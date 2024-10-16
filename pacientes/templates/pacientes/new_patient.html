@@ -4,9 +4,22 @@
 
 {% block content %}
 <h1>Nuevo Paciente</h1>
-<form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit" class="btn btn-primary">Guardar Paciente</button>
-</form>
+<div class="form-container">
+    <form method="post" class="patient-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                    <div class="form-error">
+                        {{ field.errors }}
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+        <button type="submit" class="btn btn-primary">Guardar Paciente</button>
+    </form>
+</div>
 {% endblock %}

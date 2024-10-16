@@ -75,9 +75,23 @@ class PatientForm(forms.ModelForm):
         fields = ['name', 'surname', 'date_of_birth', 'gender', 'address', 'phone_number', 
                   'email', 'medical_history', 'allergies', 'emergency_contact_name', 
                   'emergency_contact_phone', 'notes']
+        labels = {
+            'name': 'Nombre',
+            'surname': 'Apellido',
+            'date_of_birth': 'Fecha de Nacimiento',
+            'gender': 'Género',
+            'address': 'Dirección',
+            'phone_number': 'Número de Teléfono',
+            'email': 'Correo Electrónico',
+            'medical_history': 'Historial Médico',
+            'allergies': 'Alergias',
+            'emergency_contact_name': 'Nombre del Contacto de Emergencia',
+            'emergency_contact_phone': 'Teléfono del Contacto de Emergencia',
+            'notes': 'Notas',
+        }
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
-            'gender': forms.Select(choices=[('M', 'Male'), ('F', 'Female')]),
+            'gender': forms.Select(choices=[('M', 'Masculino'), ('F', 'Femenino')]),
             'medical_history': forms.Textarea(attrs={'rows': 4}),
             'allergies': forms.Textarea(attrs={'rows': 4}),
             'notes': forms.Textarea(attrs={'rows': 4}),

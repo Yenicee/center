@@ -637,3 +637,57 @@ button:hover {
 		display: none;
 	}
 }
+/*Formularios */
+.form-container {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.patient-form .form-group {
+    margin-bottom: 15px;
+}
+
+.patient-form label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.patient-form input[type="text"],
+.patient-form input[type="email"],
+.patient-form input[type="date"],
+.patient-form select,
+.patient-form textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+.patient-form textarea {
+    resize: vertical;
+}
+
+.btn.btn-primary {
+    background-color: #007bff;
+    color: #fff;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.btn.btn-primary:hover {
+    background-color: #0056b3;
+}
+
+.form-error {
+    color: red;
+    font-size: 0.875em;
+    margin-top: 5px;
+}
