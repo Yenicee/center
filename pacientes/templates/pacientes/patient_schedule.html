@@ -4,6 +4,15 @@
 
 {% block content %}
     <h1>Horario de {{ patient.name }}</h1>
+    
+    <h2>Agregar nueva actividad</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit">Agregar actividad</button>
+    </form>
+    
+    <h2>Actividades programadas</h2>
     <ul>
     {% for activity in activities %}
         <li>

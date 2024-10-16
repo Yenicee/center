@@ -5,7 +5,7 @@ from django.contrib.auth.models import User
 from .validators import validate_password_strength
 from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
-from .models import Patient
+from .models import Patient, Activity
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -95,4 +95,13 @@ class PatientForm(forms.ModelForm):
             'medical_history': forms.Textarea(attrs={'rows': 4}),
             'allergies': forms.Textarea(attrs={'rows': 4}),
             'notes': forms.Textarea(attrs={'rows': 4}),
+        }
+
+
+class ActivityForm(forms.ModelForm):
+    class Meta:
+        model = Activity
+        fields = ['date', 'description']
+        widgets = {
+            'date': forms.DateInput(attrs={'type': 'date'}),
         }

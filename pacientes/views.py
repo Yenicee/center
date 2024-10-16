@@ -4,7 +4,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.urls import reverse_lazy
 from django.views import generic
 from .models import Patient, Activity, Session
-from .forms import CustomUserCreationForm, PatientForm
+from .forms import CustomUserCreationForm, PatientForm,ActivityForm
 
 @login_required
 def patient_list(request):
@@ -14,9 +14,24 @@ def patient_list(request):
 #vista para mostrar el cronograma de actividades de un paciente
 @login_required
 def patient_schedule(request, patient_id):
-    patient = get_object_or_404(Patient, id= patient_id)
-    activities = Activity.objects.filter(patient= patient)
-    return render(request, 'pacientes/patient_schedule.html',{'patient': patient, 'activities':activities})
+    patient = get_object_or_404(Patient, id=patient_id)
+    activities = Activity.objects.filter(patient=patient).order_by('date')
+    
+    if request.method == 'POST':
+        form = ActivityForm(request.POST)
+        if form.is_valid():
+            activity = form.save(commit=False)
+            activity.patient = patient
+            activity.save()
+            return redirect('patient_schedule', patient_id=patient.id)
+    else:
+        form = ActivityForm()
+    
+    return render(request, 'pacientes/patient_schedule.html', {
+        'patient': patient,
+        'activities': activities,
+        'form': form
+    })
 
 @login_required
 def add_session_result(request, activity_id):
