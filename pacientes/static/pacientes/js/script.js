@@ -123,7 +123,6 @@ allMenu.forEach(item=> {
 })
 
 
-
 window.addEventListener('click', function (e) {
 	if(e.target !== imgProfile) {
 		if(e.target !== dropdownProfile) {
@@ -147,10 +146,6 @@ window.addEventListener('click', function (e) {
 	})
 })
 
-
-
-
-
 // PROGRESSBAR
 const allProgress = document.querySelectorAll('main .card .progress');
 
@@ -159,11 +154,7 @@ allProgress.forEach(item=> {
 })
 
 
-
-
-
-
-// APEXCHART
+// // APEXCHART
 var options = {
   series: [{
   name: 'series1',
@@ -193,5 +184,5 @@ tooltip: {
 },
 };
 
-var chart = new ApexCharts(document.querySelector("#chart"), options);
-chart.render();
+// var chart = new ApexCharts(document.querySelector("#chart"), options);
+// chart.render();

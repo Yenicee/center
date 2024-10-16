@@ -44,7 +44,7 @@ def create_patient(request):
         form = PatientForm(request.POST)
         if form.is_valid():
             form.save()
-            return redirect('patient_list')  # Asegúrate de que esta URL exista
+            return redirect('patient_list') 
     else:
         form = PatientForm()
     return render(request, 'pacientes/new_patient.html', {'form': form})
