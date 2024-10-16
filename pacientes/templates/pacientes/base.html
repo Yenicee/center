@@ -62,7 +62,6 @@
 			</div>
 		</nav>
 		<!-- NAVBAR -->
-
 		<!-- MAIN -->
 		<main>
 			<h1 class="title">Dashboard</h1>
@@ -71,12 +70,26 @@
 				<li class="divider">/</li>
 				<li><a href="#" class="active">Dashboard</a></li>
 			</ul>
-			{% block content %}
-            {% endblock %}
+
+			<!-- Contenedor dividido en dos columnas -->
+			<div class="content-container">
+				<!-- Columna izquierda -->
+				<div class="left-column">
+					{% block left_content %}
+					<!-- Contenido específico aquí -->
+					{% endblock %}
+				</div>
+
+				<!-- Columna derecha -->
+				<div class="right-column">
+					{% block right_content %}
+					<!-- Calendario u otros widgets aquí -->
+					{% endblock %}
+				</div>
+			</div>
 		</main>
 		<!-- MAIN -->
-	</section>
-	<!-- NAVBAR -->
+
 	<script src="{% static '/pacientes/js/script.js' %}"></script>
 </body>
 </html>
