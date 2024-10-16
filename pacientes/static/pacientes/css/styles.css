@@ -569,6 +569,44 @@ main .btn-send {
 main .btn-send:hover {
 	background: var(--dark-blue);
 }
+.content-container {
+    display: flex;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.left-column {
+    width: 65%;
+}
+
+/* Columna derecha (widgets o calendarios) */
+.right-column {
+    width: 35%;
+    padding: 20px;
+    background-color: var(--blue);
+}
+
+/* Para mejorar la apariencia del widget placeholder */
+.widget-placeholder {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+/* Estilos responsivos para pantallas más pequeñas */
+@media (max-width: 768px) {
+    .content-container {
+        flex-direction: column; /* Cambiar a una sola columna en pantallas pequeñas */
+    }
+
+    .left-column, .right-column {
+        width: 100%; /* Ambas columnas ocupan el 100% del ancho */
+    }
+
+    .right-column {
+        margin-top: 20px; /* Añadir un margen superior para separarlo de la columna izquierda */
+    }
+}
+
 /* MAIN */
 /* CONTENT */
 /*Tabla - Inicio*/
@@ -640,7 +678,7 @@ button:hover {
 /*Formularios */
 .form-container {
     max-width: 600px;
-    margin: 0 auto;
+    margin: 20px;
     padding: 20px;
     background-color: #f8f9fa;
     border-radius: 8px;
