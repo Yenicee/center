@@ -1,0 +1,21 @@
+{% extends 'pacientes/base.html' %}
+
+{% block title %}Horario de {{ patient.name }}{% endblock %}
+
+{% block content %}
+    <h1>Horario de {{ patient.name }}</h1>
+    <ul>
+    {% for activity in activities %}
+        <li>
+            {{ activity.date|date:"d/m/Y" }} - {{ activity.description }}
+            <form method="post" action="{% url 'add_session_result' activity.id %}">
+                {% csrf_token %}
+                <input type="text" name="result" placeholder="Resultado de la sesión">
+                <button type="submit">Guardar resultado</button>
+            </form>
+        </li>
+    {% empty %}
+        <li>No hay actividades programadas.</li>
+    {% endfor %}
+    </ul>
+{% endblock %}

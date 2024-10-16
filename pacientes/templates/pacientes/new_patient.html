@@ -1,0 +1,12 @@
+{% extends 'pacientes/base.html' %}
+
+{% block title %}Nuevo Paciente{% endblock %}
+
+{% block content %}
+<h1>Nuevo Paciente</h1>
+<form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-primary">Guardar Paciente</button>
+</form>
+{% endblock %}

@@ -1,0 +1,124 @@
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500;600;700&display=swap');
+
+* {
+	font-family: 'Open Sans', sans-serif;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+:root {
+	--grey: #F1F0F6;
+	--dark-grey: #8D8D8D;
+	--light: #fff;
+	--dark: #000;
+	--green: #81D43A;
+	--light-green: #E3FFCB;
+	--blue: #1775F1;
+	--light-blue: #D0E4FF;
+	--dark-blue: #0C5FCD;
+	--red: #FC3B56;
+}
+html {
+	overflow-x: hidden;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    background: linear-gradient(155deg, #FFF5EB, #F3FFFD);
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+/* Login */
+.login-container {
+    background-color: #ffffff;
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+.login-container img {
+    max-width: 100px;
+    margin-bottom: 20px;
+}
+
+.login-container h1 {
+    font-size: 24px;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.login-container input {
+    width: 100%;
+    padding: 12px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 16px;
+}
+
+.login-container button {
+    width: 100%;
+    padding: 12px;
+    background-color: #fc575e;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.login-container button:hover {
+    background-color: #f7b42c;
+}
+
+.forgot-password {
+    margin-top: 15px;
+}
+
+.forgot-password a {
+    color: #fc575e;
+    font-size: 14px;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.forgot-password a:hover {
+    color: #f7b42c;
+}
+
+.login-container .social-links {
+    margin-top: 20px;
+}
+
+.login-container .social-links a {
+    margin: 0 10px;
+    font-size: 20px;
+    text-decoration: none;
+    color: #fc575e;
+    transition: color 0.3s ease;
+}
+
+.login-container .social-links a:hover {
+    color: #f7b42c;
+}
+.errorlist {
+    list-style-type: none;  
+    padding: 0;
+    margin: 10px;
+}
+/*Fin Login */
+a {
+	text-decoration: none;
+}
+
+li {
+	list-style: none;
+}
+/* Base */
