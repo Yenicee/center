@@ -17,11 +17,12 @@
 			<li><a href="#" class="active"><i class='bx bxs-dashboard icon' ></i> Dashboard</a></li>
 			<li class="divider" data-text="Consultorio"></li>
 			<li>
-				<a href="#"><i class="fa-regular fa-calendar icon"></i>Agenda <i class='bx bx-chevron-right icon-right' ></i></a>
+				<a href="{% url 'calendar' %}"><i class="fa-regular fa-calendar icon"></i>Agenda <i class='bx bx-chevron-right icon-right' ></i></a>
 				<ul class="side-dropdown">
-					<li><a href="#">Nueva Entrada</a></li>
+					<li><a href="{% url 'calendar' %}">Ver Calendario</a></li>
 				</ul>
 			</li>
+
 			<li>
 				<a href="#"><i class="fa-solid fa-hospital-user icon"></i> Pacientes <i class='bx bx-chevron-right icon-right' ></i></a>
 				<ul class="side-dropdown">
@@ -94,10 +95,12 @@
                 <!-- Contenido principal de las vistas hijas aquí -->
                 {% endblock %}
             </div>
+			{% block extra_js %}{% endblock %}
 		</main>
 		<!-- MAIN -->
 
 	<script src="{% static '/pacientes/js/script.js' %}"></script>
+
 	<script>
 		document.addEventListener("DOMContentLoaded", function() {
 			const buttons = document.querySelectorAll(".tab-button");
@@ -105,11 +108,10 @@
 		
 			buttons.forEach(button => {
 				button.addEventListener("click", function() {
-					// Remover la clase 'active' de todos los botones y contenidos
+					
 					buttons.forEach(btn => btn.classList.remove("active"));
 					contents.forEach(content => content.classList.remove("active"));
 		
-					// Añadir la clase 'active' al botón clicado y al contenido correspondiente
 					button.classList.add("active");
 					const targetContent = document.getElementById(button.getAttribute("data-tab"));
 					targetContent.classList.add("active");
@@ -117,5 +119,6 @@
 			});
 		});
 	</script>
+
 </body>
 </html>

@@ -19,7 +19,8 @@ urlpatterns = [
     path('accounts/reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm2.html'), name='password_reset_confirm'),
     path('accounts/reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete2.html'), name='password_reset_complete'),
     path('pacientes/nuevo/', views.create_patient, name='new_patient'),
-    path('patients/', views.patient_list, name='patient_list'),
+    path('calendar/', views.calendar_view, name='calendar'),
+    path('api/activities/', views.get_activities, name='get_activities'),
 ]
 
 

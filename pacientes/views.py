@@ -5,6 +5,7 @@ from django.urls import reverse_lazy
 from django.views import generic
 from .models import Patient, Activity, Session
 from .forms import CustomUserCreationForm, PatientForm,ActivityForm
+from django.http import JsonResponse
 
 @login_required
 def patient_list(request):
@@ -63,3 +64,17 @@ def create_patient(request):
     else:
         form = PatientForm()
     return render(request, 'pacientes/new_patient.html', {'form': form})
+
+def calendar_view(request):
+    return render(request, 'pacientes/calendar.html')
+
+def get_activities(request):
+    activities = Activity.objects.all()
+    events = []
+    for activity in activities:
+        events.append({
+            'title': f"{activity.patient.name} - {activity.description}",
+            'start': activity.date.strftime('%Y-%m-%d'),
+            'url': f"/patient/{activity.patient.id}/schedule/"
+        })
+    return JsonResponse(events, safe=False)
