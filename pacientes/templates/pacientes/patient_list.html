@@ -2,14 +2,44 @@
 
 {% block title %}Lista de Pacientes{% endblock %}
 
-{% block content %}
-    <h1>Lista de Pacientes</h1>
-    <ul>
-    {% for patient in patients %}
-        <li><a href="{% url 'patient_schedule' patient.id %}">{{ patient.name }}</a></li>
-    {% empty %}
-        <li>No hay pacientes registrados.</li>
-    {% endfor %}
-    </ul>
+{% block left_content %}
+<h1>Lista de Pacientes</h1>
+<div class="patient-list-container">
+    {% if patients %}
+        <table class="patient-table">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Apellido</th>
+                    <th>Telefono</th>
+                    <th>Correo Electrónico</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+            {% for patient in patients %}
+                <tr>
+                    <td>{{ patient.name }}</td>
+                    <td>{{ patient.surname }}</td>
+                    <td>{{ patient.phone_number }}</td>
+                    <td>{{ patient.email }}</td>
+                    <td class="actions-cell">
+                        <a href="{% url 'patient_schedule' patient.id %}" class="btn btn-icon" title="Ver detalles">
+                            <i class="fa-solid fa-eye"></i>
+                        </a>
+                    </td>
+                </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+    {% else %}
+        <p>No hay pacientes registrados.</p>
+    {% endif %}
+</div>
+{% endblock %}
 
+{% block right_content %}
+<div class="widget-placeholder">
+    Información Adicional
+</div>
 {% endblock %}

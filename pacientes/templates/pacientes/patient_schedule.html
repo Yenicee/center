@@ -2,29 +2,82 @@
 
 {% block title %}Horario de {{ patient.name }}{% endblock %}
 
-{% block content %}
-    <h1>Horario de {{ patient.name }}</h1>
-    
-    <h2>Agregar nueva actividad</h2>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Agregar actividad</button>
-    </form>
-    
-    <h2>Actividades programadas</h2>
-    <ul>
-    {% for activity in activities %}
-        <li>
-            {{ activity.date|date:"d/m/Y" }} - {{ activity.description }}
-            <form method="post" action="{% url 'add_session_result' activity.id %}">
+{% block left_content %}
+<div class="tabs-container">
+    <!-- Botones de pestañas -->
+    <div class="tabs-buttons">
+        <button class="tab-button active" data-tab="datos">Datos Paciente</button>
+        <button class="tab-button" data-tab="proximas">Próximas Sesiones</button>
+        <button class="tab-button" data-tab="historial">Historial</button>
+    </div>
+
+    <!-- Contenido de las pestañas -->
+    <div class="tabs-content">
+        <!-- Sección Datos del Paciente -->
+        <div class="tab-content active" id="datos">
+            <h1>Datos de {{ patient.name }} {{ patient.surname }}</h1>
+            <p><strong>Fecha de Nacimiento:</strong> {{ patient.date_of_birth|date:"d/m/Y" }}</p>
+            <p><strong>Género:</strong> {{ patient.get_gender_display }}</p>
+            <p><strong>Dirección:</strong> {{ patient.address }}</p>
+            <p><strong>Teléfono:</strong> {{ patient.phone_number }}</p>
+            <p><strong>Email:</strong> {{ patient.email }}</p>
+            <p><strong>Historial Médico:</strong> {{ patient.medical_history|default:"Sin información" }}</p>
+            <p><strong>Alergias:</strong> {{ patient.allergies|default:"Sin alergias registradas" }}</p>
+            <p><strong>Contacto de Emergencia:</strong> {{ patient.emergency_contact_name }}</p>
+            <p><strong>Teléfono de Emergencia:</strong> {{ patient.emergency_contact_phone }}</p>
+            <p><strong>Notas:</strong> {{ patient.notes|default:"Sin notas adicionales" }}</p>
+        </div>
+
+        <!-- Sección Próximas Secciones (Agregar Actividad) -->
+        <div class="tab-content" id="proximas">
+            <h2>Agregar nueva actividad</h2>
+            <form method="post">
                 {% csrf_token %}
-                <input type="text" name="result" placeholder="Resultado de la sesión">
-                <button type="submit">Guardar resultado</button>
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-primary">Agregar actividad</button>
             </form>
-        </li>
-    {% empty %}
-        <li>No hay actividades programadas.</li>
-    {% endfor %}
-    </ul>
+
+            <h2>Actividades programadas</h2>
+            <ul>
+            {% for activity in activities %}
+                <li>
+                    <strong>{{ activity.date|date:"d/m/Y" }}</strong> - {{ activity.description }}
+                    <form method="post" action="{% url 'add_session_result' activity.id %}">
+                        {% csrf_token %}
+                        <input type="text" name="result" placeholder="Resultado de la sesión" class="input-result">
+                        <button type="submit" class="btn btn-secondary">Guardar resultado</button>
+                    </form>
+                </li>
+            {% empty %}
+                <li>No hay actividades programadas.</li>
+            {% endfor %}
+            </ul>
+        </div>
+
+        <!-- Sección Historial del Paciente -->
+        <div class="tab-content" id="historial">
+            <h2>Historial del Paciente</h2>
+        </div>
+    </div>
+</div>
 {% endblock %}
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const buttons = document.querySelectorAll(".tab-button");
+    const contents = document.querySelectorAll(".tab-content");
+
+    buttons.forEach(button => {
+        button.addEventListener("click", function() {
+            // Remover la clase 'active' de todos los botones y contenidos
+            buttons.forEach(btn => btn.classList.remove("active"));
+            contents.forEach(content => content.classList.remove("active"));
+
+            // Añadir la clase 'active' al botón clicado y al contenido correspondiente
+            button.classList.add("active");
+            const targetContent = document.getElementById(button.getAttribute("data-tab"));
+            targetContent.classList.add("active");
+        });
+    });
+});
+</script>

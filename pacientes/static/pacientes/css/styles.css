@@ -626,8 +626,8 @@ td {
 }
 
 th {
-	background-color: #1b6e1d;
-	color: #333;
+	background-color: var(--blue);
+	color: var(--light);
 }
 
 tr:nth-child(even) {
@@ -730,4 +730,103 @@ button:hover {
     color: red;
     font-size: 0.875em;
     margin-top: 5px;
+}
+/*Lista Pacientes*/
+.patient-list-container {
+    margin-top: 20px;
+}
+
+.patient-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.patient-table thead {
+    background-color: var(--blue);
+    color: var(--light);
+}
+
+.patient-table th,
+.patient-table td {
+	padding: 10px 10px; 
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.patient-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+.patient-table th {
+    font-weight: 600;
+}
+.patient-table td.actions-cell {
+    text-align: center;
+    vertical-align: middle; 
+}
+.btn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px; 
+    height: 20px;
+    background-color: transparent;
+    color: #007bff;
+    border-radius: 50%;
+    transition: background-color 0.3s, color 0.3s;
+}
+.btn-icon:hover {
+    background-color: #f1f1f1;
+    color: #0056b3;
+}
+
+.btn-icon i {
+    font-size: 16px;
+}
+/*Schedule*/
+.tabs-container {
+    width: 100%;
+    margin-top: 20px;
+}
+
+.tabs-buttons {
+    display: flex;
+    border-bottom: 2px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.tab-button {
+    padding: 10px 20px;
+    margin-right: 10px;
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    cursor: pointer;
+    transition: color 0.3s, border-bottom-color 0.3s;
+    font-size: 16px;
+    color: #8D8D8D; /* Gris oscuro */
+}
+
+.tab-button:hover,
+.tab-button.active {
+    color: #007bff;
+    border-bottom-color: #007bff;
+}
+
+.tabs-content {
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
 }
