@@ -578,14 +578,15 @@ main .btn-send:hover {
 }
 
 .left-column {
-    width: 65%;
+    flex: 1; /* Toma el espacio completo si es el único visible */
 }
 
-/* Columna derecha (widgets o calendarios) */
-.right-column {
-    width: 35%;
-    padding: 20px;
-    background-color: var(--blue);
+.right-column.hidden + .left-column {
+    flex: 1 1 100%; /* La columna izquierda ocupará el 100% del ancho */
+}
+
+.hidden {
+    display: none;
 }
 
 /* Para mejorar la apariencia del widget placeholder */
@@ -731,6 +732,7 @@ button:hover {
     font-size: 0.875em;
     margin-top: 5px;
 }
+
 /*Lista Pacientes*/
 .patient-list-container {
     margin-top: 20px;
@@ -829,4 +831,13 @@ button:hover {
 
 .tab-content.active {
     display: block;
+}
+/*Calendario*/
+#calendar {
+    flex: 1;
+    max-width: 90%;
+    margin: 20px auto;
+  }
+  .fc .fc-toolbar.fc-header-toolbar {
+    margin-bottom: 0.5em;
 }

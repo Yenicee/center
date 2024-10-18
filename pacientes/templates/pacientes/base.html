@@ -75,14 +75,14 @@
 			<!-- Contenedor dividido en dos columnas -->
 			<div class="content-container">
 				<!-- Columna izquierda -->
-				<div class="left-column">
+				<div class="left-column {% block left_column_class %}{% endblock %}">
 					{% block left_content %}
 					<!-- Contenido específico aquí -->
 					{% endblock %}
 				</div>
-
+			
 				<!-- Columna derecha -->
-				<div class="right-column">
+				<div class="right-column {% block right_column_class %}{% endblock %}">
 					{% block right_content %}
 					<!-- Calendario u otros widgets aquí -->
 					{% endblock %}
