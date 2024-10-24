@@ -1,13 +1,11 @@
-# forms.py
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
-from .validators import validate_password_strength
-from django.contrib.auth.forms import AuthenticationForm
 from django.utils.translation import gettext_lazy as _
-from .models import Patient, Activity
+from .models import Patient, Session, Specialist, Room
+from .validators import validate_password_strength
 
-
+# CustomUserCreationForm y CustomAuthenticationForm se mantienen igual
 class CustomUserCreationForm(UserCreationForm):
     username = forms.CharField(
         label='',
@@ -69,39 +67,101 @@ class CustomAuthenticationForm(AuthenticationForm):
         'inactive': _("Esta cuenta está inactiva."),
     }
     
+
 class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
-        fields = ['name', 'surname', 'date_of_birth', 'gender', 'address', 'phone_number', 
-                  'email', 'medical_history', 'allergies', 'emergency_contact_name', 
-                  'emergency_contact_phone', 'notes']
+        fields = [
+            'name', 'surname', 'date_of_birth', 'gender', 'photo',
+            'marital_status', 'address', 'phone_number', 'email',
+            'medical_diagnosis', 'attachments', 'therapy', 'education',
+            'therapist', 'medical_history', 'allergies',
+            'emergency_contact_name', 'emergency_contact_phone',
+            'notes', 'status'
+        ]
         labels = {
             'name': 'Nombre',
             'surname': 'Apellido',
             'date_of_birth': 'Fecha de Nacimiento',
             'gender': 'Género',
+            'photo': 'Foto',
+            'marital_status': 'Estado Civil',
             'address': 'Dirección',
             'phone_number': 'Número de Teléfono',
             'email': 'Correo Electrónico',
+            'medical_diagnosis': 'Diagnóstico Médico',
+            'attachments': 'Archivos Adjuntos',
+            'therapy': 'Terapia',
+            'education': 'Educación',
+            'therapist': 'Terapeuta',
             'medical_history': 'Historial Médico',
             'allergies': 'Alergias',
             'emergency_contact_name': 'Nombre del Contacto de Emergencia',
             'emergency_contact_phone': 'Teléfono del Contacto de Emergencia',
             'notes': 'Notas',
+            'status': 'Estado'
         }
         widgets = {
             'date_of_birth': forms.DateInput(attrs={'type': 'date'}),
             'gender': forms.Select(choices=[('M', 'Masculino'), ('F', 'Femenino')]),
             'medical_history': forms.Textarea(attrs={'rows': 4}),
+            'medical_diagnosis': forms.Textarea(attrs={'rows': 4}),
             'allergies': forms.Textarea(attrs={'rows': 4}),
             'notes': forms.Textarea(attrs={'rows': 4}),
+            'status': forms.Select(choices=[
+                ('Active', 'Activo'),
+                ('Discharged', 'Alta'),
+                ('Suspended', 'Suspendido')
+            ])
         }
 
-
-class ActivityForm(forms.ModelForm):
+class SessionForm(forms.ModelForm):
     class Meta:
-        model = Activity
-        fields = ['date', 'description']
+        model = Session
+        fields = [
+            'patient', 'specialist', 'room', 'date',
+            'time', 'objective', 'activity', 'materials',
+            'observation', 'attachment'
+        ]
+        labels = {
+            'patient': 'Paciente',
+            'specialist': 'Especialista',
+            'room': 'Sala',
+            'date': 'Fecha',
+            'time': 'Hora',
+            'objective': 'Objetivo',
+            'activity': 'Actividad',
+            'materials': 'Materiales',
+            'observation': 'Observación',
+            'attachment': 'Archivo Adjunto'
+        }
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
+            'time': forms.TimeInput(attrs={'type': 'time'}),
+            'activity': forms.Textarea(attrs={'rows': 4}),
+            'materials': forms.Textarea(attrs={'rows': 3}),
+            'observation': forms.Textarea(attrs={'rows': 3})
+        }
+
+class SpecialistForm(forms.ModelForm):
+    class Meta:
+        model = Specialist
+        fields = ['name', 'surname', 'specialty', 'email', 'phone']
+        labels = {
+            'name': 'Nombre',
+            'surname': 'Apellido',
+            'specialty': 'Especialidad',
+            'email': 'Correo Electrónico',
+            'phone': 'Teléfono'
+        }
+
+class RoomForm(forms.ModelForm):
+    class Meta:
+        model = Room
+        fields = ['name', 'capacity', 'location', 'specialists']
+        labels = {
+            'name': 'Nombre',
+            'capacity': 'Capacidad',
+            'location': 'Ubicación',
+            'specialists': 'Especialistas'
         }

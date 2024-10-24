@@ -7,8 +7,15 @@ urlpatterns = [
     path('', views.patient_list, name='patient_list'),
     path('patients/', views.patient_list, name='patient_list'),
     path('patient/<int:patient_id>/schedule/', views.patient_schedule, name='patient_schedule'),
-    path('activity/<int:activity_id>/add-result/', views.add_session_result, name='add_session_result'),
-    #path('logout/', LogoutView.as_view(), name='logout'),
+    path('sessions/<int:session_id>/', views.session_detail, name='session_detail'),
+    path('sessions/<int:session_id>/edit/', views.edit_session, name='edit_session'),
+    
+    path('specialists/', views.specialist_list, name='specialist_list'),
+    path('specialists/new/', views.create_specialist, name='new_specialist'),
+    
+    path('rooms/', views.room_list, name='room_list'),
+    path('rooms/new/', views.create_room, name='new_room'),
+    
     path('register/', views.SignUpView.as_view(), name='register'),
     path('accounts/login/', auth_views.LoginView.as_view(
         template_name='registration/login.html', 
@@ -18,9 +25,9 @@ urlpatterns = [
     path('accounts/password_reset/done/', auth_views.PasswordResetDoneView.as_view(template_name='registration/password_reset_done2.html'), name='password_reset_done'),
     path('accounts/reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(template_name='registration/password_reset_confirm2.html'), name='password_reset_confirm'),
     path('accounts/reset/done/', auth_views.PasswordResetCompleteView.as_view(template_name='registration/password_reset_complete2.html'), name='password_reset_complete'),
+    
     path('pacientes/nuevo/', views.create_patient, name='new_patient'),
     path('calendar/', views.calendar_view, name='calendar'),
-    path('api/activities/', views.get_activities, name='get_activities'),
 ]
 
 
