@@ -1,0 +1,36 @@
+{% extends 'pacientes/base.html' %}
+
+{% block content %}
+<h1 class="title">Salas</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Salas</a></li>
+</ul>
+
+<div class="data-list">
+    <div class="list-header">
+        <h2>Lista de Salas</h2>
+        <a href="{% url 'new_room' %}" class="btn-add">
+            <i class='bx bx-plus'></i>
+            Nueva Sala
+        </a>
+    </div>
+
+    <div class="list-content">
+        {% for room in rooms %}
+            <div class="list-item">
+                <div class="item-info">
+                    <h3>{{ room.name }}</h3>
+                    <p><i class='bx bx-door-open'></i> Capacidad: {{ room.capacity }}</p>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <i class='bx bx-door-open'></i>
+                <p>No hay salas registradas.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
