@@ -30,6 +30,27 @@
                     <li><a href="{% url 'new_patient' %}">Nuevo paciente</a></li>
 				</ul>
 			</li>
+			<li>
+				<a href="#">
+					<i class="fa-solid fa-user-doctor icon"></i> Especialistas 
+					<i class='bx bx-chevron-right icon-right'></i>
+				</a>
+				<ul class="side-dropdown">
+					<li><a href="{% url 'specialist_list' %}">Lista de especialistas</a></li>
+					<li><a href="{% url 'new_specialist' %}">Nuevo especialista</a></li>
+				</ul>
+			</li>
+
+			<li>
+           <a href="#">
+          <i class="fa-solid fa-door-open icon"></i> Salas 
+           <i class='bx bx-chevron-right icon-right'></i>
+          </a>
+          <ul class="side-dropdown">
+           <li><a href="{% url 'room_list' %}">Lista de salas</a></li>
+          <li><a href="{% url 'new_room' %}">Nueva sala</a></li>
+          </ul>
+</li>
 			
 			<li class="divider" data-text="Administrador"></li>
 			<li><a href="#"><i class="fa-solid fa-wallet icon"></i> Pagos</a></li>

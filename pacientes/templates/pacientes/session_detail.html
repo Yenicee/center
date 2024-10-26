@@ -1,0 +1,66 @@
+{% extends 'pacientes/base.html' %}
+
+{% block content %}
+<h1 class="title">Detalle de Sesión</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li class="divider">/</li>
+    <li><a href="{% url 'patient_schedule' session.patient.id %}">Agenda</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Sesión</a></li>
+</ul>
+
+<div class="session-detail">
+    <div class="detail-card">
+        <div class="card-header">
+            <h2>{{ session.patient.name }}</h2>
+            <div class="session-meta">
+                <span><i class='bx bx-calendar'></i> {{ session.date }}</span>
+                <span><i class='bx bx-time'></i> {{ session.time }}</span>
+            </div>
+        </div>
+
+        <div class="card-content">
+            <div class="info-group">
+                <label><i class='bx bx-user'></i> Especialista</label>
+                <p>{{ session.specialist.name }}</p>
+            </div>
+            
+            <div class="info-group">
+                <label><i class='bx bx-door-open'></i> Sala</label>
+                <p>{{ session.room.name }}</p>
+            </div>
+
+            <div class="info-group">
+                <label><i class='bx bx-target-lock'></i> Objetivo</label>
+                <p>{{ session.objective }}</p>
+            </div>
+
+            <form method="post" class="observation-form">
+                {% csrf_token %}
+                <div class="form-group">
+                    <label><i class='bx bx-notepad'></i> Observaciones</label>
+                    <textarea name="observation" class="form-input">{{ session.observation }}</textarea>
+                </div>
+                {% if error %}
+                    <div class="error-message">
+                        <i class='bx bx-error'></i>
+                        {{ error }}
+                    </div>
+                {% endif %}
+                <div class="button-group">
+                    <button type="submit" class="btn-save">
+                        <i class='bx bx-save'></i> Guardar
+                    </button>
+                    <a href="{% url 'edit_session' session.id %}" class="btn-edit">
+                        <i class='bx bx-edit'></i> Editar
+                    </a>
+                    <a href="{% url 'patient_schedule' session.patient.id %}" class="btn-back">
+                        <i class='bx bx-arrow-back'></i> Volver
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

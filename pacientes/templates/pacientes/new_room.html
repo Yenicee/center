@@ -1,0 +1,49 @@
+{% extends "pacientes/base.html" %}
+
+{% block content %}
+<h1 class="title">Nueva Sala</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li class="divider">/</li>
+    <li><a href="{% url 'room_list' %}">Salas</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Nueva Sala</a></li>
+</ul>
+
+<div class="form-container">
+    <div class="form-header">
+        <h2>Registro de Sala</h2>
+    </div>
+
+    <div class="form-content">
+        <form method="POST">
+            {% csrf_token %}
+            
+            {% for field in form %}
+            <div class="form-group">
+                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                {{ field }}
+                {% if field.errors %}
+                <div class="error-message">
+                    {% for error in field.errors %}
+                        <p>{{ error }}</p>
+                    {% endfor %}
+                </div>
+                {% endif %}
+            </div>
+            {% endfor %}
+
+            <div class="form-actions">
+                <button type="submit" class="btn-primary">
+                    <i class='bx bx-save'></i>
+                    Guardar Sala
+                </button>
+                <a href="{% url 'room_list' %}" class="btn-secondary">
+                    <i class='bx bx-x'></i>
+                    Cancelar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

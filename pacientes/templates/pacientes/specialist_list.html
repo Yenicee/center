@@ -1,0 +1,38 @@
+{% extends 'pacientes/base.html' %}
+
+{% block content %}
+<h1 class="title">Especialistas</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Especialistas</a></li>
+</ul>
+
+<div class="data-list">
+    <div class="list-header">
+        <h2>Lista de Especialistas</h2>
+        <a href="{% url 'new_specialist' %}" class="btn-add">
+            <i class='bx bx-plus'></i>
+            Nuevo Especialista
+        </a>
+    </div>
+
+    <div class="list-content">
+        {% for specialist in specialists %}
+            <div class="list-item">
+                <div class="item-info">
+                    <h3>{{ specialist.name }} {{ specialist.surname }}</h3>
+                    <p><i class='bx bx-briefcase'></i> {{ specialist.specialty }}</p>
+                    <p><i class='bx bx-envelope'></i> {{ specialist.email }}</p>
+                    <p><i class='bx bx-phone'></i> {{ specialist.phone }}</p>
+                </div>
+            </div>
+        {% empty %}
+            <div class="empty-state">
+                <i class='bx bx-user-x'></i>
+                <p>No hay especialistas registrados.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
