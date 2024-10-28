@@ -1,32 +1,49 @@
 {% extends 'pacientes/base.html' %}
-
-{% block title %}Lista de Pacientes{% endblock %}
-
 {% block left_content %}
 <h1>Lista de Pacientes</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Pacientes</a></li>
+</ul>
 <div class="patient-list-container">
+    <div class="list-header">
+        <a href="{% url 'new_patient' %}" class="btn-add">
+            <i class='bx bx-plus'></i>
+            Agregar
+        </a>
+    </div>
+
     {% if patients %}
-        <table class="patient-table">
+        <table class="table">
             <thead>
                 <tr>
+                    <th></th>
                     <th>Nombre</th>
                     <th>Apellido</th>
                     <th>Telefono</th>
                     <th>Correo Electrónico</th>
-                    <th></th>
+                    <th>Acciones</th>
                 </tr>
             </thead>
             <tbody>
             {% for patient in patients %}
                 <tr>
+                    <td>{{ patient.photo }}</td>
                     <td>{{ patient.name }}</td>
                     <td>{{ patient.surname }}</td>
                     <td>{{ patient.phone_number }}</td>
                     <td>{{ patient.email }}</td>
-                    <td class="actions-cell">
-                        <a href="{% url 'patient_schedule' patient.id %}" class="btn btn-icon" title="Ver detalles">
+                    <td class="actions-tab"> 
+                        <a href="{% url 'patient_schedule' patient.id %}" class="btn btn-icon view" title="Ver detalles">
                             <i class="fa-solid fa-eye"></i>
                         </a>
+                        <a href="" class="btn btn-icon edit" title="Editar">
+                            <i class="fas fa-pencil-alt"></i>
+                        </a>
+                        <a href="" class="btn btn-icon delete" title="Eliminar">
+                            <i class="fas fa-trash"></i>
+                        </a>    
                     </td>
                 </tr>
             {% endfor %}
@@ -35,11 +52,5 @@
     {% else %}
         <p>No hay pacientes registrados.</p>
     {% endif %}
-</div>
-{% endblock %}
-
-{% block right_content %}
-<div class="widget-placeholder">
-    Información Adicional
 </div>
 {% endblock %}
