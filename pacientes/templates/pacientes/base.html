@@ -26,8 +26,8 @@
 			<li>
 				<a href="#"><i class="fa-solid fa-hospital-user icon"></i> Pacientes <i class='bx bx-chevron-right icon-right' ></i></a>
 				<ul class="side-dropdown">
-					<li><a href="{% url 'patient_list' %}">Lista de pacientes</a></li>
-                    <li><a href="{% url 'new_patient' %}">Nuevo paciente</a></li>
+					<li><a href="{% url 'patient_list' %}"><i class="fas fa-list-ul icon-sub"></i>Pacientes</a></li>
+                    <li><a href="{% url 'new_patient' %}"><i class="fas fa-plus icon-sub"></i>Nuevo paciente</a></li>
 				</ul>
 			</li>
 			<li>
@@ -36,19 +36,19 @@
 					<i class='bx bx-chevron-right icon-right'></i>
 				</a>
 				<ul class="side-dropdown">
-					<li><a href="{% url 'specialist_list' %}">Lista de especialistas</a></li>
-					<li><a href="{% url 'new_specialist' %}">Nuevo especialista</a></li>
+					<li><a href="{% url 'specialist_list' %}"><i class="fas fa-list-ul icon-sub"></i>Especialistas</a></li>
+					<li><a href="{% url 'new_specialist' %}"><i class="fas fa-plus icon-sub"></i>Nuevo especialista</a></li>
 				</ul>
 			</li>
 
 			<li>
            <a href="#">
-          <i class="fa-solid fa-door-open icon"></i> Salas 
+			<i class="fas fa-chalkboard icon"></i> Salas 
            <i class='bx bx-chevron-right icon-right'></i>
           </a>
           <ul class="side-dropdown">
-           <li><a href="{% url 'room_list' %}">Lista de salas</a></li>
-          <li><a href="{% url 'new_room' %}">Nueva sala</a></li>
+           <li><a href="{% url 'room_list' %}"><i class="fas fa-list-ul icon-sub"></i>Salas</a></li>
+          <li><a href="{% url 'new_room' %}"><i class="fas fa-plus icon-sub"></i>Nueva sala</a></li>
           </ul>
 </li>
 			
@@ -63,7 +63,6 @@
 		</div>
 	</section>
 	<!-- SIDEBAR -->
-
 	<!-- NAVBAR -->
 	<section id="content">
 		<!-- NAVBAR -->
@@ -86,13 +85,6 @@
 		<!-- NAVBAR -->
 		<!-- MAIN -->
 		<main>
-			<h1 class="title">Dashboard</h1>
-			<ul class="breadcrumbs">
-				<li><a href="#">Home</a></li>
-				<li class="divider">/</li>
-				<li><a href="#" class="active">Dashboard</a></li>
-			</ul>
-
 			<!-- Contenedor dividido en dos columnas -->
 			<div class="content-container">
 				<!-- Columna izquierda -->

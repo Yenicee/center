@@ -1,7 +1,7 @@
 {% extends 'pacientes/base.html' %}
 
 {% block content %}
-<h1 class="title">Especialistas</h1>
+<h1 class="title">Lista de Especialistas</h1>
 <ul class="breadcrumbs">
     <li><a href="{% url 'patient_list' %}">Home</a></li>
     <li class="divider">/</li>
@@ -10,29 +10,52 @@
 
 <div class="data-list">
     <div class="list-header">
-        <h2>Lista de Especialistas</h2>
         <a href="{% url 'new_specialist' %}" class="btn-add">
             <i class='bx bx-plus'></i>
-            Nuevo Especialista
+            Agregar
         </a>
     </div>
-
-    <div class="list-content">
-        {% for specialist in specialists %}
-            <div class="list-item">
-                <div class="item-info">
-                    <h3>{{ specialist.name }} {{ specialist.surname }}</h3>
-                    <p><i class='bx bx-briefcase'></i> {{ specialist.specialty }}</p>
-                    <p><i class='bx bx-envelope'></i> {{ specialist.email }}</p>
-                    <p><i class='bx bx-phone'></i> {{ specialist.phone }}</p>
-                </div>
-            </div>
-        {% empty %}
+    <div class="specialist-list-container">
+        {% if specialists %}
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Especialidad</th>
+                        <th>Correo Electrónico</th>
+                        <th>Teléfono</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                {% for specialist in specialists %}
+                    <tr>
+                        <td>{{ specialist.name }} {{ specialist.surname }}</td>
+                        <td>{{ specialist.specialty }}</td>
+                        <td>{{ specialist.email }}</td>
+                        <td>{{ specialist.phone }}</td>
+                        <td class="actions-tab"> 
+                            <a href="" class="btn btn-icon view" title="Ver detalles">
+                                <i class="fa-solid fa-eye"></i>
+                            </a>
+                            <a href="" class="btn btn-icon edit" title="Editar">
+                                <i class="fas fa-pencil-alt"></i>
+                            </a>
+                            <a href="" class="btn btn-icon delete" title="Eliminar">
+                                <i class="fas fa-trash"></i>
+                            </a>    
+                        </td>
+                    </tr>
+                {% endfor %}
+                </tbody>
+            </table>
+        {% else %}
             <div class="empty-state">
                 <i class='bx bx-user-x'></i>
                 <p>No hay especialistas registrados.</p>
             </div>
-        {% endfor %}
+        {% endif %}
     </div>
+    
 </div>
 {% endblock %}
