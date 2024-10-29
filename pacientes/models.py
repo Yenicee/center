@@ -50,8 +50,8 @@ class Patient(models.Model):
         ('Active', 'Active'),
         ('Discharged', 'Discharged'),
         ('Suspended', 'Suspended')
-    ])
-
+    ], blank=True,
+        null=True)
     def __str__(self):
         return f'{self.name} {self.surname}'
 
