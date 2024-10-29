@@ -729,16 +729,9 @@ button:hover {
     color: var(--light);
 }
 
-
 /*Fin Tabla*/
+
 /* Estilos del formulario */
-.my-message {
-    color: red;
-    font-size: 12px;
-}
-.titleform{
-	display: flex;
-}
 .h2form{
 	width: 8px;
     height: 34px;
@@ -757,31 +750,66 @@ button:hover {
 		display: none;
 	}
 }
-/*Formularios */
+/* Formularios */
 .form-container {
-    max-width: 600px;
+    max-width: 100%;
     margin: 20px;
-    padding: 20px;
-    background-color: #f8f9fa;
-    border-radius: 8px;
+    padding: 40px;
+    background-color: var(--light);
+    border-radius: 4px;
     box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
 }
+.form-container h3{
+		position: relative; 
+		margin-bottom: 15px;
+		color: var(--blue);
+		font-weight: 600;
+}
+.form-container h3::after{
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: -5px; 
+    width:200px; 
+    height: 2px; 
+    background-color: var(--light-blue); 
+    border-radius: 2px; 
+}
+.form-container i{
+	font-size: 3em;
+	color: var(--light-blue);
+	padding-bottom: 20px;
+}
+/* Filas y Columnas */
+.row {
+    display: flex;
+    margin-bottom: 30px;
+    gap: 20px; /* Añadido para mejorar la separación entre columnas */
+}
 
-.patient-form .form-group {
+.col-title {
+    flex: 1;
+    align-self: flex-start; /* Asegura que el título esté alineado arriba */
+}
+
+.col-fields {
+    flex: 2;
+}
+
+/* Grupos del Formulario */
+.add-form .form-group {
     margin-bottom: 15px;
 }
 
-.patient-form label {
+/* Etiquetas y Campos del Formulario */
+.add-form label {
     display: block;
-    font-weight: bold;
     margin-bottom: 5px;
 }
 
-.patient-form input[type="text"],
-.patient-form input[type="email"],
-.patient-form input[type="date"],
-.patient-form select,
-.patient-form textarea {
+.add-form input,
+.add-form select,
+.add-form textarea {
     width: 100%;
     padding: 8px;
     border: 1px solid #ced4da;
@@ -789,10 +817,12 @@ button:hover {
     box-sizing: border-box;
 }
 
-.patient-form textarea {
+/* Ajuste específico para Textarea */
+.add-form textarea {
     resize: vertical;
 }
 
+/* Botón de Guardar */
 .btn.btn-primary {
     background-color: #007bff;
     color: #fff;
@@ -806,6 +836,7 @@ button:hover {
     background-color: #0056b3;
 }
 
+/* Errores del Formulario */
 .form-error {
     color: red;
     font-size: 0.875em;
@@ -861,7 +892,7 @@ button:hover {
 .tabs-container {
     margin-top: 20px;
 }
-/*Paciente*/
+/*Paciente Details*/
 .patient-details {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
