@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 from .forms import CustomAuthenticationForm
 from django.contrib.auth import views as auth_views
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     # Principal/Pacientes URLs
@@ -51,6 +53,6 @@ urlpatterns = [
         auth_views.PasswordResetCompleteView.as_view(
             template_name='registration/password_reset_complete2.html'
         ), name='password_reset_complete'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 

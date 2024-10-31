@@ -47,7 +47,11 @@
                 <!-- Foto del Paciente y Contacto de Emergencia -->
                 <div class="photo-and-contact">
                     <div class="patient-photo">
-                        <img src="" alt="Foto de {{ patient.name }}" class="photo">
+                        {% if patient.photo %}
+                        <img src="{{ patient.photo.url }}" alt="{{ patient.name }} {{ patient.surname }}" class="photo">
+                        {% else %}
+                        <img src="/static/img/default-avatar.png" alt="Foto de perfil" class="photo">
+                        {% endif %}
                     </div>
                     <div class="post-it">
                         <h3>Contacto de Emergencia</h3>
