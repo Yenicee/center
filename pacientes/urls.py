@@ -20,6 +20,8 @@ urlpatterns = [
     # Salas URLs
     path('rooms/', views.room_list, name='room_list'),
     path('rooms/new/', views.create_room, name='new_room'),
+    path('rooms/<int:room_id>/edit/', views.edit_room, name='edit_room'),
+    path('rooms/<int:room_id>/delete/', views.delete_room, name='delete_room'),
     
     # Calendario URLs
     path('calendar/', views.calendar_view, name='calendar'),

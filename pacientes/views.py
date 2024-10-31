@@ -124,6 +124,28 @@ def create_room(request):
         form = RoomForm()
     return render(request, 'pacientes/new_room.html', {'form': form})
 
+#se agrego un editar sala(sirve para los templates edit_room, delete_room)
+@login_required
+def edit_room(request, room_id):
+    room = get_object_or_404(Room, pk=room_id)
+    if request.method == 'POST':
+        form = RoomForm(request.POST, instance=room)
+        if form.is_valid():
+            form.save()
+            return redirect('room_list')
+    else:
+        form = RoomForm(instance=room)
+    return render(request, 'pacientes/edit_room.html', {'form': form, 'room': room})
+
+@login_required
+def delete_room(request, room_id):
+    room = get_object_or_404(Room, pk=room_id)
+    if request.method == 'POST':
+        room.delete()
+        return redirect('room_list')
+    return render(request, 'pacientes/delete_room.html', {'room': room})
+
+
 @login_required
 def edit_session(request, session_id):
     session = get_object_or_404(Session, id=session_id)

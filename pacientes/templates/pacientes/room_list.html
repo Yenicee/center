@@ -35,14 +35,13 @@
                             <a href="" class="btn btn-icon view" title="Ver detalles">
                                 <i class="fa-solid fa-eye"></i>
                             </a>
-                            <a href="" class="btn btn-icon edit" title="Editar">
+                            <a href="{% url 'edit_room' room.id %}" class="btn btn-icon edit" title="Editar">
                                 <i class="fas fa-pencil-alt"></i>
                             </a>
-                            <a href="" class="btn btn-icon delete" title="Eliminar">
+                            <a href="{% url 'delete_room' room.id %}" class="btn btn-icon delete" title="Eliminar">
                                 <i class="fas fa-trash"></i>
                             </a>
                         </td>
-                    </tr>
                 {% endfor %}
                 </tbody>
             </table>

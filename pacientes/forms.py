@@ -112,7 +112,8 @@ class PatientForm(forms.ModelForm):
                 ('Active', 'Activo'),
                 ('Discharged', 'Alta'),
                 ('Suspended', 'Suspendido')
-            ])
+            ],
+                attrs={'required': False})
         }
 
 class SessionForm(forms.ModelForm):

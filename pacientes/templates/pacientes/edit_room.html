@@ -1,0 +1,25 @@
+{% extends 'pacientes/base.html' %}
+
+{% block content %}
+<h1>Editar Sala</h1>
+<ul>
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li>/</li>
+    <li><a href="{% url 'room_list' %}">Salas</a></li>
+    <li>/</li>
+    <li><a href="#" class="active">Editar</a></li>
+</ul>
+
+<div>
+    <form method="POST">
+        {% csrf_token %}
+        <div class="form-group">
+            {{ form.as_p }}
+        </div>
+        <div>
+            <button type="submit">Guardar cambios</button>
+            <a href="{% url 'room_list' %}">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

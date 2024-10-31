@@ -1,0 +1,23 @@
+{% extends 'pacientes/base.html' %}
+
+{% block content %}
+<h1>Eliminar Sala</h1>
+<ul>
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li>/</li>
+    <li><a href="{% url 'room_list' %}">Salas</a></li>
+    <li>/</li>
+    <li><a href="#" class="active">Eliminar</a></li>
+</ul>
+
+<div>
+    <p>¿Está seguro que desea eliminar la sala "{{ room.name }}"?</p>
+    <form method="POST">
+        {% csrf_token %}
+        <div>
+            <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
+            <a href="{% url 'room_list' %}">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
