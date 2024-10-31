@@ -1,0 +1,27 @@
+{% extends 'pacientes/base.html' %}
+
+{% block content %}
+<h1 >Eliminar Paciente</h1>
+<ul>
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li >/</li>
+    <li><a href="{% url 'patient_list' %}">Pacientes</a></li>
+    <li >/</li>
+    <li><a href="#" class="active">Eliminar</a></li>
+</ul>
+
+<div>
+    <div>
+        <h4>¿Está seguro que desea eliminar al paciente "{{ patient.name }} {{ patient.surname }}"?</h4>
+        <p>Esta acción no se puede deshacer y eliminará toda la información asociada al paciente.</p>
+    </div>
+    
+    <form method="POST">
+        {% csrf_token %}
+        <div>
+            <button type="submit">Confirmar eliminación</button>
+            <a href="{% url 'patient_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

@@ -38,12 +38,12 @@
                         <a href="{% url 'patient_schedule' patient.id %}" class="btn btn-icon view" title="Ver detalles">
                             <i class="fa-solid fa-eye"></i>
                         </a>
-                        <a href="" class="btn btn-icon edit" title="Editar">
+                        <a href="{% url 'edit_patient' patient.id %}" class="btn-icon edit" title="Editar">
                             <i class="fas fa-pencil-alt"></i>
                         </a>
-                        <a href="" class="btn btn-icon delete" title="Eliminar">
+                        <a href="{% url 'delete_patient' patient.id %}" class="btn-icon delete" title="Eliminar">
                             <i class="fas fa-trash"></i>
-                        </a>    
+                        </a>  
                     </td>
                 </tr>
             {% endfor %}

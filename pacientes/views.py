@@ -72,6 +72,27 @@ def create_patient(request):
         form = PatientForm()
     return render(request, 'pacientes/new_patient.html', {'form': form})
 
+#se agrego esto para los templates de delete_patient y edit_patient
+@login_required
+def edit_patient(request, patient_id):
+    patient = get_object_or_404(Patient, pk=patient_id)
+    if request.method == 'POST':
+        form = PatientForm(request.POST, request.FILES, instance=patient)
+        if form.is_valid():
+            form.save()
+            return redirect('patient_list')
+    else:
+        form = PatientForm(instance=patient)
+    return render(request, 'pacientes/edit_patient.html', {'form': form, 'patient': patient})
+
+@login_required
+def delete_patient(request, patient_id):
+    patient = get_object_or_404(Patient, pk=patient_id)
+    if request.method == 'POST':
+        patient.delete()
+        return redirect('patient_list')
+    return render(request, 'pacientes/delete_patient.html', {'patient': patient})
+
 @login_required
 def calendar_view(request):
     return render(request, 'pacientes/calendar.html')

@@ -8,6 +8,8 @@ urlpatterns = [
     path('', views.patient_list, name='patient_list'),
     path('patients/new/', views.create_patient, name='new_patient'),
     path('patient/<int:patient_id>/schedule/', views.patient_schedule, name='patient_schedule'),
+    path('patient/<int:patient_id>/edit/', views.edit_patient, name='edit_patient'),
+    path('patient/<int:patient_id>/delete/', views.delete_patient, name='delete_patient'),
     
     # Sesiones URLs
     path('sessions/<int:session_id>/', views.session_detail, name='session_detail'),
