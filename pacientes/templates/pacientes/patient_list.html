@@ -23,6 +23,7 @@
                     <th>Apellido</th>
                     <th>Telefono</th>
                     <th>Correo Electrónico</th>
+                    <th>Fecha de Registro</th>  <!-- nuevo para la fecha -->
                     <th>Acciones</th>
                 </tr>
             </thead>
@@ -34,6 +35,7 @@
                     <td>{{ patient.surname }}</td>
                     <td>{{ patient.phone_number }}</td>
                     <td>{{ patient.email }}</td>
+                    <td>{{ patient.created_date|date:"d/m/Y H:i" }}</td>  <!-- Nueva celda -->
                     <td class="actions-tab"> 
                         <a href="{% url 'patient_schedule' patient.id %}" class="btn btn-icon view" title="Ver detalles">
                             <i class="fa-solid fa-eye"></i>
