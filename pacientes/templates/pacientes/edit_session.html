@@ -1,1 +1,73 @@
-{% extends "pacientes/base.html" %}
+{% extends 'pacientes/base.html' %}
+
+{% block content %}
+<h1 class="title">Editar Sesión</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li class="divider">/</li>
+    <li><a href="{% url 'patient_schedule' session.patient.id %}">Agenda</a></li>
+    <li class="divider">/</li>
+    <li><a href="{% url 'session_detail' session.id %}">Sesión</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Editar</a></li>
+</ul>
+
+<div>
+    <div>
+        <div>
+            <h2>{{ session.patient.name }}</h2>
+        </div>
+
+        <div>
+            <form method="post" action="{% url 'edit_session' session.id %}">
+                {% csrf_token %}
+              
+                <div>
+                    <label><i class='bx bx-calendar'></i> Fecha</label>
+                    {{ form.date }}
+                </div>
+            
+                <div>
+                    <label><i class='bx bx-time'></i> Hora</label>
+                    {{ form.time }}
+                </div>
+            
+                <div>
+                    <label><i class='bx bx-user'></i> Especialista</label>
+                    {{ form.specialist }}
+                </div>
+                
+                <div>
+                    <label><i class='bx bx-door-open'></i> Sala</label>
+                    {{ form.room }}
+                </div>
+            
+                <div>
+                    <label><i class='bx bx-target-lock'></i> Objetivo</label>
+                    {{ form.objective }}
+                </div>
+            
+                <div>
+                    <label><i class='bx bx-notepad'></i> Observaciones</label>
+                    {{ form.observation }}
+                </div>
+            
+                {% if error %}
+                    <div>
+                        <i class='bx bx-error'></i>
+                        {{ error }}
+                    </div>
+                {% endif %}
+            
+                    <button type="submit">
+                        <i class='bx bx-save'></i> Guardar Cambios
+                    </button>
+                    <a href="{% url 'session_detail' session.id %}" class="btn-back">
+                        <i class='bx bx-arrow-back'></i> Cancelar
+                    </a>
+                
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,6 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from django.contrib.auth.forms import UserCreationForm
+
 from django.urls import reverse_lazy
 from django.views import generic
 from .models import Patient, Session, Specialist, Room
@@ -105,9 +105,12 @@ def get_sessions(request):
         events.append({
             'title': f"{session.patient.name} - {session.objective}",
             'start': f"{session.date.strftime('%Y-%m-%d')}T{session.time.strftime('%H:%M:%S')}",
-            'url': f"/patient/{session.patient.id}/schedule/",
-            'specialist': session.specialist.name,
-            'room': session.room.name if session.room else 'Sin sala'
+            'url': f"/sessions/{session.id}/", 
+            'extendedProps': {
+                'specialist': session.specialist.name,
+                'room': session.room.name if session.room else 'Sin sala',
+                'session_id': session.id
+            }
         })
     return JsonResponse(events, safe=False)
 
@@ -174,7 +177,7 @@ def edit_session(request, session_id):
         form = SessionForm(request.POST, request.FILES, instance=session)
         if form.is_valid():
             form.save()
-            return redirect('patient_schedule', patient_id=session.patient.id)
+            return redirect('session_detail', session_id=session.id)
     else:
         form = SessionForm(instance=session)
     return render(request, 'pacientes/edit_session.html', {'form': form, 'session': session})

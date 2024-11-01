@@ -22,7 +22,7 @@
     
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            locale: 'es', // Cambiar el idioma a español
+            locale: 'es', 
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -36,7 +36,7 @@
                 list: 'Lista'
             },
             events: {
-                url: "{% url 'get_sessions' %}", // Cambiado para usar la URL de get_sessions modificacion
+                url: "{% url 'get_sessions' %}", 
                 method: 'GET',
                 failure: function() {
                     alert("No se pudieron cargar las sesiones.");
@@ -54,8 +54,11 @@
             selectable: true,
             eventClick: function(info) {
                 info.jsEvent.preventDefault();
-                if (info.event.url) {
-                    window.location.href = info.event.url; // Cambiado a location.href para navegación interna
+                
+                if (info.event.extendedProps.session_id) {
+                    window.location.href = `/sessions/${info.event.extendedProps.session_id}/`; 
+                } else {
+                    console.warn('No se encontró el ID de la sesión para este evento');
                 }
             }
         });
