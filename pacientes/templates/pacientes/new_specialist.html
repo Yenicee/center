@@ -11,39 +11,52 @@
 </ul>
 
 <div class="form-container">
-    <div class="form-header">
-        <h2>Registro de Especialista</h2>
-    </div>
+    <div class="row section">
+        <div class="col-title">
+            <i class="fa-solid fa-user-md"></i> <!-- Puedes cambiar el ícono si lo deseas -->
+            <h3>Registro de Especialista</h3>
+            <p>Completa la información del especialista</p>
+        </div>
+        <div class="col-fields">
+            <form method="POST" class="add-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
 
-    <div class="form-content">
-        <form method="POST">
-            {% csrf_token %}
-            
-            {% for field in form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                <div class="error-message">
-                    {% for error in field.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}">Nombre</label>
+                    {{ form.name }}
                 </div>
-                {% endif %}
-            </div>
-            {% endfor %}
 
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">
-                    <i class='bx bx-save'></i>
-                    Guardar Especialista
-                </button>
-                <a href="{% url 'specialist_list' %}" class="btn-secondary">
-                    <i class='bx bx-x'></i>
-                    Cancelar
-                </a>
-            </div>
-        </form>
+                <div class="form-group">
+                    <label for="{{ form.surname.id_for_label }}">Apellido</label>
+                    {{ form.surname }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.specialty.id_for_label }}">Especialidad</label>
+                    {{ form.specialty }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.email.id_for_label }}">Correo Electrónico</label>
+                    {{ form.email }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.phone.id_for_label }}">Teléfono</label>
+                    {{ form.phone }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        Guardar Especialista
+                    </button>
+                    <a href="{% url 'specialist_list' %}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

@@ -11,39 +11,47 @@
 </ul>
 
 <div class="form-container">
-    <div class="form-header">
-        <h2>Registro de Sala</h2>
-    </div>
+    <div class="row section">
+        <div class="col-title">
+            <i class="fa-solid fa-door-open"></i> <!-- Puedes cambiar el ícono si lo deseas -->
+            <h3>Registro de Sala</h3>
+            <p>Completa la información de la nueva sala</p>
+        </div>
+        <div class="col-fields">
+            <form method="POST" class="add-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
 
-    <div class="form-content">
-        <form method="POST">
-            {% csrf_token %}
-            
-            {% for field in form %}
-            <div class="form-group">
-                <label for="{{ field.id_for_label }}">{{ field.label }}</label>
-                {{ field }}
-                {% if field.errors %}
-                <div class="error-message">
-                    {% for error in field.errors %}
-                        <p>{{ error }}</p>
-                    {% endfor %}
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}">Nombre</label>
+                    {{ form.name }}
                 </div>
-                {% endif %}
-            </div>
-            {% endfor %}
 
-            <div class="form-actions">
-                <button type="submit" class="btn-primary">
-                    <i class='bx bx-save'></i>
-                    Guardar Sala
-                </button>
-                <a href="{% url 'room_list' %}" class="btn-secondary">
-                    <i class='bx bx-x'></i>
-                    Cancelar
-                </a>
-            </div>
-        </form>
+                <div class="form-group">
+                    <label for="{{ form.capacity.id_for_label }}">Capacidad</label>
+                    {{ form.capacity }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.location.id_for_label }}">Ubicación</label>
+                    {{ form.location }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.specialists.id_for_label }}">Especialistas</label>
+                    {{ form.specialists }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        Guardar Sala
+                    </button>
+                    <a href="{% url 'room_list' %}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
 {% endblock %}

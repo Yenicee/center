@@ -29,7 +29,7 @@
                     <p><strong>Estado Civil:</strong> {{ patient.marital_status }}</p>
                     <p><strong>Educación:</strong> {{ patient.education|default:"Sin información" }}</p>
                     <div class="additional-info-row">
-                        <p class="created"><strong>Creado:</strong> {{ patient.create|date:"d/m/Y" }}</p>
+                        <p class="created"><strong>Creado: </strong>{{ patient.created_date|date:"d/m/Y" }}</p>
                         <p class="status"><strong>Estado:</strong> {{ patient.status }}</p>
                     </div>
                     
@@ -78,33 +78,110 @@
                     </div>
                 </div>
             </div>
-        </div>  
-        <!-- Sección Próximas Secciones (Agregar Actividad) -->
-        <div class="tab-content" id="proximas">
-            <h2>Agregar nueva actividad</h2>
-            <form method="post">
-                {% csrf_token %}
-                {{ form.as_p }}
-                <button type="submit" class="btn btn-primary">Agregar actividad</button>
-            </form>
-
-            <h2>Actividades programadas</h2>
-            <ul>
-            {% for activity in activities %}
-                <li>
-                    <strong>{{ activity.date|date:"d/m/Y" }}</strong> - {{ activity.description }}
-                    <form method="post" action="{% url 'add_session_result' activity.id %}">
-                        {% csrf_token %}
-                        <input type="text" name="result" placeholder="Resultado de la sesión" class="input-result">
-                        <button type="submit" class="btn btn-secondary">Guardar resultado</button>
-                    </form>
-                </li>
-            {% empty %}
-                <li>No hay actividades programadas.</li>
-            {% endfor %}
-            </ul>
         </div>
+        <!-- Sección Próximas Secciones (Agregar Actividad) -->
+        <div class="tab-content form-container" id="proximas">
+            <div class="row section">
+                <div class="col-title">
+                    <i class="fa-solid fa-calendar-plus"></i> <!-- Puedes cambiar el ícono si lo deseas -->
+                    <h3>Agregar Nueva Actividad</h3>
+                    <p>Completa la información de la actividad para el paciente</p>
+                </div>
+                <div class="col-fields">
+                    <form method="post" enctype="multipart/form-data" class="add-form">
+                        {% csrf_token %}
+                        {{ form.non_field_errors }}
+                        
+                        <!-- Paciente -->
+                        <div class="form-group">
+                            <label for="{{ form.patient.id_for_label }}">Paciente</label>
+                            {{ form.patient }}
+                        </div>
 
+                        <!-- Especialista -->
+                        <div class="form-group">
+                            <label for="{{ form.specialist.id_for_label }}">Especialista</label>
+                            {{ form.specialist }}
+                        </div>
+
+                        <!-- Sala -->
+                        <div class="form-group">
+                            <label for="{{ form.room.id_for_label }}">Sala</label>
+                            {{ form.room }}
+                        </div>
+
+                        <!-- Fecha -->
+                        <div class="form-group">
+                            <label for="{{ form.date.id_for_label }}">Fecha</label>
+                            {{ form.date }}
+                        </div>
+
+                        <!-- Hora -->
+                        <div class="form-group">
+                            <label for="{{ form.time.id_for_label }}">Hora</label>
+                            {{ form.time }}
+                        </div>
+
+                        <!-- Objetivo -->
+                        <div class="form-group">
+                            <label for="{{ form.objective.id_for_label }}">Objetivo</label>
+                            {{ form.objective }}
+                        </div>
+
+                        <!-- Actividad -->
+                        <div class="form-group">
+                            <label for="{{ form.activity.id_for_label }}">Actividad</label>
+                            {{ form.activity }}
+                        </div>
+
+                        <!-- Materiales -->
+                        <div class="form-group">
+                            <label for="{{ form.materials.id_for_label }}">Materiales</label>
+                            {{ form.materials }}
+                        </div>
+
+                        <!-- Observación -->
+                        <div class="form-group">
+                            <label for="{{ form.observation.id_for_label }}">Observación</label>
+                            {{ form.observation }}
+                        </div>
+
+                        <!-- Archivo Adjunto -->
+                        <div class="form-group">
+                            <label for="{{ form.attachment.id_for_label }}">Archivo Adjunto</label>
+                            {{ form.attachment }}
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Agregar Actividad</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Lista de Actividades Programadas -->
+            <div class="row section">
+                <div class="col-title">
+                    <i class="fa-solid fa-calendar-check"></i>
+                    <h3>Actividades Programadas</h3>
+                </div>
+                <ul class="col-fields">
+                    {% for session in sessions %}
+                        <li>
+                            <strong>{{ session.date|date:"d/m/Y" }}</strong> - {{ session.objective }}
+                            <form method="post" action="{% url 'session_detail' session.id %}" class="add-form">
+                                {% csrf_token %}
+                                <div class="form-group">
+                                    <label for="observation">Resultado de la sesión</label>
+                                    <input type="text" name="observation" placeholder="Resultado de la sesión" class="input-result">
+                                </div>
+                                <button type="submit" class="btn btn-secondary">Guardar resultado</button>
+                            </form>
+                        </li>
+                    {% empty %}
+                        <li>No hay actividades programadas.</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
         <!-- Sección Historial del Paciente -->
         <div class="tab-content" id="historial">
             <h2>Historial del Paciente</h2>

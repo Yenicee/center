@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>Eliminar Sala</h1>
-<ul>
+<ul class="breadcrumbs">
     <li><a href="{% url 'patient_list' %}">Home</a></li>
     <li>/</li>
     <li><a href="{% url 'room_list' %}">Salas</a></li>
@@ -10,14 +10,30 @@
     <li><a href="#" class="active">Eliminar</a></li>
 </ul>
 
-<div>
-    <p>¿Está seguro que desea eliminar la sala "{{ room.name }}"?</p>
-    <form method="POST">
-        {% csrf_token %}
-        <div>
-            <button type="submit" class="btn btn-danger">Confirmar eliminación</button>
-            <a href="{% url 'room_list' %}">Cancelar</a>
+<<div class="form-container">
+    <div class="row section">
+        <div class="col-title">
+            <i class="fa-solid fa-door-closed"></i> 
+            <h3>Eliminar Sala</h3>
+            <p>Por favor, confirma la eliminación de la sala.</p>
         </div>
-    </form>
+        <div class="col-fields">
+            <div class="alert alert-warning">
+                <h4>¿Está seguro que desea eliminar la sala "{{ room.name }}"?</h4>
+                <p>Esta acción no se puede deshacer y eliminará toda la información asociada a la sala.</p>
+            </div>
+            <form method="POST" class="delete-form">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-danger">
+                        Confirmar Eliminación
+                    </button>
+                    <a href="{% url 'room_list' %}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
 </div>
 {% endblock %}

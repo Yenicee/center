@@ -18,7 +18,6 @@
         <table class="table">
             <thead>
                 <tr>
-                    <th></th>
                     <th>Nombre</th>
                     <th>Apellido</th>
                     <th>Telefono</th>
@@ -30,12 +29,11 @@
             <tbody>
             {% for patient in patients %}
                 <tr>
-                    <td>{{ patient.photo }}</td>
                     <td>{{ patient.name }}</td>
                     <td>{{ patient.surname }}</td>
                     <td>{{ patient.phone_number }}</td>
                     <td>{{ patient.email }}</td>
-                    <td>{{ patient.created_date|date:"d/m/Y H:i" }}</td>  <!-- Nueva celda -->
+                    <td>{{ patient.created_date|date:"d/m/Y" }}</td>
                     <td class="actions-tab"> 
                         <a href="{% url 'patient_schedule' patient.id %}" class="btn btn-icon view" title="Ver detalles">
                             <i class="fa-solid fa-eye"></i>

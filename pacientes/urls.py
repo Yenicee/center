@@ -16,7 +16,7 @@ urlpatterns = [
     # Sesiones URLs
     path('sessions/<int:session_id>/', views.session_detail, name='session_detail'),
     path('sessions/<int:session_id>/edit/', views.edit_session, name='edit_session'),
-    
+
     # Especialistas URLs
     path('specialists/', views.specialist_list, name='specialist_list'),
     path('specialists/new/', views.create_specialist, name='new_specialist'),

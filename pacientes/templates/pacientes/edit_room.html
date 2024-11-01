@@ -2,7 +2,7 @@
 
 {% block content %}
 <h1>Editar Sala</h1>
-<ul>
+<ul class="breadcrumbs">
     <li><a href="{% url 'patient_list' %}">Home</a></li>
     <li>/</li>
     <li><a href="{% url 'room_list' %}">Salas</a></li>
@@ -10,16 +10,48 @@
     <li><a href="#" class="active">Editar</a></li>
 </ul>
 
-<div>
-    <form method="POST">
-        {% csrf_token %}
-        <div class="form-group">
-            {{ form.as_p }}
+<div class="form-container">
+    <div class="row section">
+        <div class="col-title">
+            <i class="fa-solid fa-door-open"></i> <!-- Puedes cambiar el ícono si lo deseas -->
+            <h3>Editar Información de la Sala</h3>
+            <p>Modifica la información de la sala según sea necesario</p>
         </div>
-        <div>
-            <button type="submit">Guardar cambios</button>
-            <a href="{% url 'room_list' %}">Cancelar</a>
+        <div class="col-fields">
+            <form method="POST" class="add-form">
+                {% csrf_token %}
+                {{ form.non_field_errors }}
+
+                <div class="form-group">
+                    <label for="{{ form.name.id_for_label }}">Nombre</label>
+                    {{ form.name }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.capacity.id_for_label }}">Capacidad</label>
+                    {{ form.capacity }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.location.id_for_label }}">Ubicación</label>
+                    {{ form.location }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.specialists.id_for_label }}">Especialistas</label>
+                    {{ form.specialists }}
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        Guardar Cambios
+                    </button>
+                    <a href="{% url 'room_list' %}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
         </div>
-    </form>
+    </div>
 </div>
 {% endblock %}
