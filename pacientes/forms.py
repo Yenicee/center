@@ -119,29 +119,38 @@ class PatientForm(forms.ModelForm):
 class SessionForm(forms.ModelForm):
     class Meta:
         model = Session
-        fields = [
-            'patient', 'specialist', 'room', 'date',
-            'time', 'objective', 'activity', 'materials',
-            'observation', 'attachment'
-        ]
+        fields = ['date', 'time', 'specialist', 'room', 'objective', 'activity', 
+                 'materials', 'observation', 'attachment', 'is_reserved', 
+                 'reserved_date', 'reserved_time', 'new_activity']
+        
         labels = {
+             'date': 'Fecha',
+            'time': 'Hora',
             'patient': 'Paciente',
             'specialist': 'Especialista',
             'room': 'Sala',
-            'date': 'Fecha',
-            'time': 'Hora',
             'objective': 'Objetivo',
             'activity': 'Actividad',
             'materials': 'Materiales',
             'observation': 'Observación',
-            'attachment': 'Archivo Adjunto'
+            'attachment': 'Archivo Adjunto',
+           
+            'is_reserved': 'Reservar fecha',
+            'reserved_date': 'Fecha de reserva',
+            'reserved_time': 'Hora de reserva',
+            'new_activity': 'Nueva actividad'
         }
+        
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'time': forms.TimeInput(attrs={'type': 'time'}),
+            'reserved_date': forms.DateInput(attrs={'type': 'date'}),
+            'reserved_time': forms.TimeInput(attrs={'type': 'time'}),
+            'objective': forms.TextInput(attrs={'class': 'form-control'}),
             'activity': forms.Textarea(attrs={'rows': 4}),
-            'materials': forms.Textarea(attrs={'rows': 3}),
-            'observation': forms.Textarea(attrs={'rows': 3})
+            'materials': forms.Textarea(attrs={'rows': 4}),
+            'observation': forms.Textarea(attrs={'rows': 4}),
+            'new_activity': forms.Textarea(attrs={'rows': 4}),
         }
 
 class SpecialistForm(forms.ModelForm):
@@ -166,3 +175,15 @@ class RoomForm(forms.ModelForm):
             'location': 'Ubicación',
             'specialists': 'Especialistas'
         }
+        
+class ReservationFilterForm(forms.Form):
+    start_date = forms.DateField(
+        label='Fecha inicial',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )
+    end_date = forms.DateField(
+        label='Fecha final',
+        required=False,
+        widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
+    )

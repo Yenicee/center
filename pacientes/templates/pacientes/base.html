@@ -24,6 +24,21 @@
 				</li>
 
 				<li>
+					<a href="{% url 'reservation_list' %}">
+						<i class='bx bxs-calendar-check icon'></i> Reservas 
+						{% with reserved_count=request.user.get_reserved_sessions_count %}
+						{% if reserved_count > 0 %}
+						<span class="badge bg-primary">{{ reserved_count }}</span>
+						{% endif %}
+						{% endwith %}
+						<i class='bx bx-chevron-right icon-right'></i>
+					</a>
+					<ul class="side-dropdown">
+						<li><a href="{% url 'reservation_list' %}"><i class="fas fa-list-ul icon-sub"></i>Ver Reservas</a></li>
+					</ul>
+				</li>
+
+				<li>
 					<a href="#"><i class="fa-solid fa-hospital-user icon"></i> Pacientes <i class='bx bx-chevron-right icon-right' ></i></a>
 					<ul class="side-dropdown">
 						<li><a href="{% url 'patient_list' %}"><i class="fas fa-list-ul icon-sub"></i>Pacientes</a></li>
@@ -50,11 +65,11 @@
 			<li><a href="{% url 'room_list' %}"><i class="fas fa-list-ul icon-sub"></i>Salas</a></li>
 			<li><a href="{% url 'new_room' %}"><i class="fas fa-plus icon-sub"></i>Nueva sala</a></li>
 			</ul>
-	</li>
+	       </li>
 				
 				<li class="divider" data-text="Administrador"></li>
 				<li><a href="#"><i class="fa-solid fa-wallet icon"></i> Pagos</a></li>
-			</ul>
+		</ul>
 			<div class="ads">
 				<div class="wrapper">
 					<a href="mailto:soporteit@ingenieriaterra.com.ar" class="btn-upgrade">Consultas</a>

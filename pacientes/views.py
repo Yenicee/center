@@ -6,9 +6,11 @@ from django.views import generic
 from .models import Patient, Session, Specialist, Room
 from .forms import (
     CustomUserCreationForm, PatientForm, SessionForm,
-    SpecialistForm, RoomForm
+    SpecialistForm, RoomForm, ReservationFilterForm
 )
 from django.http import JsonResponse
+from datetime import datetime, timedelta
+
 
 @login_required
 def patient_list(request):
@@ -181,3 +183,41 @@ def edit_session(request, session_id):
     else:
         form = SessionForm(instance=session)
     return render(request, 'pacientes/edit_session.html', {'form': form, 'session': session})
+
+
+#vista para las reservaciones
+@login_required
+def reservation_list(request):
+    filter_form = ReservationFilterForm(request.GET or None)
+    reserved_sessions = Session.objects.filter(is_reserved=True)
+  
+    if filter_form.is_valid():
+        start_date = filter_form.cleaned_data.get('start_date')
+        end_date = filter_form.cleaned_data.get('end_date')
+        
+        if start_date:
+            reserved_sessions = reserved_sessions.filter(reserved_date__gte=start_date)
+        if end_date:
+            reserved_sessions = reserved_sessions.filter(reserved_date__lte=end_date)
+    
+    elif not request.GET:
+        today = datetime.now().date()
+        reserved_sessions = reserved_sessions.filter(
+            reserved_date__gte=today,
+            reserved_date__lte=today + timedelta(days=30)
+        )
+  
+    reserved_sessions = reserved_sessions.order_by('reserved_date', 'reserved_time')
+    
+    reservations_by_date = {}
+    for session in reserved_sessions:
+        date_key = session.reserved_date
+        if date_key not in reservations_by_date:
+            reservations_by_date[date_key] = []
+        reservations_by_date[date_key].append(session)
+    
+    context = {
+        'filter_form': filter_form,
+        'reservations_by_date': reservations_by_date,
+    }
+    return render(request, 'pacientes/reservation_list.html', context)
