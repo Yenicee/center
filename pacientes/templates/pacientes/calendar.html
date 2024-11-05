@@ -3,9 +3,77 @@
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
+<style>
+    .fc-event {
+        margin: 2px 0;
+        padding: 2px;
+    }
+    
+    .fc-event-title {
+        font-weight: bold;
+        white-space: normal;
+    }
+    
+    .fc-daygrid-event {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        color: white;
+        white-space: normal !important;
+        overflow: hidden;
+    }
+    
+    .fc-description {
+        font-size: 0.875em;
+        opacity: 0.9;
+        margin-top: 2px;
+    }
+    
+    #calendar {
+        background: white;
+        padding: 15px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        height: 800px;
+        margin: 20px;
+    }
+
+    /* Mejoras adicionales para la visualización */
+    .fc-daygrid-day-events {
+        margin-bottom: 0;
+    }
+
+    .fc-event-time {
+        font-weight: bold;
+    }
+
+    .fc-toolbar-title {
+        font-size: 1.5em !important;
+        font-weight: bold;
+    }
+
+    .fc-button-primary {
+        background-color: #0d6efd !important;
+        border-color: #0d6efd !important;
+    }
+
+    .fc-button-primary:hover {
+        background-color: #0b5ed7 !important;
+        border-color: #0a58ca !important;
+    }
+
+    /* Mejorar la visualización en vista semanal y diaria */
+    .fc-timegrid-event {
+        background-color: #0d6efd;
+        border-color: #0d6efd;
+        padding: 4px;
+    }
+
+    .fc-timegrid-event .fc-event-main {
+        padding: 2px 4px;
+    }
+</style>
 {% endblock %}
 
-<!-- Sobrescribimos las clases de las columnas -->
 {% block right_column_class %}hidden{% endblock %}
 {% block left_column_class %}left-full{% endblock %}
 
@@ -22,7 +90,7 @@
     
         var calendar = new FullCalendar.Calendar(calendarEl, {
             initialView: 'dayGridMonth',
-            locale: 'es', 
+            locale: 'es',
             headerToolbar: {
                 left: 'prev,next today',
                 center: 'title',
@@ -35,35 +103,69 @@
                 day: 'Día',
                 list: 'Lista'
             },
+            slotMinTime: '07:00:00',
+            slotMaxTime: '22:00:00',
+            nowIndicator: true,
             events: {
-                url: "{% url 'get_sessions' %}", 
+                url: "{% url 'get_sessions' %}",
                 method: 'GET',
-                failure: function() {
-                    alert("No se pudieron cargar las sesiones.");
+                failure: function(error) {
+                    console.error('Error al cargar las reservas:', error);
+                    alert('Error al cargar las reservas');
                 }
             },
-            
             eventDidMount: function(info) {
-                // Agregue información adicional
+                // Mostrar información detallada
                 info.el.title = `
-                    Especialista: ${info.event.extendedProps.specialist}
-                    Sala: ${info.event.extendedProps.room}
-                `;
+                    Paciente: ${info.event.extendedProps.patient || 'No especificado'}
+                    Especialista: ${info.event.extendedProps.specialist || 'No especificado'}
+                    Sala: ${info.event.extendedProps.room || 'No especificada'}
+                    Objetivo: ${info.event.extendedProps.objective || 'No especificado'}
+                    Actividad: ${info.event.extendedProps.activity || 'No especificada'}
+                `.trim();
             },
-            editable: true,
-            selectable: true,
+            eventContent: function(arg) {
+                return {
+                    html: `
+                        <div class="fc-content">
+                            <div class="fc-title">
+                                <strong>${arg.timeText}</strong> - ${arg.event.extendedProps.patient || 'Sin paciente'}
+                            </div>
+                            <div class="fc-description small">
+                                ${arg.event.extendedProps.activity || arg.event.extendedProps.objective || 'Sin actividad'}
+                            </div>
+                        </div>
+                    `
+                };
+            },
+            displayEventEnd: true,
+            eventTimeFormat: {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: false
+            },
+            dayMaxEvents: true,
             eventClick: function(info) {
                 info.jsEvent.preventDefault();
-                
-                if (info.event.extendedProps.session_id) {
-                    window.location.href = `/sessions/${info.event.extendedProps.session_id}/`; 
+
+                if (info.event.extendedProps.eventType === 'session') {
+                    // Redirigir a la página de detalles de la sesión
+                    window.location.href = `/sessions/${info.event.extendedProps.session_id}/`;
                 } else {
-                    console.warn('No se encontró el ID de la sesión para este evento');
+                    // Redirigir a la página de detalles de la reserva
+                    window.location.href = `/reservations/${info.event.extendedProps.session_id}/`;
                 }
             }
+            {% comment %} loading: function(isLoading) {
+                if (isLoading) {
+                    console.log('Cargando eventos...');
+                } else {
+                    console.log('Eventos cargados');
+                }
+            } {% endcomment %}
         });
     
         calendar.render();
     });
-    </script>
+</script>
 {% endblock %}
