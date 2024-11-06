@@ -99,22 +99,77 @@ def delete_patient(request, patient_id):
 def calendar_view(request):
     return render(request, 'pacientes/calendar.html')
 
+
 @login_required
 def get_sessions(request):
-    sessions = Session.objects.all()
-    events = []
-    for session in sessions:
-        events.append({
-            'title': f"{session.patient.name} - {session.objective}",
-            'start': f"{session.date.strftime('%Y-%m-%d')}T{session.time.strftime('%H:%M:%S')}",
-            'url': f"/sessions/{session.id}/", 
-            'extendedProps': {
-                'specialist': session.specialist.name,
-                'room': session.room.name if session.room else 'Sin sala',
-                'session_id': session.id
+    try:
+        # Obtener todas las sesiones reservadas
+        sessions = Session.objects.filter(is_reserved=True)
+        print(f"Número de sesiones encontradas: {sessions.count()}")
+
+        # Obtener todas las reservas
+        reservations = Session.objects.filter(is_reserved=False)
+        print(f"Número de reservas encontradas: {reservations.count()}")
+
+        events = []
+
+        for session in sessions:
+            # Usar reserved_date y reserved_time para sesiones reservadas
+            start_datetime = datetime.combine(
+                session.reserved_date or session.date,
+                session.reserved_time or session.time
+            )
+            end_datetime = start_datetime + timedelta(hours=1)
+
+            event = {
+                'id': str(session.id),
+                'title': f"{session.patient.name} - {session.new_activity or session.objective}",
+                'start': start_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
+                'end': end_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
+                'extendedProps': {
+                    'specialist': session.specialist.name,
+                    'room': session.room.name if session.room else 'Sin sala',
+                    'session_id': session.id,
+                    'patient': f"{session.patient.name} {session.patient.surname}",
+                    'activity': session.new_activity or session.activity,
+                    'objective': session.objective,
+                    'eventType': 'session'
+                },
+                'backgroundColor': '#0d6efd',
+                'borderColor': '#0d6efd',
+                'display': 'block'
             }
-        })
-    return JsonResponse(events, safe=False)
+            events.append(event)
+
+        for reservation in reservations:
+            start_datetime = datetime.combine(
+                reservation.reserved_date or reservation.date,
+                reservation.reserved_time or reservation.time
+            )
+            end_datetime = start_datetime + timedelta(hours=1)
+            event = {
+                'id': str(reservation.id),
+                'title': f"Reserva - {reservation.patient.name}",
+                'start': start_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
+                'end': end_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
+                'extendedProps': {
+                    'room': reservation.room.name if reservation.room else 'Sin sala',
+                    'session_id': reservation.id,
+                    'patient': f"{reservation.patient.name} {reservation.patient.surname}",
+                    'eventType': 'reservation'
+                },
+                'backgroundColor': '#dc3545',
+                'borderColor': '#dc3545',
+                'display': 'block'
+            }
+            events.append(event)
+
+        return JsonResponse(events, safe=False)
+    except Exception as e:
+        print(f"Error en get_sessions: {str(e)}")
+        import traceback
+        print(traceback.format_exc())
+        return JsonResponse({'error': str(e)}, status=500)
 
 # Nuevas vistas para Specialist
 @login_required
