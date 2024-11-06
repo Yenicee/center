@@ -186,38 +186,27 @@ def edit_session(request, session_id):
 
 
 #vista para las reservaciones
+from datetime import timedelta
+
 @login_required
 def reservation_list(request):
-    filter_form = ReservationFilterForm(request.GET or None)
-    reserved_sessions = Session.objects.filter(is_reserved=True)
-  
-    if filter_form.is_valid():
-        start_date = filter_form.cleaned_data.get('start_date')
-        end_date = filter_form.cleaned_data.get('end_date')
-        
-        if start_date:
-            reserved_sessions = reserved_sessions.filter(reserved_date__gte=start_date)
-        if end_date:
-            reserved_sessions = reserved_sessions.filter(reserved_date__lte=end_date)
-    
-    elif not request.GET:
-        today = datetime.now().date()
-        reserved_sessions = reserved_sessions.filter(
-            reserved_date__gte=today,
-            reserved_date__lte=today + timedelta(days=30)
-        )
-  
-    reserved_sessions = reserved_sessions.order_by('reserved_date', 'reserved_time')
-    
+    # Obtener la fecha actual
+    today = datetime.now().date()
+    # Calcular la fecha límite para filtrar los últimos 30 días
+    thirty_days_ago = today - timedelta(days=30)
+
+    # Filtrar sesiones solo en los últimos 30 días
+    recent_sessions = Session.objects.filter(date__gte=thirty_days_ago).order_by('date', 'time')
+
+    # Agrupar las sesiones por fecha
     reservations_by_date = {}
-    for session in reserved_sessions:
-        date_key = session.reserved_date
+    for session in recent_sessions:
+        date_key = session.date
         if date_key not in reservations_by_date:
             reservations_by_date[date_key] = []
         reservations_by_date[date_key].append(session)
     
     context = {
-        'filter_form': filter_form,
         'reservations_by_date': reservations_by_date,
     }
     return render(request, 'pacientes/reservation_list.html', context)

@@ -1,107 +1,121 @@
 {% extends 'pacientes/base.html' %}
 {% load static %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+{% endblock %}
+
 {% block content %}
-
-    <main>
+<main>
+    <div>
         <div>
-            <div>
-                <h1>Reservas</h1>
-                <ul>
-                    <li>
-                        <a href="{% url 'patient_list' %}">Dashboard</a>
-                    </li>
-                    <li>
-                        <a class="active" href="#">/Reservas</a>
-                    </li>
-                </ul>
-            </div>
+            <h1>Reservas</h1>
+            <ul>
+                <li>
+                    <a href="{% url 'patient_list' %}">Dashboard</a>
+                </li>
+                <li>
+                    <a class="active" href="#">/Reservas</a>
+                </li>
+            </ul>
         </div>
-
-        <!-- Formulario de filtros -->
-        <div>
-            <div>
-                <form method="get">
-                    <div>
-                        <div>
-                            <label for="{{ filter_form.start_date.id_for_label }}">
-                                {{ filter_form.start_date.label }}
-                            </label>
-                            {{ filter_form.start_date }}
-                        </div>
-                        <div>
-                            <label for="{{ filter_form.end_date.id_for_label }}">
-                                {{ filter_form.end_date.label }}
-                            </label>
-                            {{ filter_form.end_date }}
-                        </div>
-                        <div>
-                            <button type="submit" class="btn-primary">
-                                <i class='bx bx-filter'></i> Filtrar
-                            </button>
-                            <a href="{% url 'reservation_list' %}" class="btn-secondary">
-                                <i class='bx bx-reset'></i> Limpiar
-                            </a>
-                        </div>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        {% if reservations_by_date %}
-            {% for date, sessions in reservations_by_date.items %}
-            <div>
-                <div>
-                    <div>
-                        <h3>{{ date|date:"l d F, Y" }}</h3>
-                    </div>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Hora</th>
-                                <th>Paciente</th>
-                                <th>Especialista</th>
-                                <th>Sala</th>
-                                <th>Nueva Actividad</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {% for session in sessions %}
-                            <tr>
-                                <td>{{ session.reserved_time|time:"H:i" }}</td>
-                                <td>
-                                    <p>{{ session.patient.name }} {{ session.patient.surname }}</p>
-                                </td>
-                                <td>{{ session.specialist.name }}</td>
-                                <td>{{ session.room.name }}</td>
-                                <td><span class="status completed">{{ session.new_activity|truncatechars:50 }}</span></td>
-                                <td>
-                                    <div class="action-buttons">
-                                        <a href="{% url 'session_detail' session.id %}" class="btn-view">
-                                            <i class='bx bx-show'></i>
-                                        </a>
-                                        <a href="{% url 'edit_session' session.id %}" class="btn-edit">
-                                            <i class='bx bx-edit'></i>
-                                        </a>
-                                    </div>
-                                </td>
-                            </tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <div>
-                <div>
-                    <i class='bx bx-info-circle'></i>
-                    <span>No hay sesiones reservadas para el período seleccionado.</span>
-                </div>
-            </div>
-        {% endif %}
-    </main>
-
+    </div>
+    <div class="date-filters">
+        <label for="minDate">Fecha Inicio:</label>
+        <input type="date" id="minDate" name="minDate">
     
+        <label for="maxDate">Fecha Fin:</label>
+        <input type="date" id="maxDate" name="maxDate">
+    </div>
+    <div>
+        <table id="reservationsTable" class="display table">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Hora</th>
+                    <th>Paciente</th>
+                    <th>Especialista</th>
+                    <th>Sala</th>
+                    <th>Nueva Actividad</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% if reservations_by_date %}
+                    {% for date, sessions in reservations_by_date.items %}
+                        {% for session in sessions %}
+                        <tr>
+                            <td>{{ date|date:"d/m/Y" }}</td>
+                            <td>{{ session.reserved_time|time:"H:i" }}</td>
+                            <td>{{ session.patient.name }} {{ session.patient.surname }}</td>
+                            <td>{{ session.specialist.name }}</td>
+                            <td>{{ session.room.name }}</td>
+                            <td>{{ session.new_activity|truncatechars:50 }}</td>
+                            <td class="actions-tab">
+                                <div class="action-buttons">
+                                    <a href="{% url 'session_detail' session.id %}" class="btn-view" title="Ver">
+                                        <i class='bx bx-show'></i>
+                                    </a>
+                                    <a href="{% url 'edit_session' session.id %}" class="btn-edit" title="Editar">
+                                        <i class='bx bx-edit'></i>
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    {% endfor %}
+                {% else %}
+                    <tr>
+                        <td colspan="7" class="text-center">No hay sesiones reservadas para el período seleccionado.</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        // Inicializar DataTable
+        var table = $('#reservationsTable').DataTable({
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+            },
+            responsive: true,
+            pageLength: 10,
+        });
+
+        // Custom filtering function which will search data in column with date format
+        $.fn.dataTable.ext.search.push(
+            function(settings, data, dataIndex) {
+                var minDate = $('#minDate').val();
+                var maxDate = $('#maxDate').val();
+                var dateData = data[0]; // Asumiendo que la columna 0 es la que contiene la fecha
+
+                if (minDate) {
+                    minDate = new Date(minDate);
+                }
+                if (maxDate) {
+                    maxDate = new Date(maxDate);
+                }
+
+                var dateColumn = new Date(dateData.split("/").reverse().join("-"));
+
+                if ((minDate === "" || dateColumn >= minDate) && 
+                    (maxDate === "" || dateColumn <= maxDate)) {
+                    return true;
+                }
+                return false;
+            }
+        );
+
+        $('#minDate, #maxDate').on('change', function() {
+            table.draw();
+        });
+    });
+</script>
 {% endblock %}
