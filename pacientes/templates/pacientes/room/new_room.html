@@ -1,21 +1,20 @@
-{% extends 'pacientes/base.html' %}
-
+{% extends "pacientes/base/base.html" %}
 {% block content %}
-<h1>Editar Sala</h1>
+<h1 class="title">Nueva Sala</h1>
 <ul class="breadcrumbs">
     <li><a href="{% url 'patient_list' %}">Home</a></li>
-    <li>/</li>
+    <li class="divider">/</li>
     <li><a href="{% url 'room_list' %}">Salas</a></li>
-    <li>/</li>
-    <li><a href="#" class="active">Editar</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Nueva Sala</a></li>
 </ul>
 
 <div class="form-container">
     <div class="row section">
         <div class="col-title">
             <i class="fa-solid fa-door-open"></i> <!-- Puedes cambiar el ícono si lo deseas -->
-            <h3>Editar Información de la Sala</h3>
-            <p>Modifica la información de la sala según sea necesario</p>
+            <h3>Registro de Sala</h3>
+            <p>Completa la información de la nueva sala</p>
         </div>
         <div class="col-fields">
             <form method="POST" class="add-form">
@@ -44,7 +43,7 @@
 
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
-                        Guardar Cambios
+                        Guardar Sala
                     </button>
                     <a href="{% url 'room_list' %}" class="btn btn-secondary">
                         Cancelar

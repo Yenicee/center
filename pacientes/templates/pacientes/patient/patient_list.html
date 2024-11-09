@@ -1,4 +1,10 @@
-{% extends 'pacientes/base.html' %}
+{% extends "pacientes/base/base.html" %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+{% endblock %}
+
 {% block left_content %}
 <h1>Lista de Pacientes</h1>
 <ul class="breadcrumbs">
@@ -15,12 +21,12 @@
     </div>
 
     {% if patients %}
-        <table class="table">
+        <table id="patientTable" class="display table">
             <thead>
                 <tr>
                     <th>Nombre</th>
                     <th>Apellido</th>
-                    <th>Telefono</th>
+                    <th>Teléfono</th>
                     <th>Correo Electrónico</th>
                     <th>Fecha de Registro</th>  <!-- nuevo para la fecha -->
                     <th>Acciones</th>
@@ -53,4 +59,20 @@
         <p>No hay pacientes registrados.</p>
     {% endif %}
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#patientTable').DataTable({
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+            },
+            responsive: true,
+            pageLength: 10,
+        });
+    });
+</script>
 {% endblock %}
