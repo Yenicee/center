@@ -17,7 +17,13 @@
         <td>{{ payment.session.patient.name }}</td>
         <td>{{ payment.session.date }}</td>
         <td>{{ payment.amount }}</td>
-        <td>{{ payment.is_paid }}</td>
+        <td>
+            {% if payment.is_paid %}
+                <span style="color: green;">Pagado</span>
+            {% else %}
+                <span style="color: red;">Pendiente</span>
+            {% endif %}
+        </td>
         <td>{{ payment.payment_date }}</td>
         <td>{{ payment.payment_observation }}</td>
         <td>

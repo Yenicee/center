@@ -117,7 +117,6 @@
                 }
             },
             eventDidMount: function(info) {
-                // Mostrar información detallada
                 info.el.title = `
                     Paciente: ${info.event.extendedProps.patient || 'No especificado'}
                     Especialista: ${info.event.extendedProps.specialist || 'No especificado'}
@@ -149,22 +148,8 @@
             dayMaxEvents: true,
             eventClick: function(info) {
                 info.jsEvent.preventDefault();
-
-                if (info.event.extendedProps.eventType === 'session') {
-                    // Redirigir a la página de detalles de la sesión
-                    window.location.href = `/sessions/${info.event.extendedProps.session_id}/`;
-                } else {
-                    // Redirigir a la página de detalles de la reserva
-                    window.location.href = `/reservations/${info.event.extendedProps.session_id}/`;
-                }
+                window.location.href = `/sessions/${info.event.extendedProps.session_id}/`;
             }
-            {% comment %} loading: function(isLoading) {
-                if (isLoading) {
-                    console.log('Cargando eventos...');
-                } else {
-                    console.log('Eventos cargados');
-                }
-            } {% endcomment %}
         });
     
         calendar.render();

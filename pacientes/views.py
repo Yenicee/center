@@ -104,24 +104,21 @@ def calendar_view(request):
 @login_required
 def get_sessions(request):
     try:
-        # Obtener todas las sesiones reservadas
         sessions = Session.objects.filter(is_reserved=True)
         print(f"Número de sesiones encontradas: {sessions.count()}")
-
-        # Obtener todas las reservas
+        
         reservations = Session.objects.filter(is_reserved=False)
         print(f"Número de reservas encontradas: {reservations.count()}")
-
+        
         events = []
-
+        
         for session in sessions:
-            # Usar reserved_date y reserved_time para sesiones reservadas
             start_datetime = datetime.combine(
                 session.reserved_date or session.date,
                 session.reserved_time or session.time
             )
             end_datetime = start_datetime + timedelta(hours=1)
-
+            
             event = {
                 'id': str(session.id),
                 'title': f"{session.patient.name} - {session.new_activity or session.objective}",
@@ -141,22 +138,26 @@ def get_sessions(request):
                 'display': 'block'
             }
             events.append(event)
-
+        
         for reservation in reservations:
             start_datetime = datetime.combine(
                 reservation.reserved_date or reservation.date,
                 reservation.reserved_time or reservation.time
             )
             end_datetime = start_datetime + timedelta(hours=1)
+            
             event = {
                 'id': str(reservation.id),
-                'title': f"Reserva - {reservation.patient.name}",
+                'title': f"{reservation.patient.name} - {reservation.new_activity or reservation.objective}",
                 'start': start_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
                 'end': end_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
                 'extendedProps': {
+                    'specialist': reservation.specialist.name if reservation.specialist else 'Sin especialista',
                     'room': reservation.room.name if reservation.room else 'Sin sala',
                     'session_id': reservation.id,
                     'patient': f"{reservation.patient.name} {reservation.patient.surname}",
+                    'activity': reservation.new_activity or reservation.objective,
+                    'objective': reservation.objective,
                     'eventType': 'reservation'
                 },
                 'backgroundColor': '#dc3545',
@@ -164,8 +165,9 @@ def get_sessions(request):
                 'display': 'block'
             }
             events.append(event)
-
+            
         return JsonResponse(events, safe=False)
+        
     except Exception as e:
         print(f"Error en get_sessions: {str(e)}")
         import traceback

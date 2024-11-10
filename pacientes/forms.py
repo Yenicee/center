@@ -195,4 +195,10 @@ class PaymentForm(forms.ModelForm):
             'payment_date': forms.DateInput(attrs={'type': 'date'}),
             'payment_observation': forms.Textarea(attrs={'rows': 3}),
         }
-        
+        labels = {
+            'session': 'Sesión',
+            'is_paid': 'Está pagado',
+            'payment_date': 'Fecha de pago',
+            'amount': 'Monto',
+            'payment_observation': 'Observación del pago'
+        }
