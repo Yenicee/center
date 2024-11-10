@@ -3,10 +3,11 @@ from django.contrib.auth.decorators import login_required
 
 from django.urls import reverse_lazy
 from django.views import generic
-from .models import Patient, Session, Specialist, Room
+from .models import Patient, Session, Specialist, Room, Payment
 from .forms import (
     CustomUserCreationForm, PatientForm, SessionForm,
-    SpecialistForm, RoomForm, ReservationFilterForm
+    SpecialistForm, RoomForm, ReservationFilterForm,
+    PaymentForm
 )
 from django.http import JsonResponse
 from datetime import datetime, timedelta
@@ -205,7 +206,6 @@ def create_room(request):
         form = RoomForm()
     return render(request, 'pacientes/room/new_room.html', {'form': form})
 
-
 #se agrego un editar sala(sirve para los templates edit_room, delete_room)
 @login_required
 def edit_room(request, room_id):
@@ -240,21 +240,14 @@ def edit_session(request, session_id):
         form = SessionForm(instance=session)
     return render(request, 'pacientes/session/edit_session.html', {'form': form, 'session': session})
 
-
-#vista para las reservaciones
-from datetime import timedelta
-
 @login_required
 def reservation_list(request):
-    # Obtener la fecha actual
+   
     today = datetime.now().date()
-    # Calcular la fecha límite para filtrar los últimos 30 días
-    thirty_days_ago = today - timedelta(days=30)
 
-    # Filtrar sesiones solo en los últimos 30 días
+    thirty_days_ago = today - timedelta(days=30)
     recent_sessions = Session.objects.filter(date__gte=thirty_days_ago).order_by('date', 'time')
 
-    # Agrupar las sesiones por fecha
     reservations_by_date = {}
     for session in recent_sessions:
         date_key = session.date
@@ -266,3 +259,49 @@ def reservation_list(request):
         'reservations_by_date': reservations_by_date,
     }
     return render(request, 'pacientes/reservation/reservation_list.html', context)
+
+#nueva views agregada
+
+@login_required
+def payment_list(request):
+    payments = Payment.objects.all().order_by('-session__date')
+    return render(request, 'pacientes/payments/payment_list.html', {'payments': payments})
+
+@login_required
+def create_payment(request):
+    if request.method == 'POST':
+        form = PaymentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            return redirect('payment_list')
+    else:
+        form = PaymentForm()
+    return render(request, 'pacientes/payments/create_payment.html', {'form': form})
+
+@login_required
+def edit_payment(request, payment_id):
+    payment = get_object_or_404(Payment, pk=payment_id)
+    if request.method == 'POST':
+        form = PaymentForm(request.POST, instance=payment)
+        if form.is_valid():
+            form.save()
+            return redirect('payment_list')
+    else:
+        form = PaymentForm(instance=payment)
+    return render(request, 'pacientes/payments/edit_payment.html', 
+                 {'form': form, 'payment': payment})
+
+@login_required
+def delete_payment(request, payment_id):
+    payment = get_object_or_404(Payment, pk=payment_id)
+    if request.method == 'POST':
+        payment.delete()
+        return redirect('payment_list')
+    return render(request, 'pacientes/payments/delete_payment.html', 
+                 {'payment': payment})
+
+@login_required
+def payment_detail(request, payment_id):
+    payment = get_object_or_404(Payment, id=payment_id)
+    return render(request, 'pacientes/payments/payment_detail.html', 
+                 {'payment': payment})

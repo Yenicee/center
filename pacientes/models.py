@@ -1,6 +1,7 @@
-from django.db import models
+from django.db import models 
 from django.contrib.auth.models import User
 from django.utils import timezone
+
 
 class Specialist(models.Model):
     name = models.CharField(max_length=100)
@@ -30,6 +31,7 @@ class Patient(models.Model):
     address = models.CharField(max_length=255)
     phone_number = models.CharField(max_length=20) 
     email = models.EmailField()
+    cost_session = models.DecimalField(max_digits=10, decimal_places=2, default=0) 
     
     photo = models.ImageField(upload_to='patient_photos/', blank=True, null=True)
     marital_status = models.CharField(max_length=20)
@@ -55,6 +57,7 @@ class Patient(models.Model):
     def __str__(self):
         return f'{self.name} {self.surname}'
 
+
 class Session(models.Model):
    
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='sessions')
@@ -76,3 +79,25 @@ class Session(models.Model):
     def __str__(self):
         return f"Session {self.date} - Patient: {self.patient.name} {self.patient.surname}"
 
+
+class Payment(models.Model):
+    session = models.OneToOneField(Session, on_delete=models.CASCADE, related_name='payment')
+    is_paid = models.BooleanField(default=False)
+    payment_date = models.DateField(null=True, blank=True)
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    payment_observation = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def save(self, *args, **kwargs):
+        if not self.amount and self.session:
+            self.amount = self.session.patient.cost_session
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return f"Payment for session {self.session.date} - Patient: {self.session.patient.name} {self.session.patient.surname}"
+
+    class Meta:
+        ordering = ['-session__date']
+        verbose_name = 'Payment'
+        verbose_name_plural = 'Payments'

@@ -31,6 +31,13 @@ urlpatterns = [
     path('calendar/', views.calendar_view, name='calendar'),
     path('api/sessions/', views.get_sessions, name='get_sessions'),
     
+    #Pagos URLs
+    path('payments/', views.payment_list, name='payment_list'),
+    path('payments/create/', views.create_payment, name='create_payment'),
+    path('payments/<int:payment_id>/edit/', views.edit_payment, name='edit_payment'),
+    path('payments/<int:payment_id>/delete/', views.delete_payment, name='delete_payment'),
+    path('payments/<int:payment_id>/', views.payment_detail, name='payment_detail'),
+    
     # Autenticaciones URLs
     path('register/', views.SignUpView.as_view(), name='register'),
     path('accounts/login/', auth_views.LoginView.as_view(

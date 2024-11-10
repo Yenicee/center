@@ -1,0 +1,32 @@
+{% extends "pacientes/base/base.html" %}
+
+{% block content %}
+<h2>Lista de Pagos</h2>
+<table>
+    <tr>
+        <th>Usuario</th>
+        <th>Sesión</th>
+        <th>Monto</th>
+        <th>Pagado</th>
+        <th>Fecha de Pago</th>
+        <th>Observación</th>
+        <th>Acciones</th>
+    </tr>
+    {% for payment in payments %}
+    <tr>
+        <td>{{ payment.session.patient.name }}</td>
+        <td>{{ payment.session.date }}</td>
+        <td>{{ payment.amount }}</td>
+        <td>{{ payment.is_paid }}</td>
+        <td>{{ payment.payment_date }}</td>
+        <td>{{ payment.payment_observation }}</td>
+        <td>
+            <a href="{% url 'payment_detail' payment.id %}">Ver</a>
+            <a href="{% url 'edit_payment' payment.id %}">Editar</a>
+            <a href="{% url 'delete_payment' payment.id %}">Eliminar</a>
+        </td>
+    </tr>
+    {% endfor %}
+</table>
+<a href="{% url 'create_payment' %}">Agregar Pago</a>
+{% endblock %}

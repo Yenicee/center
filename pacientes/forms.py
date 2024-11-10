@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from .models import Patient, Session, Specialist, Room
+from .models import Patient, Session, Specialist, Room, Payment
 from .validators import validate_password_strength
 
 # CustomUserCreationForm y CustomAuthenticationForm se mantienen igual
@@ -67,7 +67,6 @@ class CustomAuthenticationForm(AuthenticationForm):
         'inactive': _("Esta cuenta está inactiva."),
     }
     
-
 class PatientForm(forms.ModelForm):
     class Meta:
         model = Patient
@@ -187,3 +186,13 @@ class ReservationFilterForm(forms.Form):
         required=False,
         widget=forms.DateInput(attrs={'type': 'date', 'class': 'form-control'})
     )
+    
+class PaymentForm(forms.ModelForm):
+    class Meta:
+        model = Payment
+        fields = ['session', 'is_paid', 'payment_date', 'amount', 'payment_observation']
+        widgets = {
+            'payment_date': forms.DateInput(attrs={'type': 'date'}),
+            'payment_observation': forms.Textarea(attrs={'rows': 3}),
+        }
+        
