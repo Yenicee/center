@@ -1,1 +1,36 @@
 {% extends "pacientes/base/base.html" %}
+
+{% block content %}
+<h1>Detalles del Pago</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'payment_list' %}">Lista de Pagos</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Detalles</a></li>
+</ul>
+
+<div class="form-container">
+    <div class="row section">
+        <div class="col-title">
+            <i class="fas fa-money-bill-wave"></i>
+            <h3>Información del Pago</h3>
+        </div>
+        <div class="col-fields">
+            <p><strong>Paciente:</strong> {{ payment.session.patient.name }} {{ payment.session.patient.surname }}</p>
+            <p><strong>Fecha de Sesión:</strong> {{ payment.session.date }}</p>
+            <p><strong>Monto:</strong> ${{ payment.amount }}</p>
+            <p><strong>Estado de Pago:</strong> 
+                <span style="color: {% if payment.is_paid %}green{% else %}red{% endif %};">
+                    {% if payment.is_paid %}Pagado{% else %}No Pagado{% endif %}
+                </span>
+            </p>
+            <p><strong>Fecha de Pago:</strong> {{ payment.payment_date|date:"d/m/Y" }}</p>
+            <p><strong>Observación:</strong> {{ payment.payment_observation }}</p>
+        </div>
+    </div>
+
+    <div class="button-group">
+        <a href="{% url 'edit_payment' payment.id %}" class="btn btn-primary">Editar</a>
+        <a href="{% url 'payment_list' %}" class="btn btn-secondary">Volver a la lista</a>
+    </div>
+</div>
+{% endblock %}

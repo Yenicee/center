@@ -10,6 +10,11 @@
 <div class="list-header">
     <a href="{% url 'create_payment' %}" class="btn-add">Agregar Pago</a>
 </div>
+<div class="payment-summary">
+    <p><strong>Total Monto:</strong> <span id="totalAmount"></span></p>
+    <p><strong>Total Pagos Realizados:</strong> <span id="totalPaid"></span></p>
+    <p><strong>Total Pagos Pendientes:</strong> <span id="totalPending"></span></p>
+</div>
 <div class="payment-list-container">
     <table id="paymentTable" class="display table">
         <thead>
@@ -54,6 +59,13 @@
             </tr>
             {% endfor %}
         </tbody>
+        <tfoot>
+            <tr>
+                <th colspan="2" style="text-align:right">Total Filtrado:</th>
+                <th id="filteredTotalAmount"></th>
+                <th colspan="4"></th>
+            </tr>
+        </tfoot>
     </table>
 </div>
 {% endblock %}
@@ -73,9 +85,58 @@
             stateSave: true,
             dom: '<"top-container"lf>rt<"bottom"ip><"clear">',
             pagingType: 'full_numbers',
+            footerCallback: function (row, data, start, end, display) {
+                var api = this.api();
+
+                // Calcula el total de "Monto" (Columna 2)
+                var totalAmount = api
+                    .column(2, { page: 'all' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+                // Inicializar contadores para pagos realizados y pendientes
+                var totalPaid = 0;
+                var totalPending = 0;
+
+                // Recorre cada fila visible y calcula los totales de pagos realizados y pendientes
+                api.rows({ page: 'all' }).nodes().each(function(row, index) {
+                    var $row = $(row);
+
+                    // Extraer el monto de la columna 2
+                    var amount = parseFloat($row.find('td').eq(2).text()) || 0;
+
+                    // Verificar el estado en la columna 3
+                    var status = $row.find('td').eq(3).text().trim();
+
+                    if (status === 'Pagado') {
+                        totalPaid += amount;
+                    } else if (status === 'No Pagado') {
+                        totalPending += amount;
+                    }
+                });
+
+                // Muestra los totales en el contenedor de resumen
+                $('#totalAmount').text('$' + totalAmount.toFixed(2));
+                $('#totalPaid').text('$' + totalPaid.toFixed(2));
+                $('#totalPending').text('$' + totalPending.toFixed(2));
+                var filteredTotal = api
+                    .column(2, { page: 'current' })
+                    .data()
+                    .reduce(function (a, b) {
+                        return parseFloat(a) + parseFloat(b);
+                    }, 0);
+
+                // Muestra los totales en el contenedor de resumen y en el pie de página de la tabla
+                $('#totalAmount').text('$' + totalAmount.toFixed(2));
+                $('#filteredTotalAmount').text('$' + filteredTotal.toFixed(2));
+            }
+            
         });
-      // Evento click para cambiar el estado de pagado/no pagado con SweetAlert2
-      $(document).on('click', '.toggle-paid', function() {
+
+        // Evento click para cambiar el estado de pagado/no pagado con SweetAlert2
+        $(document).on('click', '.toggle-paid', function() {
             var paymentId = $(this).data('id');
             var cellElement = $(this);
             var isPaid = cellElement.text().trim() === 'Pagado';
@@ -109,6 +170,9 @@
                                     timer: 1500,
                                     showConfirmButton: false
                                 });
+
+                                // Recalcular los totales después de cambiar el estado
+                                table.draw();
                             } else {
                                 Swal.fire('Error', 'Error al cambiar el estado del pago.', 'error');
                             }
@@ -123,3 +187,4 @@
     });
 </script>
 {% endblock %}
+

@@ -765,6 +765,28 @@ button:hover {
 .status-dropdown:hover {
 	color: #007bff;
 }
+.payment-summary {
+	display: flex;
+	gap: 20px;
+	margin-bottom: 20px;
+	padding: 15px;
+	border: 1px solid #ddd;
+	border-radius: 8px;
+	background-color: #f9f9f9;
+	font-weight: bold;
+}
+.payment-summary p {
+	margin: 0;
+}
+#totalAmount {
+	color: #333; /* Color neutro para el total general */
+}
+#totalPaid {
+	color: green; /* Verde para pagos realizados */
+}
+#totalPending {
+	color: red; /* Rojo para pagos pendientes */
+}
 /*Tabla - Fin*/
 /*Header Tabla*/
 .list-header {

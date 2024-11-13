@@ -1,1 +1,51 @@
 {% extends "pacientes/base/base.html" %}
+
+{% block content %}
+<h1>Editar Pago</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'payment_list' %}">Lista de Pagos</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Editar</a></li>
+</ul>
+
+<div class="form-container">
+    <form method="POST" enctype="multipart/form-data" class="add-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="row section">
+            <div class="col-title">
+                <i class="fas fa-edit"></i>
+                <h3>Detalles del Pago</h3>
+            </div>
+            <div class="col-fields">
+                <div class="form-group">
+                    <label for="{{ form.session.id_for_label }}">Sesión</label>
+                    {{ form.session }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.amount.id_for_label }}">Monto</label>
+                    {{ form.amount }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.is_paid.id_for_label }}">Estado de Pago</label>
+                    {{ form.is_paid }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.payment_date.id_for_label }}">Fecha de Pago</label>
+                    {{ form.payment_date }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.payment_observation.id_for_label }}">Observación</label>
+                    {{ form.payment_observation }}
+                </div>
+            </div>
+        </div>
+
+        <div class="button-group">
+            <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+            <a href="{% url 'payment_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
