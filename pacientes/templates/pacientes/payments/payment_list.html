@@ -1,38 +1,125 @@
 {% extends "pacientes/base/base.html" %}
 
+{% block extra_css %}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.min.css">
+{% endblock %}
+
 {% block content %}
 <h2>Lista de Pagos</h2>
-<table>
-    <tr>
-        <th>Usuario</th>
-        <th>Sesión</th>
-        <th>Monto</th>
-        <th>Pagado</th>
-        <th>Fecha de Pago</th>
-        <th>Observación</th>
-        <th>Acciones</th>
-    </tr>
-    {% for payment in payments %}
-    <tr>
-        <td>{{ payment.session.patient.name }}</td>
-        <td>{{ payment.session.date }}</td>
-        <td>{{ payment.amount }}</td>
-        <td>
-            {% if payment.is_paid %}
-                <span style="color: green;">Pagado</span>
-            {% else %}
-                <span style="color: red;">Pendiente</span>
-            {% endif %}
-        </td>
-        <td>{{ payment.payment_date }}</td>
-        <td>{{ payment.payment_observation }}</td>
-        <td>
-            <a href="{% url 'payment_detail' payment.id %}">Ver</a>
-            <a href="{% url 'edit_payment' payment.id %}">Editar</a>
-            <a href="{% url 'delete_payment' payment.id %}">Eliminar</a>
-        </td>
-    </tr>
-    {% endfor %}
-</table>
-<a href="{% url 'create_payment' %}">Agregar Pago</a>
+<div class="list-header">
+    <a href="{% url 'create_payment' %}" class="btn-add">Agregar Pago</a>
+</div>
+<div class="payment-list-container">
+    <table id="paymentTable" class="display table">
+        <thead>
+            <tr>
+                <th>Usuario</th>
+                <th>Sesión</th>
+                <th>Monto</th>
+                <th>Pagado</th>
+                <th>Fecha de Pago</th>
+                <th>Observación</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for payment in payments %}
+            <tr>
+                <td>{{ payment.session.patient.name }} {{ payment.session.patient.surname }}</td>
+                <td>{{ payment.session.date }}</td>
+                <td>{{ payment.amount }}</td>
+                <td>
+                    <span class="toggle-paid" data-id="{{ payment.id }}" style="cursor: pointer; color: {% if payment.is_paid %}green{% else %}red{% endif %};">
+                        {% if payment.is_paid %}
+                            Pagado
+                        {% else %}
+                            No Pagado
+                        {% endif %}
+                    </span>
+                </td>
+                <td>{{ payment.payment_date }}</td>
+                <td>{{ payment.payment_observation }}</td>
+                <td class="actions-tab">
+                    <a href="{% url 'payment_detail' payment.id %}" class="btn btn-icon view" title="Ver">
+                        <i class='bx bx-show'></i>
+                    </a>
+                    <a href="{% url 'edit_payment' payment.id %}" class="btn-icon edit" title="Editar">
+                        <i class='fas fa-pencil-alt'></i>
+                    </a>
+                    <a href="{% url 'delete_payment' payment.id %}" class="btn-icon delete" title="Eliminar">
+                        <i class='fas fa-trash'></i>
+                    </a>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11.7.12/dist/sweetalert2.all.min.js"></script>
+<script>
+    $(document).ready(function() {
+        var table = $('#paymentTable').DataTable({
+            language: {
+                url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
+            },
+            responsive: true,
+            pageLength: 10,
+            stateSave: true,
+            dom: '<"top-container"lf>rt<"bottom"ip><"clear">',
+            pagingType: 'full_numbers',
+        });
+      // Evento click para cambiar el estado de pagado/no pagado con SweetAlert2
+      $(document).on('click', '.toggle-paid', function() {
+            var paymentId = $(this).data('id');
+            var cellElement = $(this);
+            var isPaid = cellElement.text().trim() === 'Pagado';
+
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: `¿Quieres cambiar el estado a ${isPaid ? 'No Pagado' : 'Pagado'}?`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'Sí, cambiar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    $.ajax({
+                        url: "{% url 'toggle_payment_status' %}",
+                        type: 'POST',
+                        data: {
+                            'payment_id': paymentId,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                // Actualizar el estado en la interfaz
+                                cellElement.text(response.is_paid ? 'Pagado' : 'No Pagado')
+                                           .css('color', response.is_paid ? 'green' : 'red');
+
+                                Swal.fire({
+                                    icon: 'success',
+                                    title: 'Estado cambiado',
+                                    text: `El estado se ha cambiado a ${response.is_paid ? 'Pagado' : 'No Pagado'}.`,
+                                    timer: 1500,
+                                    showConfirmButton: false
+                                });
+                            } else {
+                                Swal.fire('Error', 'Error al cambiar el estado del pago.', 'error');
+                            }
+                        },
+                        error: function() {
+                            Swal.fire('Error', 'No se pudo cambiar el estado. Por favor, inténtalo de nuevo.', 'error');
+                        }
+                    });
+                }
+            });
+        });
+    });
+</script>
 {% endblock %}

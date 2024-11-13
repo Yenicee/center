@@ -1,65 +1,106 @@
 {% extends "pacientes/base/base.html" %}
+
+{% block title %}Detalle de Sesión{% endblock %}
+
 {% block content %}
-<h1 class="title">Detalle de Sesión</h1>
+<h1>Detalle de Sesión</h1>
 <ul class="breadcrumbs">
-    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li><a href="{% url 'patient_list' %}">Inicio</a></li>
     <li class="divider">/</li>
     <li><a href="{% url 'calendar' %}">Agenda</a></li>
     <li class="divider">/</li>
     <li><a href="#" class="active">Sesión</a></li>
 </ul>
 
-<div class="session-detail">
-    <div class="detail-card">
-        <div class="card-header">
-            <h2>{{ session.patient.name }}</h2>
-            <div class="session-meta">
-                <span><i class='bx bx-calendar'></i> {{ session.date }}</span>
-                <span><i class='bx bx-time'></i> {{ session.time }}</span>
+<div class="form-container">
+    <form method="post" class="add-form">
+        {% csrf_token %}
+        <div class="row section">
+            <div class="col-title">
+                <i class="fa-solid fa-calendar"></i>
+                <h3>Información de la Sesión</h3>
             </div>
-        </div>
-
-        <div class="card-content">
-            <div class="info-group">
-                <label><i class='bx bx-user'></i> Especialista</label>
-                <p>{{ session.specialist.name }}</p>
-            </div>
-            
-            <div class="info-group">
-                <label><i class='bx bx-door-open'></i> Sala</label>
-                <p>{{ session.room.name }}</p>
-            </div>
-
-            <div class="info-group">
-                <label><i class='bx bx-target-lock'></i> Objetivo</label>
-                <p>{{ session.objective }}</p>
-            </div>
-
-            <form method="post" class="observation-form">
-                {% csrf_token %}
+            <div class="col-fields">
+                <!-- Paciente -->
                 <div class="form-group">
-                    <label><i class='bx bx-notepad'></i> Observaciones</label>
-                    <textarea name="observation" class="form-input">{{ session.observation }}</textarea>
+                    <label for="{{ form.patient.id_for_label }}">Paciente:</label>
+                    <p>{{ session.patient.name }} {{ session.patient.surname }}</p>
                 </div>
-                {% if error %}
-                    <div class="error-message">
-                        <i class='bx bx-error'></i>
-                        {{ error }}
-                    </div>
-                {% endif %}
-                <div class="button-group">
-                    <button type="submit" class="btn-save">
-                        <i class='bx bx-save'></i> Guardar
-                    </button>
-                    <a href="{% url 'edit_session' session.id %}" class="btn-edit">
-                        <i class='bx bx-edit'></i> Editar
-                    </a>
-                    <a href="{% url 'patient_schedule' session.patient.id %}" class="btn-back">
-                        <i class='bx bx-arrow-back'></i> Volver
-                    </a>
+
+                <!-- Especialista -->
+                <div class="form-group">
+                    <label for="{{ form.specialist.id_for_label }}">Especialista:</label>
+                    <p>{{ session.specialist.name }}</p>
                 </div>
-            </form>
+
+                <!-- Sala -->
+                <div class="form-group">
+                    <label for="{{ form.room.id_for_label }}">Sala:</label>
+                    <p>{{ session.room.name }}</p>
+                </div>
+
+                <!-- Fecha -->
+                <div class="form-group">
+                    <label for="{{ form.date.id_for_label }}">Fecha:</label>
+                    <p>{{ session.date|date:"d/m/Y" }}</p>
+                </div>
+
+                <!-- Hora -->
+                <div class="form-group">
+                    <label for="{{ form.time.id_for_label }}">Hora:</label>
+                    <p>{{ session.time|time:"H:i" }}</p>
+                </div>
+
+                <!-- Objetivo -->
+                <div class="form-group">
+                    <label for="{{ form.objective.id_for_label }}">Objetivo:</label>
+                    <p>{{ session.objective }}</p>
+                </div>
+
+                <!-- Actividad -->
+                <div class="form-group">
+                    <label for="{{ form.activity.id_for_label }}">Actividad:</label>
+                    <p>{{ session.activity }}</p>
+                </div>
+
+                <!-- Materiales -->
+                <div class="form-group">
+                    <label for="{{ form.materials.id_for_label }}">Materiales:</label>
+                    <p>{{ session.materials }}</p>
+                </div>
+
+                <!-- Observación -->
+                <div class="form-group">
+                    <label for="{{ form.observation.id_for_label }}">Observación:</label>
+                    <p>{{ session.observation }}</p>
+                </div>
+
+                <!-- Archivo Adjunto -->
+                <div class="form-group">
+                    <label for="{{ form.attachment.id_for_label }}">Archivo Adjunto:</label>
+                    {% if session.attachment %}
+                        <a href="{{ session.attachment.url }}" target="_blank">{{ session.attachment.name }}</a>
+                    {% else %}
+                        <p>No hay archivo adjunto</p>
+                    {% endif %}
+                </div>
+
+                <!-- Estado -->
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}">Estado</label>
+                    <p>{{ session.get_status_display }}</p>
+                </div>
+            </div>
         </div>
-    </div>
+
+        <div class="button-group">
+            <a href="{% url 'edit_session' session.id %}" class="btn btn-primary">
+                Editar
+            </a>
+            <a href="{% url 'reservation_list' %}" class="btn btn-secundary">
+                Cancelar
+            </a>
+        </div>
+    </form>
 </div>
 {% endblock %}

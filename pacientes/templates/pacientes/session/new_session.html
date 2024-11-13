@@ -1,0 +1,131 @@
+{% extends "pacientes/base/base.html" %}
+
+{% block content %}
+<h1>Crear Nueva Sesión</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'reservation_list' %}">Reservas</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Nueva Sesión</a></li>
+</ul>
+
+<div class="form-container">
+    <form method="POST" enctype="multipart/form-data" class="add-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+        
+        <!-- Información Básica de la Sesión -->
+        <div class="row section">
+            <div class="col-title">
+                <i class="far fa-id-card"></i>
+                <h3>Información de la Sesión</h3>
+            </div>
+            <div class="col-fields">
+                <div class="form-group">
+                    <label for="{{ form.patient.id_for_label }}">Paciente</label>
+                    {{ form.patient }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.specialist.id_for_label }}">Especialista</label>
+                    {{ form.specialist }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.room.id_for_label }}">Sala</label>
+                    {{ form.room }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.date.id_for_label }}">Fecha</label>
+                    {{ form.date }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.time.id_for_label }}">Hora</label>
+                    {{ form.time }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Objetivo y Actividad -->
+        <div class="row section">
+            <div class="col-title">
+                <i class="fa-solid fa-bullseye"></i>
+                <h3>Objetivo de la sesión</h3>
+            </div>
+            <div class="col-fields">
+                <div class="form-group">
+                    <label for="{{ form.objective.id_for_label }}">Objetivo</label>
+                    {{ form.objective }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.activity.id_for_label }}">Actividad</label>
+                    {{ form.activity }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.materials.id_for_label }}">Materiales</label>
+                    {{ form.materials }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.observation.id_for_label }}">Observación</label>
+                    {{ form.observation }}
+                </div>
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}">Estado</label>
+                    {{ form.status }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Archivo Adjunto -->
+        <div class="row section">
+            <div class="col-title">
+                <i class="fa-solid fa-paperclip"></i>
+                <h3>Archivo Adjunto</h3>
+            </div>
+            <div class="col-fields">
+                <div class="form-group">
+                    <label for="{{ form.attachment.id_for_label }}">Archivo Adjunto</label>
+                    {{ form.attachment }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- Sección para añadir múltiples fechas y horas -->
+        <div class="row section">
+            <div class="col-title">
+                <i class="fa-solid fa-calendar-plus"></i>
+                <h3>Agregar Fechas Adicionales</h3>
+                <p>Añade más fechas y horas para el mismo paciente, especialista y sala.</p>
+            </div>
+            <div class="col-fields">
+                <div id="additional-sessions">
+                    <!-- Aquí se añadirán campos adicionales de fecha y hora -->
+                </div>
+                <button type="button" class="btn btn-secondary" onclick="addSession()">+ Añadir Fecha</button>
+            </div>
+        </div>
+        
+        <!-- Botones de Acción -->
+        <button type="submit" class="btn btn-primary">Guardar Sesión</button>
+        <a href="{% url 'reservation_list' %}" class="btn btn-secondary">Cancelar</a>
+    </form>
+</div>
+
+<script>
+    let sessionCount = 0;
+    
+    function addSession() {
+        sessionCount++;
+        
+        // Crear contenedores de fecha y hora adicionales
+        const container = document.getElementById("additional-sessions");
+        const div = document.createElement("div");
+        div.classList.add("form-group");
+        div.innerHTML = `
+            <label>Fecha Adicional ${sessionCount}</label>
+            <input type="date" name="additional_dates[]" class="form-control" required>
+            <label>Hora Adicional ${sessionCount}</label>
+            <input type="time" name="additional_times[]" class="form-control" required>
+        `;
+        container.appendChild(div);
+    }
+</script>
+
+{% endblock %}

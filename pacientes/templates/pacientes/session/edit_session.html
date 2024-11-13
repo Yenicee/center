@@ -1,145 +1,127 @@
 {% extends "pacientes/base/base.html" %}
+
 {% block content %}
-<h1 class="title">Editar Sesión</h1>
+<h1>Editar Sesión</h1>
 <ul class="breadcrumbs">
     <li><a href="{% url 'patient_list' %}">Inicio</a></li>
-    <li class="divider">/</li>
+    <li>/</li>
     <li><a href="{% url 'calendar' %}">Agenda</a></li>
-    <li class="divider">/</li>
+    <li>/</li>
     <li><a href="{% url 'session_detail' session.id %}">Sesión</a></li>
-    <li class="divider">/</li>
+    <li>/</li>
     <li><a href="#" class="active">Editar</a></li>
 </ul>
 
-<div>
-    <div>
-        <div>
-            <h2>{{ session.patient.name }}  {{ session.patient.surname }}</h2>
+<div class="form-container">
+    <div class="row section">
+        <div class="col-title">
+            <i class="fa-solid fa-calendar-alt"></i>
+            <h3>Información de la Sesión</h3>
+            <p>Detalles generales de la sesión</p>
         </div>
-
-        <div>
-            <form method="POST" enctype="multipart/form-data">
+        <div class="col-fields">
+            <form method="POST" enctype="multipart/form-data" class="add-form">
                 {% csrf_token %}
-                
-                <div>
-                    <div>
-                        <div>
-                            <label>{{ form.date.label }}</label>
-                            {{ form.date }}
-                        </div>
-                    </div>
-                    <div>
-                        <div>
-                            <label>{{ form.time.label }}</label>
-                            {{ form.time }}
-                        </div>
-                    </div>
-                </div>
+                {{ form.non_field_errors }}
 
-                <div>
-                    <div>
-                        <div>
-                            <label>{{ form.specialist.label }}</label>
-                            {{ form.specialist }}
-                        </div>
-                    </div>
-                    <div>
-                        <div>
-                            <label>{{ form.room.label }}</label>
-                            {{ form.room }}
-                        </div>
-                    </div>
-                </div>
-
-                <div>
-                    <label>{{ form.objective.label }}</label>
-                    {{ form.objective }}
-                </div>
-
-                <div>
-                    <label>{{ form.activity.label }}</label>
-                    {{ form.activity }}
-                </div>
-
-                <div>
-                    <label>{{ form.materials.label }}</label>
-                    {{ form.materials }}
-                </div>
-
-                <div>
-                    <label>{{ form.observation.label }}</label>
-                    {{ form.observation }}
-                </div>
-
-                <div>
-                    <label>{{ form.attachment.label }}</label>
-                    {{ form.attachment }}
-                    {% if session.attachment %}
-                        <p>Archivo actual: {{ session.attachment.name }}</p>
+                <div class="form-group">
+                    <label for="{{ form.date.id_for_label }}">Fecha</label>
+                    {{ form.date }}
+                    {% if form.date.errors %}
+                        <div class="error-message">{{ form.date.errors }}</div>
                     {% endif %}
                 </div>
 
-                <div>
-                    <div>
-                        <div>
-                            {{ form.is_reserved }}
-                            <label>{{ form.is_reserved.label }}</label>
-                        </div>
-                    </div>
+                <div class="form-group">
+                    <label for="{{ form.time.id_for_label }}">Hora</label>
+                    {{ form.time }}
+                    {% if form.time.errors %}
+                        <div class="error-message">{{ form.time.errors }}</div>
+                    {% endif %}
                 </div>
 
-                <div id="reservationFields" style="display: none;">
-                    <div>
-                        <div>
-                            <label>{{ form.reserved_date.label }}</label>
-                            {{ form.reserved_date }}
-                        </div>
-                    </div>
-                    <div>
-                        <div>
-                            <label>{{ form.reserved_time.label }}</label>
-                            {{ form.reserved_time }}
-                        </div>
-                    </div>
-
-                    <div>
-                        <label>{{ form.new_activity.label }}</label>
-                        {{ form.new_activity }}
-                    </div>
-                    
+                <div class="form-group">
+                    <label for="{{ form.patient.id_for_label }}">Paciente</label>
+                    {{ form.patient }}
+                    {% if form.patient.errors %}
+                        <div class="error-message">{{ form.patient.errors }}</div>
+                    {% endif %}
                 </div>
 
-                {% if error %}
-                <div>
-                    {{ error }}
+                <div class="form-group">
+                    <label for="{{ form.specialist.id_for_label }}">Especialista</label>
+                    {{ form.specialist }}
+                    {% if form.specialist.errors %}
+                        <div class="error-message">{{ form.specialist.errors }}</div>
+                    {% endif %}
                 </div>
-                {% endif %}
 
-                <div>
-                    <button type="submit">Guardar Cambios</button>
-                    <a href="{% url 'calendar' %}">Cancelar</a>
+                <div class="form-group">
+                    <label for="{{ form.room.id_for_label }}">Sala</label>
+                    {{ form.room }}
+                    {% if form.room.errors %}
+                        <div class="error-message">{{ form.room.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.objective.id_for_label }}">Objetivo</label>
+                    {{ form.objective }}
+                    {% if form.objective.errors %}
+                        <div class="error-message">{{ form.objective.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.activity.id_for_label }}">Actividad</label>
+                    {{ form.activity }}
+                    {% if form.activity.errors %}
+                        <div class="error-message">{{ form.activity.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.materials.id_for_label }}">Materiales</label>
+                    {{ form.materials }}
+                    {% if form.materials.errors %}
+                        <div class="error-message">{{ form.materials.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.observation.id_for_label }}">Observación</label>
+                    {{ form.observation }}
+                    {% if form.observation.errors %}
+                        <div class="error-message">{{ form.observation.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.attachment.id_for_label }}">Archivo Adjunto</label>
+                    {{ form.attachment }}
+                    {% if form.attachment.errors %}
+                        <div class="error-message">{{ form.attachment.errors }}</div>
+                    {% endif %}
+                    {% if session.attachment %}
+                        <p>Archivo actual: <a href="{{ session.attachment.url }}" target="_blank">{{ session.attachment.name }}</a></p>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.status.id_for_label }}">Estado</label>
+                    {{ form.status }}
+                    {% if form.status.errors %}
+                        <div class="error-message">{{ form.status.errors }}</div>
+                    {% endif %}
+                </div>
+
+                <!-- Botones de Acción -->
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">Guardar Cambios</button>
+                    <a href="{% url 'reservation_list' %}" class="btn btn-secondary">Cancelar</a>
                 </div>
             </form>
         </div>
     </div>
 </div>
-
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const isReservedCheckbox = document.querySelector('#{{ form.is_reserved.id_for_label }}');
-        const reservationFields = document.getElementById('reservationFields');
-    
-        function toggleReservationFields() {
-            if (isReservedCheckbox.checked) {
-                reservationFields.style.display = 'flex';
-            } else {
-                reservationFields.style.display = 'none';
-            }
-        }
-    
-        isReservedCheckbox.addEventListener('change', toggleReservationFields);
-        toggleReservationFields();
-    });
-    </script>
-
 {% endblock %}

@@ -118,12 +118,13 @@ class PatientForm(forms.ModelForm):
 class SessionForm(forms.ModelForm):
     class Meta:
         model = Session
-        fields = ['date', 'time', 'specialist', 'room', 'objective', 'activity', 
-                 'materials', 'observation', 'attachment', 'is_reserved', 
-                 'reserved_date', 'reserved_time', 'new_activity']
-        
+        fields = [
+            'patient', 'specialist', 'room', 'date', 'time', 
+            'objective', 'activity', 'materials', 'observation', 
+            'attachment', 'status'
+        ]
         labels = {
-             'date': 'Fecha',
+            'date': 'Fecha',
             'time': 'Hora',
             'patient': 'Paciente',
             'specialist': 'Especialista',
@@ -133,11 +134,7 @@ class SessionForm(forms.ModelForm):
             'materials': 'Materiales',
             'observation': 'Observación',
             'attachment': 'Archivo Adjunto',
-           
-            'is_reserved': 'Reservar fecha',
-            'reserved_date': 'Fecha de reserva',
-            'reserved_time': 'Hora de reserva',
-            'new_activity': 'Nueva actividad'
+            'status': 'Estado de la sesión' 
         }
         
         widgets = {

@@ -632,6 +632,12 @@ td {
 	border: 1px solid #dddddd;
 	padding: 10px;
 	text-align: left;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+td[title] {
+	cursor: pointer;
 }
 
 th {
@@ -662,7 +668,7 @@ button:hover {
 .actions-tab {
     display: flex;
     justify-content: center;
-    gap: 10px; /* Espacio entre iconos */
+    gap: 10px; 
 }
 
 .actions-tab .btn-icon {
@@ -695,6 +701,69 @@ button:hover {
 }
 .actions-tab .btn-icon.delete:hover {
     background-color: #ffe0e0;
+}
+.status-dropdown {
+	background: none;
+	border: none;
+	color: inherit;
+	font: inherit;
+	padding-right: 15px; /* Espacio para la flecha */
+	margin: 0;
+	outline: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+	cursor: pointer;
+	text-align: center;
+	position: relative;
+}
+
+/* Añadir la flecha */
+.status-dropdown::after {
+    content: "";
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 0;
+    height: 0;
+    border-left: 5px solid transparent;
+    border-right: 5px solid transparent;
+    border-top: 5px solid #555; /* Color de la flecha */
+    pointer-events: none;
+}
+.status-cell {
+    position: relative;
+}
+
+.status-dropdown {
+    background: none;
+    border: none;
+    color: inherit;
+    font: inherit;
+    padding-right: 15px;
+    margin: 0;
+    outline: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    cursor: pointer;
+    text-align: center;
+    width: 100%; /* Hace que ocupe todo el ancho */
+}
+
+.dropdown-arrow {
+    position: absolute;
+    right: 10px; /* Ajusta según tu diseño */
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 12px;
+    color: #555; /* Ajusta el color */
+    pointer-events: none;
+}
+/* Cambio de color al pasar el cursor */
+.status-dropdown:hover {
+	color: #007bff;
 }
 /*Tabla - Fin*/
 /*Header Tabla*/
@@ -1042,4 +1111,63 @@ button:hover {
   }
   .fc .fc-toolbar.fc-header-toolbar {
     margin-bottom: 0.5em;
+}
+/*DataTables*/
+.dataTables_wrapper .dataTables_paginate .paginate_button {
+    padding: 5px 10px;
+    margin: 2px;
+    border-radius: 4px;
+    background-color: #f4f4f4;
+    border: 1px solid #ddd;
+    color: #333;
+    cursor: pointer;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+/* Estilo para el botón de paginación activo */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current {
+    background-color: #007bff;
+    color: #fff !important;
+    border: 1px solid #007bff;
+}
+
+/* Hover efecto */
+.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background-color: #e9ecef;
+    color: #007bff;
+	
+}
+
+/* Deshabilitar botón */
+.dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+    background-color: #f4f4f4;
+    color: #aaa;
+    cursor: not-allowed;
+	
+}
+.dataTables_paginate{
+	padding-top: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.top-container{
+	display: flex;
+    gap: 20px;
+}
+th.sorting::after, th.sorting_asc::after, th.sorting_desc::after {
+    font-family: FontAwesome;
+    content: '\f0dc';
+    margin-left: 5px;
+    font-size: 0.75rem;
+}
+
+th.sorting_asc::after {
+    content: '\f0de';
+}
+th.sorting_desc::after {
+    content: '\f0dd';
+}
+.dataTables_info{
+	padding-top: 10px;
 }

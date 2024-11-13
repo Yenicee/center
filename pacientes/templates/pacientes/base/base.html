@@ -25,7 +25,7 @@
 
 				<li>
 					<a href="{% url 'reservation_list' %}">
-						<i class='bx bxs-calendar-check icon'></i> Reserva 
+						<i class='bx bxs-calendar-check icon'></i> Sesiones 
 						{% with reserved_count=request.user.get_reserved_sessions_count %}
 						{% if reserved_count > 0 %}
 						<span class="badge bg-primary">{{ reserved_count }}</span>
@@ -34,8 +34,8 @@
 						<i class='bx bx-chevron-right icon-right'></i>
 					</a>
 					<ul class="side-dropdown">
-						<li><a href="{% url 'reservation_list' %}"><i class="fas fa-list-ul icon-sub"></i>Ver reservas</a></li>
-						<li><a href=""><i class="fas fa-plus icon-sub"></i>Nueva reserva</a></li>
+						<li><a href="{% url 'reservation_list' %}"><i class="fas fa-list-ul icon-sub"></i>Ver sesiones</a></li>
+						<li><a href="{% url 'new_session' %}"><i class="fas fa-plus icon-sub"></i>Nueva sesion</a></li>
 					</ul>
 				</li>
 

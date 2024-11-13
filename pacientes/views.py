@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 
 from django.urls import reverse_lazy
 from django.views import generic
+from django.views.decorators.http import require_POST
 from .models import Patient, Session, Specialist, Room, Payment
 from .forms import (
     CustomUserCreationForm, PatientForm, SessionForm,
@@ -42,6 +43,42 @@ def patient_schedule(request, patient_id):
         'specialists': specialists,
         'rooms': rooms
     })
+@login_required
+def new_session(request):
+    if request.method == 'POST':
+        form = SessionForm(request.POST, request.FILES)
+        
+        if form.is_valid():
+            # Crear la sesión principal con todos los datos del formulario
+            session = form.save()
+            
+            # Procesar las sesiones adicionales
+            additional_dates = request.POST.getlist('additional_dates[]')
+            additional_times = request.POST.getlist('additional_times[]')
+            
+            for date, time in zip(additional_dates, additional_times):
+                # Crear una nueva sesión solo con paciente, especialista y sala; otros campos en blanco
+                new_session = Session(
+                    patient=session.patient,
+                    specialist=session.specialist,
+                    room=session.room,
+                    date=date,
+                    time=time,
+                    objective='',  # Campo en blanco
+                    activity='',   # Campo en blanco
+                    materials='',  # Campo en blanco
+                    observation='',  # Campo en blanco
+                    status='Pendiente'  # Puede definirse un valor por defecto, como "Pendiente"
+                )
+                new_session.save()
+            
+            return redirect('reservation_list')
+    
+    else:
+        form = SessionForm()
+    
+    return render(request, 'pacientes/session/new_session.html', {'form': form})
+
 
 @login_required
 def session_detail(request, session_id):
@@ -58,7 +95,21 @@ def session_detail(request, session_id):
                 'error': 'La observación no puede estar vacía.'
             })
     return render(request, 'pacientes/session/session_detail.html', {'session': session})
-
+@require_POST
+@login_required
+def update_session_status(request):
+    session_id = request.POST.get('session_id')
+    new_status = request.POST.get('new_status')
+    
+    try:
+        session = Session.objects.get(id=session_id)
+        session.status = new_status
+        session.save()
+        return JsonResponse({'success': True})
+    except Session.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'La sesión no existe.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
 class SignUpView(generic.CreateView):
     form_class = CustomUserCreationForm
     success_url = reverse_lazy('login')
@@ -100,28 +151,28 @@ def delete_patient(request, patient_id):
 def calendar_view(request):
     return render(request, 'pacientes/calendar/calendar.html')
 
-
 @login_required
 def get_sessions(request):
     try:
-        sessions = Session.objects.filter(is_reserved=True)
-        print(f"Número de sesiones encontradas: {sessions.count()}")
-        
-        reservations = Session.objects.filter(is_reserved=False)
-        print(f"Número de reservas encontradas: {reservations.count()}")
-        
+        # Filtra sesiones "Pendiente" y "Cancelada"
+        sessions = Session.objects.filter(status__in=["Pendiente", "Cancelada"])
+
+        # Procesamiento de eventos para el calendario
         events = []
         
         for session in sessions:
-            start_datetime = datetime.combine(
-                session.reserved_date or session.date,
-                session.reserved_time or session.time
-            )
+            start_datetime = datetime.combine(session.date, session.time)
             end_datetime = start_datetime + timedelta(hours=1)
             
+            # Configura el color basado en el estado de la sesión
+            if session.status == "Pendiente":
+                color = '#0d6efd'  # Azul para "Pendiente"
+            elif session.status == "Cancelada":
+                color = '#dc3545'  # Rojo para "Cancelada"
+
             event = {
                 'id': str(session.id),
-                'title': f"{session.patient.name} - {session.new_activity or session.objective}",
+                'title': f"{session.patient.name} - {session.objective}",
                 'start': start_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
                 'end': end_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
                 'extendedProps': {
@@ -129,43 +180,16 @@ def get_sessions(request):
                     'room': session.room.name if session.room else 'Sin sala',
                     'session_id': session.id,
                     'patient': f"{session.patient.name} {session.patient.surname}",
-                    'activity': session.new_activity or session.activity,
+                    'activity': session.activity,
                     'objective': session.objective,
                     'eventType': 'session'
                 },
-                'backgroundColor': '#0d6efd',
-                'borderColor': '#0d6efd',
+                'backgroundColor': color,
+                'borderColor': color,
                 'display': 'block'
             }
             events.append(event)
         
-        for reservation in reservations:
-            start_datetime = datetime.combine(
-                reservation.reserved_date or reservation.date,
-                reservation.reserved_time or reservation.time
-            )
-            end_datetime = start_datetime + timedelta(hours=1)
-            
-            event = {
-                'id': str(reservation.id),
-                'title': f"{reservation.patient.name} - {reservation.new_activity or reservation.objective}",
-                'start': start_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
-                'end': end_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
-                'extendedProps': {
-                    'specialist': reservation.specialist.name if reservation.specialist else 'Sin especialista',
-                    'room': reservation.room.name if reservation.room else 'Sin sala',
-                    'session_id': reservation.id,
-                    'patient': f"{reservation.patient.name} {reservation.patient.surname}",
-                    'activity': reservation.new_activity or reservation.objective,
-                    'objective': reservation.objective,
-                    'eventType': 'reservation'
-                },
-                'backgroundColor': '#dc3545',
-                'borderColor': '#dc3545',
-                'display': 'block'
-            }
-            events.append(event)
-            
         return JsonResponse(events, safe=False)
         
     except Exception as e:
@@ -173,6 +197,7 @@ def get_sessions(request):
         import traceback
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
+
 
 # Nuevas vistas para Specialist
 @login_required
@@ -237,7 +262,9 @@ def edit_session(request, session_id):
         form = SessionForm(request.POST, request.FILES, instance=session)
         if form.is_valid():
             form.save()
-            return redirect('session_detail', session_id=session.id)
+            return redirect('reservation_list')
+        else:
+            print("Errores de validación:", form.errors)  # Para depuración
     else:
         form = SessionForm(instance=session)
     return render(request, 'pacientes/session/edit_session.html', {'form': form, 'session': session})
@@ -307,3 +334,11 @@ def payment_detail(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
     return render(request, 'pacientes/payments/payment_detail.html', 
                  {'payment': payment})
+
+@require_POST
+def toggle_payment_status(request):
+    payment_id = request.POST.get('payment_id')
+    payment = get_object_or_404(Payment, id=payment_id)
+    payment.is_paid = not payment.is_paid
+    payment.save()
+    return JsonResponse({'success': True, 'is_paid': payment.is_paid})

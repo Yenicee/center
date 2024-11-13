@@ -59,7 +59,11 @@ class Patient(models.Model):
 
 
 class Session(models.Model):
-   
+    STATUS_CHOICES = [
+        ('Pendiente', 'Pendiente'),
+        ('Realizada', 'Realizada'),
+        ('Cancelada', 'Cancelada')
+    ]
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='sessions')
     specialist = models.ForeignKey(Specialist, on_delete=models.CASCADE, related_name='sessions')
     room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, related_name='sessions')
@@ -70,11 +74,13 @@ class Session(models.Model):
     materials = models.TextField(blank=True)
     observation = models.TextField(blank=True)
     attachment = models.FileField(upload_to='session_attachments/', blank=True, null=True)
-    
-    is_reserved = models.BooleanField(default=False)
-    reserved_date = models.DateField(null=True, blank=True)
-    reserved_time = models.TimeField(null=True, blank=True)
-    new_activity = models.TextField(blank=True, null=True)
+      
+    status = models.CharField(
+        max_length=10,
+        choices=STATUS_CHOICES,
+        default='Pendiente',
+        help_text="Estado de la sesión: 'Pendiente', 'Completada o 'Cancelada'."
+    )
     
     def __str__(self):
         return f"Session {self.date} - Patient: {self.patient.name} {self.patient.surname}"
