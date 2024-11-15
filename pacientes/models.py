@@ -82,6 +82,17 @@ class Session(models.Model):
         help_text="Estado de la sesión: 'Pendiente', 'Completada o 'Cancelada'."
     )
     
+    def save(self, *args, **kwargs):
+        # Guarda la sesión normalmente
+        super().save(*args, **kwargs)
+
+        if self.status == "Realizada":
+            # encarga de manejar el tema del pago 
+            payment, created = Payment.objects.get_or_create(session=self)
+            payment.is_paid = True
+            payment.payment_date = self.date
+            payment.save()
+            
     def __str__(self):
         return f"Session {self.date} - Patient: {self.patient.name} {self.patient.surname}"
 
@@ -99,7 +110,7 @@ class Payment(models.Model):
         if not self.amount and self.session:
             self.amount = self.session.patient.cost_session
         super().save(*args, **kwargs)
-
+        
     def __str__(self):
         return f"Payment for session {self.session.date} - Patient: {self.session.patient.name} {self.session.patient.surname}"
 

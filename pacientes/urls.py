@@ -41,7 +41,6 @@ urlpatterns = [
     path('payments/<int:payment_id>/', views.payment_detail, name='payment_detail'),
     path('toggle_payment_status/', views.toggle_payment_status, name='toggle_payment_status'),
     
-    
     # Autenticaciones URLs
     path('register/', views.SignUpView.as_view(), name='register'),
     path('accounts/login/', auth_views.LoginView.as_view(

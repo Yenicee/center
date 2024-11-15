@@ -13,7 +13,7 @@ from .forms import (
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 
-
+#views para patient
 @login_required
 def patient_list(request):
     patients = Patient.objects.all()
@@ -43,6 +43,44 @@ def patient_schedule(request, patient_id):
         'specialists': specialists,
         'rooms': rooms
     })
+
+@login_required
+def create_patient(request):
+    if request.method == 'POST':
+        form = PatientForm(request.POST, request.FILES)
+        if form.is_valid():
+            form.save()
+            return redirect('patient_list') 
+    else:
+        form = PatientForm()
+    return render(request, 'pacientes/patient/new_patient.html',{'form': form})
+
+@login_required
+def edit_patient(request, patient_id):
+    patient = get_object_or_404(Patient, pk=patient_id)
+    if request.method == 'POST':
+        form = PatientForm(request.POST, request.FILES, instance=patient)
+        if form.is_valid():
+            form.save()
+            return redirect('patient_list')
+    else:
+        form = PatientForm(instance=patient)
+    return render(request, 'pacientes/patient/edit_patient.html', {'form': form, 'patient': patient})
+
+@login_required
+def delete_patient(request, patient_id):
+    patient = get_object_or_404(Patient, pk=patient_id)
+    if request.method == 'POST':
+        patient.delete()
+        return redirect('patient_list')
+    return render(request,'pacientes/patient/delete_patient.html', {'patient': patient})
+
+
+#views para manejo de session
+@login_required
+def calendar_view(request):
+    return render(request, 'pacientes/calendar/calendar.html')
+
 @login_required
 def new_session(request):
     if request.method == 'POST':
@@ -79,7 +117,6 @@ def new_session(request):
     
     return render(request, 'pacientes/session/new_session.html', {'form': form})
 
-
 @login_required
 def session_detail(request, session_id):
     session = get_object_or_404(Session, id=session_id)
@@ -95,69 +132,11 @@ def session_detail(request, session_id):
                 'error': 'La observación no puede estar vacía.'
             })
     return render(request, 'pacientes/session/session_detail.html', {'session': session})
-@require_POST
-@login_required
-def update_session_status(request):
-    session_id = request.POST.get('session_id')
-    new_status = request.POST.get('new_status')
-    
-    try:
-        session = Session.objects.get(id=session_id)
-        session.status = new_status
-        session.save()
-        return JsonResponse({'success': True})
-    except Session.DoesNotExist:
-        return JsonResponse({'success': False, 'error': 'La sesión no existe.'}, status=404)
-    except Exception as e:
-        return JsonResponse({'success': False, 'error': str(e)}, status=500)
-class SignUpView(generic.CreateView):
-    form_class = CustomUserCreationForm
-    success_url = reverse_lazy('login')
-    template_name = 'registration/register.html'
-
-@login_required
-def create_patient(request):
-    if request.method == 'POST':
-        form = PatientForm(request.POST, request.FILES)
-        if form.is_valid():
-            form.save()
-            return redirect('patient_list') 
-    else:
-        form = PatientForm()
-    return render(request, 'pacientes/patient/new_patient.html',{'form': form})
-
-#se agrego esto para los templates de delete_patient y edit_patient
-@login_required
-def edit_patient(request, patient_id):
-    patient = get_object_or_404(Patient, pk=patient_id)
-    if request.method == 'POST':
-        form = PatientForm(request.POST, request.FILES, instance=patient)
-        if form.is_valid():
-            form.save()
-            return redirect('patient_list')
-    else:
-        form = PatientForm(instance=patient)
-    return render(request, 'pacientes/patient/edit_patient.html', {'form': form, 'patient': patient})
-
-@login_required
-def delete_patient(request, patient_id):
-    patient = get_object_or_404(Patient, pk=patient_id)
-    if request.method == 'POST':
-        patient.delete()
-        return redirect('patient_list')
-    return render(request,'pacientes/patient/delete_patient.html', {'patient': patient})
-
-@login_required
-def calendar_view(request):
-    return render(request, 'pacientes/calendar/calendar.html')
 
 @login_required
 def get_sessions(request):
     try:
-        # Filtra sesiones "Pendiente" y "Cancelada"
         sessions = Session.objects.filter(status__in=["Pendiente", "Cancelada"])
-
-        # Procesamiento de eventos para el calendario
         events = []
         
         for session in sessions:
@@ -198,6 +177,41 @@ def get_sessions(request):
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
 
+@login_required
+def edit_session(request, session_id):
+    session = get_object_or_404(Session, id=session_id)
+    if request.method == 'POST':
+        form = SessionForm(request.POST, request.FILES, instance=session)
+        if form.is_valid():
+            form.save()
+            return redirect('reservation_list')
+        else:
+            print("Errores de validación:", form.errors)  # Para depuración
+    else:
+        form = SessionForm(instance=session)
+    return render(request, 'pacientes/session/edit_session.html', {'form': form, 'session': session})
+
+@require_POST
+@login_required
+def update_session_status(request):
+    session_id = request.POST.get('session_id')
+    new_status = request.POST.get('new_status')
+    
+    try:
+        session = Session.objects.get(id=session_id)
+        session.status = new_status
+        session.save()
+        return JsonResponse({'success': True})
+    except Session.DoesNotExist:
+        return JsonResponse({'success': False, 'error': 'La sesión no existe.'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+class SignUpView(generic.CreateView):
+    form_class = CustomUserCreationForm
+    success_url = reverse_lazy('login')
+    template_name = 'registration/register.html'
+
 
 # Nuevas vistas para Specialist
 @login_required
@@ -216,7 +230,7 @@ def create_specialist(request):
         form = SpecialistForm()
     return render(request, 'pacientes/specialist/new_specialist.html', {'form': form})
 
-# Nuevas vistas para Room
+#views encargadas de room
 @login_required
 def room_list(request):
     rooms = Room.objects.all()
@@ -233,7 +247,6 @@ def create_room(request):
         form = RoomForm()
     return render(request, 'pacientes/room/new_room.html', {'form': form})
 
-#se agrego un editar sala(sirve para los templates edit_room, delete_room)
 @login_required
 def edit_room(request, room_id):
     room = get_object_or_404(Room, pk=room_id)
@@ -254,21 +267,7 @@ def delete_room(request, room_id):
         return redirect('room_list')
     return render(request, 'pacientes/room/delete_room.html', {'room': room})
 
-
-@login_required
-def edit_session(request, session_id):
-    session = get_object_or_404(Session, id=session_id)
-    if request.method == 'POST':
-        form = SessionForm(request.POST, request.FILES, instance=session)
-        if form.is_valid():
-            form.save()
-            return redirect('reservation_list')
-        else:
-            print("Errores de validación:", form.errors)  # Para depuración
-    else:
-        form = SessionForm(instance=session)
-    return render(request, 'pacientes/session/edit_session.html', {'form': form, 'session': session})
-
+#views encargado de la parte de reservation_list
 @login_required
 def reservation_list(request):
    
@@ -289,11 +288,11 @@ def reservation_list(request):
     }
     return render(request, 'pacientes/reservation/reservation_list.html', context)
 
-#nueva views agregada
-
+#views encargada de payment
 @login_required
 def payment_list(request):
-    payments = Payment.objects.all().order_by('-session__date')
+    # Filtrar pagos solo de sesiones Pendientes o Realizadas
+    payments = Payment.objects.filter(session__status__in=['Pendiente', 'Realizada']).order_by('-session__date')
     return render(request, 'pacientes/payments/payment_list.html', {'payments': payments})
 
 @login_required
