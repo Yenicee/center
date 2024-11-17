@@ -40,6 +40,7 @@
                     <label for="{{ form.time.id_for_label }}">Hora</label>
                     {{ form.time }}
                 </div>
+               
             </div>
         </div>
         
@@ -69,6 +70,13 @@
                 <div class="form-group">
                     <label for="{{ form.status.id_for_label }}">Estado</label>
                     {{ form.status }}
+                </div>
+                
+                <div class="form-group form-check">
+                    <label class="form-check-label" for="{{ form.paid_in_advance.id_for_label }}">
+                        {{ form.paid_in_advance }}
+                        Pagada por adelantado
+                    </label>
                 </div>
             </div>
         </div>

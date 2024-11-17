@@ -121,7 +121,7 @@ class SessionForm(forms.ModelForm):
         fields = [
             'patient', 'specialist', 'room', 'date', 'time', 
             'objective', 'activity', 'materials', 'observation', 
-            'attachment', 'status'
+            'attachment', 'status','paid_in_advance'
         ]
         labels = {
             'date': 'Fecha',
@@ -134,7 +134,8 @@ class SessionForm(forms.ModelForm):
             'materials': 'Materiales',
             'observation': 'Observación',
             'attachment': 'Archivo Adjunto',
-            'status': 'Estado de la sesión' 
+            'status': 'Estado de la sesión',
+            'paid_in_advance': 'Pagada'
         }
         
         widgets = {
@@ -147,6 +148,7 @@ class SessionForm(forms.ModelForm):
             'materials': forms.Textarea(attrs={'rows': 4}),
             'observation': forms.Textarea(attrs={'rows': 4}),
             'new_activity': forms.Textarea(attrs={'rows': 4}),
+            'paid_in_advance': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
 class SpecialistForm(forms.ModelForm):

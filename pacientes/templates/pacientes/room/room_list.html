@@ -10,6 +10,7 @@
             <tr>
                 <th>Nombre</th>
                 <th>Capacidad</th>
+                <th>Especialista</th>
                 <th>Acciones</th>
             </tr>
         </thead>
@@ -18,6 +19,12 @@
             <tr>
                 <td>{{ room.name }}</td>
                 <td>{{ room.capacity }}</td>
+                <td>
+                    {% for specialist in room.specialists.all %}
+                        {{ specialist.name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                </td>
+                
                 <td class="actions-tab">
                     <a href="{% url 'edit_room' room.id %}" class="btn btn-icon edit" title="Editar">
                         <i class="fas fa-pencil-alt"></i>

@@ -87,26 +87,27 @@ def new_session(request):
         form = SessionForm(request.POST, request.FILES)
         
         if form.is_valid():
-            # Crear la sesión principal con todos los datos del formulario
+         
             session = form.save()
-            
+              
             # Procesar las sesiones adicionales
             additional_dates = request.POST.getlist('additional_dates[]')
             additional_times = request.POST.getlist('additional_times[]')
             
             for date, time in zip(additional_dates, additional_times):
-                # Crear una nueva sesión solo con paciente, especialista y sala; otros campos en blanco
+                # Crear una nueva sesión manteniendo el estado de pago por adelantado
                 new_session = Session(
                     patient=session.patient,
                     specialist=session.specialist,
                     room=session.room,
                     date=date,
                     time=time,
-                    objective='',  # Campo en blanco
-                    activity='',   # Campo en blanco
-                    materials='',  # Campo en blanco
-                    observation='',  # Campo en blanco
-                    status='Pendiente'  # Puede definirse un valor por defecto, como "Pendiente"
+                    objective='',
+                    activity='',
+                    materials='',
+                    observation='',
+                    status='Pendiente',
+                    paid_in_advance=session.paid_in_advance
                 )
                 new_session.save()
             

@@ -1,1 +1,43 @@
 {% extends "pacientes/base/base.html" %}
+{% block content %}
+<h1>Eliminar pago</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li class="divider">/</li>
+    <li><a href="{% url 'payment_list' %}">Pagos</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Eliminar</a></li>
+</ul>
+
+<div class="form-container">
+    <div class="row section">
+        <div class="col-title">
+            <i class="fa-solid fa-money-bill"></i>
+            <h3>Eliminar Pago</h3>
+            <p>Por favor, confirma la eliminación del pago.</p>
+        </div>
+        <div class="col-fields">
+            <div class="alert alert-warning">
+                <h4>¿Está seguro que desea eliminar el pago de la sesión del {{ payment.session.date|date:"d/m/Y" }}?</h4>
+                <p>Esta acción no se puede deshacer y eliminará toda la información del pago para la sesión del paciente {{ payment.session.patient.name }} {{ payment.session.patient.surname }}.</p>
+                <ul>
+                    <li><strong>Monto:</strong> ${{ payment.amount }}</li>
+                    <li><strong>Fecha de pago:</strong> {{ payment.payment_date|date:"d/m/Y"|default:"No registrada" }}</li>
+                    <li><strong>Estado:</strong> {% if payment.is_paid %}Pagado{% else %}No Pagado{% endif %}</li>
+                </ul>
+            </div>
+            <form method="POST" class="delete-form">
+                {% csrf_token %}
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-danger">
+                        Confirmar Eliminación
+                    </button>
+                    <a href="{% url 'payment_list' %}" class="btn btn-secondary">
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock  %}

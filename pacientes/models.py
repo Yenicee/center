@@ -82,16 +82,32 @@ class Session(models.Model):
         help_text="Estado de la sesión: 'Pendiente', 'Completada o 'Cancelada'."
     )
     
+    paid_in_advance = models.BooleanField(default=False, verbose_name="Pagada por adelantado")
+    
     def save(self, *args, **kwargs):
+        
         # Guarda la sesión normalmente
         super().save(*args, **kwargs)
 
-        if self.status == "Realizada":
-            # encarga de manejar el tema del pago 
-            payment, created = Payment.objects.get_or_create(session=self)
-            payment.is_paid = True
-            payment.payment_date = self.date
-            payment.save()
+        # Si está marcada como pagada por adelantado, crear el pago
+        if self.paid_in_advance:
+            payment, created = Payment.objects.get_or_create(
+                session=self,
+                defaults={
+                    'is_paid': True,
+                    'payment_date': self.date,
+                    'amount': self.patient.cost_session
+                }
+            )
+        # Si cambia a realizada y no está pagada por adelantado
+        elif self.status == "Realizada":
+            payment, created = Payment.objects.get_or_create(
+                session=self,
+                defaults={
+                    'is_paid': False,
+                    'payment_date': self.date
+                }
+            )
             
     def __str__(self):
         return f"Session {self.date} - Patient: {self.patient.name} {self.patient.surname}"
