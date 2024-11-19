@@ -21,11 +21,18 @@ def patient_list(request):
 
 @login_required
 def patient_schedule(request, patient_id):
+    # 1. Obtener el paciente
     patient = get_object_or_404(Patient, id=patient_id)
-    sessions = Session.objects.filter(patient=patient).order_by('date', 'time')
+
+    # 2. Filtrar las sesiones del paciente según su estado
+    pending_sessions = Session.objects.filter(patient=patient, status="Pendiente").order_by('date', 'time')
+    completed_sessions = Session.objects.filter(patient=patient, status="Realizada").order_by('-date', '-time')
+    
+    # 3. Otros datos relevantes
     specialists = Specialist.objects.all()
     rooms = Room.objects.all()
-    
+
+    # 4. Manejar el formulario para agregar nuevas sesiones
     if request.method == 'POST':
         form = SessionForm(request.POST, request.FILES)
         if form.is_valid():
@@ -36,12 +43,14 @@ def patient_schedule(request, patient_id):
     else:
         form = SessionForm(initial={'patient': patient})
     
-    return render(request,'pacientes/patient/patient_schedule.html', {
+    # 5. Renderizar la plantilla con el contexto adecuado
+    return render(request, 'pacientes/patient/patient_schedule.html', {
         'patient': patient,
-        'sessions': sessions,
-        'form': form,
+        'pending_sessions': pending_sessions,  # Sesiones pendientes
+        'completed_sessions': completed_sessions,  # Sesiones realizadas
+        'form': form,  # Formulario para agregar sesión
         'specialists': specialists,
-        'rooms': rooms
+        'rooms': rooms,
     })
 
 @login_required
