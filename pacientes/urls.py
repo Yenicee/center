@@ -4,6 +4,7 @@ from .forms import CustomAuthenticationForm
 from django.contrib.auth import views as auth_views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     # Principal/Pacientes URLs
@@ -42,7 +43,6 @@ urlpatterns = [
     path('toggle_payment_status/', views.toggle_payment_status, name='toggle_payment_status'),
     
     # Autenticaciones URLs
-    path('register/', views.SignUpView.as_view(), name='register'),
     path('accounts/login/', auth_views.LoginView.as_view(
         template_name='registration/login.html', 
         authentication_form=CustomAuthenticationForm
@@ -63,7 +63,8 @@ urlpatterns = [
         auth_views.PasswordResetCompleteView.as_view(
             template_name='registration/password_reset_complete2.html'
         ), name='password_reset_complete'),
-    
+    path('accounts/logout/', LogoutView.as_view(), name='logout'),
+   
     #Reservaciones URLs
     path('reservations/', views.reservation_list, name='reservation_list'),
 

@@ -1,13 +1,11 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 
-from django.urls import reverse_lazy
-from django.views import generic
 from django.views.decorators.http import require_POST
 from .models import Patient, Session, Specialist, Room, Payment
 from .forms import (
-    CustomUserCreationForm, PatientForm, SessionForm,
-    SpecialistForm, RoomForm, ReservationFilterForm,
+    PatientForm, SessionForm,
+    SpecialistForm, RoomForm,
     PaymentForm
 )
 from django.http import JsonResponse
@@ -217,11 +215,6 @@ def update_session_status(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-class SignUpView(generic.CreateView):
-    form_class = CustomUserCreationForm
-    success_url = reverse_lazy('login')
-    template_name = 'registration/register.html'
-
 
 # Nuevas vistas para Specialist
 @login_required
@@ -351,3 +344,4 @@ def toggle_payment_status(request):
     payment.is_paid = not payment.is_paid
     payment.save()
     return JsonResponse({'success': True, 'is_paid': payment.is_paid})
+

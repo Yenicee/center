@@ -119,6 +119,9 @@ MESSAGE_TAGS = {
     messages.INFO: 'info',
     messages.SUCCESS: 'success',
     messages.WARNING: 'warning',
-    messages.ERROR: 'danger',  # Esto aplica para los mensajes de error
+    messages.ERROR: 'danger', 
 }
-LOGIN_REDIRECT_URL = '/patients/'
+
+LOGOUT_REDIRECT_URL = '/accounts/login/' 
+
+LOGIN_REDIRECT_URL = '/calendar/'
