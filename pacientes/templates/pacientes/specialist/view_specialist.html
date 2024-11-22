@@ -1,0 +1,21 @@
+{% extends "pacientes/base/base.html" %}
+
+{% block content %}
+
+<div>
+    <h2>Detalles del Especialista</h2>
+    <div>
+        <div>
+            {% if specialist.imagen %}
+                <img src="{{ specialist.imagen.url }}" alt="Foto de {{ specialist.nombre }}" class="img-fluid" style="max-width: 200px; margin-bottom: 20px;">
+            {% endif %}
+            <h5>{{ specialist.nombre }}</h5>
+            <p><strong>Especialidad:</strong> {{ specialist.especialidad }}</p>
+            <p><strong>Correo:</strong> {{ specialist.correo_electronico }}</p>
+            <p><strong>Teléfono:</strong> {{ specialist.telefono }}</p>
+            <a href="{% url 'specialist_list' %}">Volver</a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}

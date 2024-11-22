@@ -1,12 +1,20 @@
 from django.db import models 
 
 class Specialist(models.Model):
+    ROLES = [
+        ('especialista', 'Especialista'),
+        ('administrador', 'Administrador'),
+    ]
     name = models.CharField(max_length=100)
     surname = models.CharField(max_length=100)
     specialty = models.CharField(max_length=100)
     email = models.EmailField()
     phone = models.CharField(max_length=20)
-
+    dni = models.CharField(max_length=20, unique=True)
+    profile_image = models.ImageField(upload_to='specialist_images/', null=True, blank=True)
+    role = models.CharField(max_length=20, choices=ROLES, default='especialista')
+    password = models.CharField(max_length=128)
+    
     def __str__(self):
         return f"{self.name} {self.surname}"
 

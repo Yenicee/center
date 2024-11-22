@@ -1,5 +1,6 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 
 from django.views.decorators.http import require_POST
 from .models import Patient, Session, Specialist, Room, Payment
@@ -8,8 +9,10 @@ from .forms import (
     SpecialistForm, RoomForm,
     PaymentForm
 )
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseForbidden
 from datetime import datetime, timedelta
+from django.contrib import messages
+
 
 #views para patient
 @login_required
@@ -225,14 +228,38 @@ def specialist_list(request):
 @login_required
 def create_specialist(request):
     if request.method == 'POST':
-        form = SpecialistForm(request.POST)
+        form = SpecialistForm(request.POST, request.FILES)
         if form.is_valid():
-            form.save()
+            specialist = form.save(commit=False)
+            
+            password = form.cleaned_data.get('password')
+            specialist.password = make_password(password)
+            
+            specialist.save()
+            
             return redirect('specialist_list')
     else:
         form = SpecialistForm()
     return render(request, 'pacientes/specialist/new_specialist.html', {'form': form})
 
+@login_required
+def view_specialist(request, specialist_id):
+    specialist = get_object_or_404(Specialist, id=specialist_id)
+    return render(request, 'pacientes/specialist/view_specialist.html', {
+        'specialist': specialist
+    })
+
+@login_required
+def delete_specialist(request, specialist_id):
+    specialist = get_object_or_404(Specialist, id=specialist_id)
+    if request.method == 'POST':
+        specialist.delete()
+        messages.success(request, 'Especialista eliminado exitosamente.')
+        return redirect('specialist_list')
+    return render(request, 'pacientes/specialist/delete_specialist.html', {
+        'specialist': specialist
+    })
+        
 #views encargadas de room
 @login_required
 def room_list(request):

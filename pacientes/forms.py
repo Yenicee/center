@@ -154,15 +154,30 @@ class SessionForm(forms.ModelForm):
 class SpecialistForm(forms.ModelForm):
     class Meta:
         model = Specialist
-        fields = ['name', 'surname', 'specialty', 'email', 'phone']
+        fields = ['name', 'surname', 'specialty', 'email', 'phone', 'dni', 'profile_image', 'role']
         labels = {
             'name': 'Nombre',
             'surname': 'Apellido',
             'specialty': 'Especialidad',
             'email': 'Correo Electrónico',
-            'phone': 'Teléfono'
+            'phone': 'Teléfono',
+            'dni': 'DNI',
+            'profile_image': 'Imagen de Perfil',
+            'role': 'Rol',
+        }
+        widgets = {
+            'role': forms.Select(choices=Specialist.ROLES),
         }
 
+    def clean(self):
+        cleaned_data = super().clean()
+        password = cleaned_data.get("password")
+        confirm_password = cleaned_data.get("confirm_password")
+
+        if password != confirm_password:
+            raise forms.ValidationError("Las contraseñas no coinciden")
+        return cleaned_data
+        
 class RoomForm(forms.ModelForm):
     class Meta:
         model = Room
