@@ -9,7 +9,7 @@ from .forms import (
     SpecialistForm, RoomForm,
     PaymentForm
 )
-from django.http import JsonResponse, HttpResponseForbidden
+from django.http import JsonResponse
 from datetime import datetime, timedelta
 from django.contrib import messages
 
@@ -232,15 +232,20 @@ def create_specialist(request):
         if form.is_valid():
             specialist = form.save(commit=False)
             
+            # Encripta la contraseña
             password = form.cleaned_data.get('password')
             specialist.password = make_password(password)
             
-            specialist.save()
+            if 'profile_image' in request.FILES:
+                specialist.profile_image = request.FILES['profile_image']
             
+            specialist.save()
+            messages.success(request, 'Especialista creado exitosamente.')
             return redirect('specialist_list')
     else:
         form = SpecialistForm()
     return render(request, 'pacientes/specialist/new_specialist.html', {'form': form})
+
 
 @login_required
 def view_specialist(request, specialist_id):

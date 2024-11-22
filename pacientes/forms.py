@@ -152,6 +152,9 @@ class SessionForm(forms.ModelForm):
         }
 
 class SpecialistForm(forms.ModelForm):
+    password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña')
+    confirm_password = forms.CharField(widget=forms.PasswordInput(), label='Confirmar Contraseña')
+
     class Meta:
         model = Specialist
         fields = ['name', 'surname', 'specialty', 'email', 'phone', 'dni', 'profile_image', 'role']
@@ -177,6 +180,7 @@ class SpecialistForm(forms.ModelForm):
         if password != confirm_password:
             raise forms.ValidationError("Las contraseñas no coinciden")
         return cleaned_data
+    
         
 class RoomForm(forms.ModelForm):
     class Meta:
