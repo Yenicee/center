@@ -1,6 +1,9 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
+from .decorators import admin_only
+from django.contrib.auth.models import User
+
 
 from django.views.decorators.http import require_POST
 from .models import Patient, Session, Specialist, Room, Payment
@@ -78,6 +81,7 @@ def edit_patient(request, patient_id):
     return render(request, 'pacientes/patient/edit_patient.html', {'form': form, 'patient': patient})
 
 @login_required
+@admin_only
 def delete_patient(request, patient_id):
     patient = get_object_or_404(Patient, pk=patient_id)
     if request.method == 'POST':
@@ -230,22 +234,24 @@ def create_specialist(request):
     if request.method == 'POST':
         form = SpecialistForm(request.POST, request.FILES)
         if form.is_valid():
-            specialist = form.save(commit=False)
-            
-            # Encripta la contraseña
-            password = form.cleaned_data.get('password')
-            specialist.password = make_password(password)
-            
-            if 'profile_image' in request.FILES:
-                specialist.profile_image = request.FILES['profile_image']
-            
-            specialist.save()
+            # Si el formulario es válido, guarda los datos
+            form.save()
             messages.success(request, 'Especialista creado exitosamente.')
             return redirect('specialist_list')
+        else:
+            # Manejo de errores: Agrega un mensaje y registra los errores en la consola
+            messages.error(request, f'Error en el formulario: {form.errors}')
+            print(form.errors)  # Útil para debug en consola
     else:
         form = SpecialistForm()
+    
     return render(request, 'pacientes/specialist/new_specialist.html', {'form': form})
 
+def check_username_availability(request):
+    username = request.GET.get('username', None)
+    if username and User.objects.filter(username=username).exists():
+        return JsonResponse({'available': False, 'message': 'El nombre de usuario ya está en uso.'})
+    return JsonResponse({'available': True})
 
 @login_required
 def view_specialist(request, specialist_id):
@@ -255,15 +261,15 @@ def view_specialist(request, specialist_id):
     })
 
 @login_required
+@admin_only
 def delete_specialist(request, specialist_id):
     specialist = get_object_or_404(Specialist, id=specialist_id)
+    user = specialist.user  # Obtener el usuario relacionado
     if request.method == 'POST':
-        specialist.delete()
+        user.delete()  # Esto elimina tanto el User como el Specialist
         messages.success(request, 'Especialista eliminado exitosamente.')
         return redirect('specialist_list')
-    return render(request, 'pacientes/specialist/delete_specialist.html', {
-        'specialist': specialist
-    })
+    return render(request, 'pacientes/specialist/delete_specialist.html', {'specialist': specialist})
         
 #views encargadas de room
 @login_required

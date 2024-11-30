@@ -7,6 +7,7 @@
 	<link href='https://unpkg.com/boxicons@2.0.9/css/boxicons.min.css' rel='stylesheet'>
 	<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 	<link rel="stylesheet" href="{% static 'pacientes/css/styles.css' %}">
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 	<title>BienEstar</title>
 </head>
 <body>
@@ -92,7 +93,14 @@
 				</div>
 			</form>
 			<div class="profile">
-				<span class="username">{{ user.username }}</span>
+				<span class="username">
+					{{ user.username }}
+					{% if user.specialist_profile %}
+						- Rol: {{ user.specialist_profile.role|title }}
+					{% else %}
+						- Rol: Usuario sin perfil asignado
+					{% endif %}
+				</span>
 				<img src="{% static 'pacientes/images/usuario.png' %}" alt="">
 				<ul class="profile-link">
 					{% if user.is_authenticated %}
@@ -158,6 +166,32 @@
 			});
 		});
 	</script>
-
+	<script>
+		document.addEventListener('DOMContentLoaded', function () {
+			// Interceptar enlaces o botones con clase "admin-only"
+			document.querySelectorAll('.admin-only').forEach(function (element) {
+				element.addEventListener('click', function (e) {
+					e.preventDefault();
+					const url = this.getAttribute('href');
+	
+					fetch(url, { headers: { 'x-requested-with': 'XMLHttpRequest' } })
+						.then(response => {
+							if (response.status === 403) {
+								Swal.fire({
+									icon: 'error',
+									title: 'Acceso Denegado',
+									text: 'Esta acción es exclusiva para administradores.',
+								});
+							} else {
+								window.location.href = url;
+							}
+						})
+						.catch(error => {
+							console.error('Error:', error);
+						});
+				});
+			});
+		});
+	</script>	
 </body>
 </html>

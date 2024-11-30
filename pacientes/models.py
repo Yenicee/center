@@ -1,23 +1,29 @@
 from django.db import models 
+from django.contrib.auth.models import User
+
 
 class Specialist(models.Model):
     ROLES = [
         ('especialista', 'Especialista'),
         ('administrador', 'Administrador'),
     ]
-    name = models.CharField(max_length=100)
-    surname = models.CharField(max_length=100)
+
+    # Relación con el modelo User de Django
+    user = models.OneToOneField(
+    User,
+    on_delete=models.CASCADE,
+    related_name='specialist_profile',
+    null=True  # Temporalmente permite nulos para manejar datos existentes
+    )
+    # Campos específicos del especialista
     specialty = models.CharField(max_length=100)
-    email = models.EmailField()
     phone = models.CharField(max_length=20)
     dni = models.CharField(max_length=20, unique=True)
     profile_image = models.ImageField(upload_to='specialist_images/', null=True, blank=True)
     role = models.CharField(max_length=20, choices=ROLES, default='especialista')
-    password = models.CharField(max_length=128)
-    
-    def __str__(self):
-        return f"{self.name} {self.surname}"
 
+    def __str__(self):
+        return f"{self.user.first_name} {self.user.last_name} - {self.role}"
 class Room(models.Model):
     name = models.CharField(max_length=100)
     capacity = models.IntegerField()

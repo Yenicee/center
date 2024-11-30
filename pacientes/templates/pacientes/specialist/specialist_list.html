@@ -9,6 +9,7 @@
         <thead>
             <tr>
                 <th>Nombre</th>
+                <th>Usuario</th>
                 <th>Especialidad</th>
                 <th>Correo Electrónico</th>
                 <th>Teléfono</th>
@@ -18,17 +19,20 @@
         <tbody>
             {% for specialist in specialists %}
             <tr>
-                <td>{{ specialist.name }} {{ specialist.surname }}</td>
+                <!-- Muestra el nombre y apellido del usuario relacionado -->
+                <td>{{ specialist.user.first_name }} {{ specialist.user.last_name }}</td>
+                <td>{{ specialist.user.username }}</td>
                 <td>{{ specialist.specialty }}</td>
-                <td>{{ specialist.email }}</td>
+                <!-- Muestra el correo electrónico del usuario relacionado -->
+                <td>{{ specialist.user.email }}</td>
                 <td>{{ specialist.phone }}</td>
                 <td class="actions-tab"> 
-                    <a href="{% url 'view_specialist' specialist.id %}" class="btn btn-info btn-sm">
+                    <a href="{% url 'view_specialist' specialist.id %}" class="btn btn-icon view">
                         <i class="fas fa-eye"></i>
                     </a>
-                    <a href="{% url 'delete_specialist' specialist.id %}" class="btn btn-danger btn-sm">
+                    <a href="{% url 'delete_specialist' specialist.id %}" class="btn-icon delete btn-danger btn-sm admin-only">
                         <i class="fas fa-trash"></i>
-                    </a>   
+                    </a>
                 </td>
             </tr>
             {% endfor %}

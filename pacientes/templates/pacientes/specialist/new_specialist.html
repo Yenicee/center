@@ -20,57 +20,66 @@
             <form method="POST" enctype="multipart/form-data" class="add-form">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
-            
+
+                <!-- Campos relacionados con User -->
                 <div class="form-group">
-                    <label for="{{ form.name.id_for_label }}">Nombre</label>
-                    {{ form.name }}
+                    <label for="{{ form.first_name.id_for_label }}">Nombre</label>
+                    {{ form.first_name }}
                 </div>
-            
+
                 <div class="form-group">
-                    <label for="{{ form.surname.id_for_label }}">Apellido</label>
-                    {{ form.surname }}
+                    <label for="{{ form.last_name.id_for_label }}">Apellido</label>
+                    {{ form.last_name }}
                 </div>
-            
+
                 <div class="form-group">
-                    <label for="{{ form.specialty.id_for_label }}">Especialidad</label>
-                    {{ form.specialty }}
+                    <label for="{{ form.username.id_for_label }}">Nombre de Usuario</label>
+                    {{ form.username }}
+                    <small class="error-message" id="username-feedback"></small>
                 </div>
-            
-                <div class="form-group">
-                    <label for="{{ form.dni.id_for_label }}">DNI</label>
-                    {{ form.dni }}
-                </div>
-            
+
                 <div class="form-group">
                     <label for="{{ form.email.id_for_label }}">Correo Electrónico</label>
                     {{ form.email }}
                 </div>
-            
+
+                <!-- Campos relacionados con Specialist -->
+                <div class="form-group">
+                    <label for="{{ form.specialty.id_for_label }}">Especialidad</label>
+                    {{ form.specialty }}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.dni.id_for_label }}">DNI</label>
+                    {{ form.dni }}
+                </div>
+
                 <div class="form-group">
                     <label for="{{ form.phone.id_for_label }}">Teléfono</label>
                     {{ form.phone }}
                 </div>
-            
+
                 <div class="form-group">
                     <label for="{{ form.profile_image.id_for_label }}">Imagen de Perfil</label>
                     {{ form.profile_image }}
                 </div>
-            
+
                 <div class="form-group">
                     <label for="{{ form.role.id_for_label }}">Rol</label>
                     {{ form.role }}
                 </div>
-            
+
+                <!-- Contraseña -->
                 <div class="form-group">
                     <label for="{{ form.password.id_for_label }}">Contraseña</label>
                     {{ form.password }}
                 </div>
-            
+
                 <div class="form-group">
                     <label for="{{ form.confirm_password.id_for_label }}">Confirmar Contraseña</label>
                     {{ form.confirm_password }}
                 </div>
-            
+
                 <div class="form-actions">
                     <button type="submit" class="btn btn-primary">
                         Guardar Especialista
@@ -83,4 +92,35 @@
         </div>
     </div>
 </div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const usernameInput = document.getElementById('id_username');
+        const feedback = document.createElement('small');
+        feedback.style.color = 'red';
+        usernameInput.parentNode.appendChild(feedback);
+    
+        usernameInput.addEventListener('input', function() {
+            const username = usernameInput.value;
+            if (username.length > 0) {
+                fetch("{% url 'check_username' %}?username=" + username)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (!data.available) {
+                            feedback.textContent = data.message;
+                            feedback.style.color = 'red';
+                        } else {
+                            feedback.textContent = 'Nombre de usuario disponible';
+                            feedback.style.color = 'green';
+                        }
+                    })
+                    .catch(error => {
+                        console.error('Error al validar el nombre de usuario:', error);
+                        feedback.textContent = 'No se pudo verificar la disponibilidad.';
+                    });
+            } else {
+                feedback.textContent = '';
+            }
+        });
+    });
+</script>
 {% endblock %}

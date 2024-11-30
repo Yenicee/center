@@ -42,7 +42,7 @@
                     <a href="{% url 'edit_patient' patient.id %}" class="btn-icon edit" title="Editar">
                         <i class="fas fa-pencil-alt"></i>
                     </a>
-                    <a href="{% url 'delete_patient' patient.id %}" class="btn-icon delete" title="Eliminar">
+                    <a href="{% url 'delete_patient' patient.id %}" class="btn-icon delete btn-danger btn-sm admin-only" title="Eliminar">
                         <i class="fas fa-trash"></i>
                     </a>
                 </td>

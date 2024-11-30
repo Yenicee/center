@@ -6,4 +6,3 @@ def validate_password_strength(value):
         raise ValidationError("La contraseña debe tener al menos 8 caracteres.")
     if value.isdigit():
         raise ValidationError("La contraseña no puede ser completamente numérica.")
-    # Agrega más validaciones personalizadas si lo deseas

@@ -25,6 +25,7 @@ urlpatterns = [
     path('specialists/new/', views.create_specialist, name='new_specialist'),
     path('specialists/<int:specialist_id>/', views.view_specialist, name='view_specialist'),
     path('specialists/<int:specialist_id>/delete/', views.delete_specialist, name='delete_specialist'),
+    path('check-username/', views.check_username_availability, name='check_username'),
 
     # Salas URLs
     path('rooms/', views.room_list, name='room_list'),

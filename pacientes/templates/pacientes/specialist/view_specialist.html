@@ -1,22 +1,69 @@
 {% extends "pacientes/base/base.html" %}
 
 {% block content %}
+<h1>Detalles del Especialista</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Home</a></li>
+    <li>/</li>
+    <li><a href="{% url 'specialist_list' %}">Especialistas</a></li>
+    <li>/</li>
+    <li><a href="#" class="active">Ver</a></li>
+</ul>
 
-<div>
-    <div>
-        {% if specialist.profile_image %}
-            <img src="{{ specialist.profile_image.url }}" alt="Foto de {{ specialist.name }}" 
-                 class="img-fluid" style="max-width: 200px; margin-bottom: 20px;">
-        {% endif %}
-        <h5>{{ specialist.name }} {{ specialist.surname }}</h5>
-        <p><strong>Especialidad:</strong> {{ specialist.specialty }}</p>
-        <p><strong>DNI:</strong> {{ specialist.dni }}</p>
-        <p><strong>Correo:</strong> {{ specialist.email }}</p>
-        <p><strong>Teléfono:</strong> {{ specialist.phone }}</p>
-        <p><strong>Rol:</strong> {{ specialist.get_role_display }}</p>
-        <a href="{% url 'specialist_list' %}" class="text-purple-600">Volver</a>
+<div class="form-container">
+    <div class="row section">
+        <div class="col-title">
+            <i class="fa-solid fa-user-md"></i>
+            <h3>Información del Especialista</h3>
+            <p>Consulta los datos del especialista seleccionado</p>
+        </div>
+        <div class="specialist-details">
+            <div class="info-container">
+                <div class="info-row">
+                    <label>Nombre:</label>
+                    <span>{{ specialist.user.first_name }} {{ specialist.user.last_name }}</span>
+                </div>
+                <div class="info-row">
+                    <label>Usuario:</label>
+                    <span>{{ specialist.user.username }}</span>
+                </div>
+                <div class="info-row">
+                    <label>Especialidad:</label>
+                    <span>{{ specialist.specialty }}</span>
+                </div>
+                <div class="info-row">
+                    <label>DNI:</label>
+                    <span>{{ specialist.dni }}</span>
+                </div>
+                <div class="info-row">
+                    <label>Correo Electrónico:</label>
+                    <span>{{ specialist.user.email }}</span>
+                </div>
+                <div class="info-row">
+                    <label>Teléfono:</label>
+                    <span>{{ specialist.phone }}</span>
+                </div>
+                <div class="info-row">
+                    <label>Rol:</label>
+                    <span>{{ specialist.get_role_display }}</span>
+                </div>
+            </div>
+            <div class="profile-container">
+                {% if specialist.profile_image %}
+                    <img src="{{ specialist.profile_image.url }}" alt="Foto de {{ specialist.user.first_name }}" 
+                         class="profile-image">
+                {% else %}
+                    <div class="profile-placeholder">Sin imagen</div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="form-actions">
+            <a href="{% url 'specialist_list' %}" class="btn btn-secondary">
+                Volver
+            </a>
+        </div>
+        
     </div>
 </div>
-</div>
-
 {% endblock %}

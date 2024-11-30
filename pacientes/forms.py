@@ -152,17 +152,20 @@ class SessionForm(forms.ModelForm):
         }
 
 class SpecialistForm(forms.ModelForm):
+    # Campos relacionados con User
+    username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')
+    email = forms.EmailField(required=True, label='Correo Electrónico')
+    first_name = forms.CharField(max_length=30, required=True, label='Nombre')
+    last_name = forms.CharField(max_length=30, required=True, label='Apellido')
     password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña')
     confirm_password = forms.CharField(widget=forms.PasswordInput(), label='Confirmar Contraseña')
 
+    # Campos relacionados con Specialist
     class Meta:
         model = Specialist
-        fields = ['name', 'surname', 'specialty', 'email', 'phone', 'dni', 'profile_image', 'role']
+        fields = ['specialty', 'phone', 'dni', 'profile_image', 'role']
         labels = {
-            'name': 'Nombre',
-            'surname': 'Apellido',
             'specialty': 'Especialidad',
-            'email': 'Correo Electrónico',
             'phone': 'Teléfono',
             'dni': 'DNI',
             'profile_image': 'Imagen de Perfil',
@@ -173,14 +176,32 @@ class SpecialistForm(forms.ModelForm):
         }
 
     def clean(self):
+        # Validar que las contraseñas coincidan
         cleaned_data = super().clean()
-        password = cleaned_data.get("password")
-        confirm_password = cleaned_data.get("confirm_password")
+        password = cleaned_data.get('password')
+        confirm_password = cleaned_data.get('confirm_password')
 
         if password != confirm_password:
-            raise forms.ValidationError("Las contraseñas no coinciden")
+            raise forms.ValidationError("Las contraseñas no coinciden.")
         return cleaned_data
-    
+
+    def save(self, commit=True):
+        # Sobrescribir el método save para manejar User y Specialist
+        user = User(
+            username=self.cleaned_data['username'],
+            email=self.cleaned_data['email'],
+            first_name=self.cleaned_data['first_name'],
+            last_name=self.cleaned_data['last_name']
+        )
+        user.set_password(self.cleaned_data['password'])
+
+        if commit:
+            user.save()  # Guardar el usuario primero
+            specialist = super().save(commit=False)
+            specialist.user = user
+            specialist.save()
+
+        return specialist
         
 class RoomForm(forms.ModelForm):
     class Meta:
