@@ -68,6 +68,7 @@ def create_patient(request):
         form = PatientForm()
     return render(request, 'pacientes/patient/new_patient.html',{'form': form})
 
+
 @login_required
 def edit_patient(request, patient_id):
     patient = get_object_or_404(Patient, pk=patient_id)
@@ -170,7 +171,7 @@ def get_sessions(request):
                 'start': start_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
                 'end': end_datetime.strftime('%Y-%m-%dT%H:%M:%S'),
                 'extendedProps': {
-                    'specialist': session.specialist.name,
+                    'specialist': session.specialist.user.get_full_name() or session.specialist.user.username,
                     'room': session.room.name if session.room else 'Sin sala',
                     'session_id': session.id,
                     'patient': f"{session.patient.name} {session.patient.surname}",
@@ -229,6 +230,7 @@ def specialist_list(request):
     specialists = Specialist.objects.all()
     return render(request, 'pacientes/specialist/specialist_list.html', {'specialists': specialists})
 
+@admin_only
 @login_required
 def create_specialist(request):
     if request.method == 'POST':

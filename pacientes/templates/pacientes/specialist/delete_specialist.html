@@ -1,15 +1,25 @@
 {% extends "pacientes/base/base.html" %}
 
 {% block content %}
-<div>
-    <h2>Confirmar Eliminación</h2>
-    <div>
-        ¿Está seguro que desea eliminar al especialista {{ specialist.nombre }}?
+<h1>Confirmar Eliminación</h1>
+<ul class="breadcrumbs">
+    <li><a href="{% url 'specialist_list' %}">Home</a></li>
+    <li class="divider">/</li>
+    <li><a href="{% url 'specialist_list' %}">Especialistas</a></li>
+    <li class="divider">/</li>
+    <li><a href="#" class="active">Eliminar</a></li>
+</ul>
+<div class="form-container">
+    <div class="row section">
+        <div class="col-title">
+            ¿Está seguro que desea eliminar al especialista {{ specialist.user.get_full_name }}?
+        </div>
     </div>
     <form method="post">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
-        <a href="{% url 'specialist_list' %}">Cancelar</a>
+        <a href="{% url 'specialist_list' %}" class="btn btn-secondary">Cancelar</a>
     </form>
+    
 </div>
 {% endblock %}

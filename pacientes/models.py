@@ -24,6 +24,8 @@ class Specialist(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.role}"
+    
+    
 class Room(models.Model):
     name = models.CharField(max_length=100)
     capacity = models.IntegerField()

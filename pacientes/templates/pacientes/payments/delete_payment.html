@@ -1,4 +1,5 @@
 {% extends "pacientes/base/base.html" %}
+
 {% block content %}
 <h1>Eliminar pago</h1>
 <ul class="breadcrumbs">
@@ -26,6 +27,7 @@
                     <li><strong>Estado:</strong> {% if payment.is_paid %}Pagado{% else %}No Pagado{% endif %}</li>
                 </ul>
             </div>
+
             <form method="POST" class="delete-form">
                 {% csrf_token %}
                 <div class="form-actions">
