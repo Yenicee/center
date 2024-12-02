@@ -2,6 +2,7 @@ from django.shortcuts import redirect
 from django.http import JsonResponse
 from django.contrib import messages
 
+
 def admin_only(view_func):
     def wrapper(request, *args, **kwargs):
         if request.user.is_authenticated and hasattr(request.user, 'specialist_profile'):

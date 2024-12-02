@@ -1306,7 +1306,7 @@ th.sorting_desc::after {
     color: #555;
     flex: 1;
 }
-
+/* Profile */
 .profile-container {
     flex: 0 0 150px;
     text-align: center;
