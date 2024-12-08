@@ -119,9 +119,9 @@
                 });
 
                 // Muestra los totales en el contenedor de resumen
-                $('#totalAmount').text('$' + totalAmount.toFixed(2));
-                $('#totalPaid').text('$' + totalPaid.toFixed(2));
-                $('#totalPending').text('$' + totalPending.toFixed(2));
+                $('#totalAmount').text('S/. ' + totalAmount.toFixed(2));
+                $('#totalPaid').text('S/. ' + totalPaid.toFixed(2));
+                $('#totalPending').text('S/. ' + totalPending.toFixed(2));
                 var filteredTotal = api
                     .column(2, { page: 'current' })
                     .data()
@@ -130,8 +130,8 @@
                     }, 0);
 
                 // Muestra los totales en el contenedor de resumen y en el pie de página de la tabla
-                $('#totalAmount').text('$' + totalAmount.toFixed(2));
-                $('#filteredTotalAmount').text('$' + filteredTotal.toFixed(2));
+                $('#totalAmount').text('S/.' + totalAmount.toFixed(2));
+                $('#filteredTotalAmount').text('S/.' + filteredTotal.toFixed(2));
             }
             
         });

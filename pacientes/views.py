@@ -3,8 +3,9 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.hashers import make_password
 from .decorators import admin_only
 from django.contrib.auth.models import User
-
-
+from django.core.exceptions import ValidationError
+from django.contrib import messages
+from django.db import transaction
 from django.views.decorators.http import require_POST
 from .models import Patient, Session, Specialist, Room, Payment
 from .forms import (
@@ -100,38 +101,118 @@ def calendar_view(request):
 def new_session(request):
     if request.method == 'POST':
         form = SessionForm(request.POST, request.FILES)
-        
+        error_messages = []  # Lista para acumular errores
+
         if form.is_valid():
-         
-            session = form.save()
-              
-            # Procesar las sesiones adicionales
-            additional_dates = request.POST.getlist('additional_dates[]')
-            additional_times = request.POST.getlist('additional_times[]')
-            
-            for date, time in zip(additional_dates, additional_times):
-                # Crear una nueva sesión manteniendo el estado de pago por adelantado
-                new_session = Session(
-                    patient=session.patient,
-                    specialist=session.specialist,
-                    room=session.room,
-                    date=date,
-                    time=time,
-                    objective='',
-                    activity='',
-                    materials='',
-                    observation='',
-                    status='Pendiente',
-                    paid_in_advance=session.paid_in_advance
+            try:
+                with transaction.atomic():
+                    # Guardar la sesión principal
+                    session = form.save()
+
+                    # Manejar las sesiones adicionales
+                    additional_dates = request.POST.getlist('additional_dates[]')
+                    additional_times = request.POST.getlist('additional_times[]')
+                    additional_paid_in_advance = request.POST.getlist('additional_paid_in_advance[]')
+
+                    for index, (date, time) in enumerate(zip(additional_dates, additional_times)):
+                        # Verificar si el checkbox está marcado para esta sesión
+                        is_paid_in_advance = str(index + 1) in additional_paid_in_advance
+
+                        additional_session = Session(
+                            patient=session.patient,
+                            specialist=session.specialist,
+                            room=session.room,
+                            date=date,
+                            time=time,
+                            objective='No especificado',
+                            activity='No especificado',
+                            materials='',
+                            observation='',
+                            status='Pendiente',
+                            paid_in_advance=is_paid_in_advance  # Asignar el valor del checkbox
+                        )
+
+                        try:
+                            additional_session.full_clean()
+                            additional_session.save()
+                        except ValidationError as e:
+                            error_messages.extend(
+                                [f"{field}: {error}" for field, errors in e.message_dict.items() for error in errors]
+                            )
+
+                if error_messages:
+                    for msg in error_messages:
+                        messages.error(request, msg)
+                    return render(request, 'pacientes/session/new_session.html', {'form': form})
+
+                messages.success(request, 'Sesión creada correctamente, incluyendo sesiones adicionales.')
+                return redirect('reservation_list')
+
+            except ValidationError as e:
+                error_messages.extend(
+                    [f"{field}: {error}" for field, errors in e.message_dict.items() for error in errors]
                 )
-                new_session.save()
-            
-            return redirect('reservation_list')
-    
+
+        else:
+            for field, errors in form.errors.items():
+                for error in errors:
+                    messages.error(request, f"{field}: {error}")
+
     else:
         form = SessionForm()
-    
+
     return render(request, 'pacientes/session/new_session.html', {'form': form})
+
+@login_required
+def check_availability(request):
+    # Obtener los parámetros de la solicitud
+    dates = request.GET.getlist('dates[]')  # Lista de fechas
+    times = request.GET.getlist('times[]')  # Lista de horas
+    specialist_id = request.GET.get('specialist')
+    room_id = request.GET.get('room')
+
+    # Verificar que todos los parámetros requeridos estén presentes
+    if not (dates and times and specialist_id and room_id):
+        return JsonResponse({'error': 'Faltan parámetros obligatorios'}, status=400)
+
+    # Inicializar listas para acumular conflictos específicos
+    specialist_conflicts = []
+    room_conflicts = []
+
+    # Iterar sobre las combinaciones de fechas y horas
+    for date, time in zip(dates, times):
+        # Convertir la fecha y hora recibidas en objetos datetime
+        session_start = datetime.strptime(f"{date} {time}", "%Y-%m-%d %H:%M")
+        session_end = session_start + timedelta(minutes=59)  # Sesión dura 1 hora
+
+        # Verificar conflictos con especialista
+        specialist_conflict = Session.objects.filter(
+            specialist_id=specialist_id,
+            date=date,
+            time__gte=(session_start - timedelta(minutes=59)).time(),  # Inicio - 1 hora
+            time__lt=session_end.time()  # Fin
+        ).exists()
+
+        if specialist_conflict:
+            specialist_conflicts.append({'date': date, 'time': time})
+
+        # Verificar conflictos con sala
+        room_conflict = Session.objects.filter(
+            room_id=room_id,
+            date=date,
+            time__gte=(session_start - timedelta(minutes=59)).time(),  # Inicio - 1 hora
+            time__lt=session_end.time()  # Fin
+        ).exists()
+
+        if room_conflict:
+            room_conflicts.append({'date': date, 'time': time})
+
+    # Respuesta JSON con los resultados
+    return JsonResponse({
+        'specialist_conflicts': specialist_conflicts,
+        'room_conflicts': room_conflicts,
+    })
+
 
 @login_required
 def session_detail(request, session_id):

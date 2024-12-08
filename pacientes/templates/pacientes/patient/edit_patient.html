@@ -65,6 +65,10 @@
                     <p class="help">Foto actual: {{ patient.photo.name }}</p>
                     {% endif %}
                 </div>
+                <div class="form-group">
+                    <label for="{{ form.cost_session.id_for_label }}">Costo por Sesión</label>
+                    {{ form.cost_session }}
+                </div>
             </div>
         </div>
 

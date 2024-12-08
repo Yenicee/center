@@ -6,7 +6,11 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib.auth.views import LogoutView
 
+
+
+
 urlpatterns = [
+    path('check_availability/', views.check_availability, name='check_availability'),
     # Principal/Pacientes URLs
     path('', views.patient_list, name='patient_list'),
     path('patients/new/', views.create_patient, name='new_patient'),
@@ -19,6 +23,8 @@ urlpatterns = [
     path('sessions/<int:session_id>/edit/', views.edit_session, name='edit_session'),
     path('new-session/', views.new_session, name='new_session'),
     path('update-session-status/', views.update_session_status, name='update_session_status'),
+    
+
 
     # Especialistas URLs
     path('specialists/', views.specialist_list, name='specialist_list'),
@@ -71,6 +77,8 @@ urlpatterns = [
     #Reservaciones URLs
     path('reservations/', views.reservation_list, name='reservation_list'),
 
-] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+] 
+if settings.DEBUG:
+    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
 
 

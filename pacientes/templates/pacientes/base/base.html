@@ -143,6 +143,11 @@
                 {% endblock %}
             </div>
 			{% block extra_js %}{% endblock %}
+						{% if messages %}
+				{% for message in messages %}
+					<div class="alert {{ message.tags }}">{{ message }}</div>
+				{% endfor %}
+			{% endif %}
 		</main>
 		<!-- MAIN -->
 

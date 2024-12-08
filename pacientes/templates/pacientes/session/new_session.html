@@ -109,31 +109,130 @@
                 <button type="button" class="btn btn-secondary" onclick="addSession()">+ Añadir Fecha</button>
             </div>
         </div>
-        
+        {% if messages %}
+            <div class="messages">
+                {% for message in messages %}
+                    <div class="alert {{ message.tags }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
         <!-- Botones de Acción -->
         <button type="submit" class="btn btn-primary">Guardar Sesión</button>
         <a href="{% url 'reservation_list' %}" class="btn btn-secondary">Cancelar</a>
     </form>
 </div>
-
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-    let sessionCount = 0;
-    
-    function addSession() {
-        sessionCount++;
-        
-        // Crear contenedores de fecha y hora adicionales
-        const container = document.getElementById("additional-sessions");
-        const div = document.createElement("div");
-        div.classList.add("form-group");
-        div.innerHTML = `
-            <label>Fecha Adicional ${sessionCount}</label>
-            <input type="date" name="additional_dates[]" class="form-control" required>
-            <label>Hora Adicional ${sessionCount}</label>
-            <input type="time" name="additional_times[]" class="form-control" required>
-        `;
-        container.appendChild(div);
-    }
-</script>
+   let sessionCount = 0;
 
+   function addSession() {
+    sessionCount++;
+
+    const container = document.getElementById("additional-sessions");
+    const div = document.createElement("div");
+    div.classList.add("form-group");
+    div.innerHTML = `
+        <label>Fecha Adicional ${sessionCount}</label>
+        <input type="date" name="additional_dates[]" class="form-control additional-date" required>
+        <label>Hora Adicional ${sessionCount}</label>
+        <input type="time" name="additional_times[]" class="form-control additional-time" required>
+        <label class="form-check-label">
+            <input type="checkbox" name="additional_paid_in_advance[]" value="${sessionCount}" class="form-check-input">
+            Pagada por adelantado
+        </label>
+    `;
+    container.appendChild(div);
+
+    // Asignar eventos `change` a los nuevos campos
+    const newDateField = div.querySelector('input[name="additional_dates[]"]');
+    const newTimeField = div.querySelector('input[name="additional_times[]"]');
+
+    if (newDateField) newDateField.addEventListener('change', checkAvailability);
+    if (newTimeField) newTimeField.addEventListener('change', checkAvailability);
+}
+
+function checkAvailability() {
+    const dateField = document.querySelector('[name="date"]');
+    const timeField = document.querySelector('[name="time"]');
+    const specialistField = document.querySelector('[name="specialist"]');
+    const roomField = document.querySelector('[name="room"]');
+
+    const date = dateField ? dateField.value : null;
+    const time = timeField ? timeField.value : null;
+    const specialist = specialistField ? specialistField.value : null;
+    const room = roomField ? roomField.value : null;
+
+    const additionalDates = Array.from(document.querySelectorAll('[name="additional_dates[]"]'))
+        .map(input => input.value)
+        .filter(value => value);
+    const additionalTimes = Array.from(document.querySelectorAll('[name="additional_times[]"]'))
+        .map(input => input.value)
+        .filter(value => value);
+
+    if (specialist && room && ((date && time) || (additionalDates.length > 0 && additionalTimes.length > 0))) {
+        const params = new URLSearchParams({
+            specialist: specialist,
+            room: room,
+        });
+
+        if (date && time) {
+            params.append('dates[]', date);
+            params.append('times[]', time);
+        }
+
+        additionalDates.forEach(d => params.append('dates[]', d));
+        additionalTimes.forEach(t => params.append('times[]', t));
+
+        fetch(`/check_availability?${params.toString()}`)
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error("Error en la respuesta del servidor");
+                }
+                return response.json();
+            })
+            .then(data => {
+                const conflicts = [];
+
+                if (data.specialist_conflicts.length > 0) {
+                    const specialistDetails = data.specialist_conflicts
+                        .map(conflict => `Fecha: ${conflict.date}, Hora: ${conflict.time}`)
+                        .join('<br>');
+                    conflicts.push(`Conflicto con el especialista en los siguientes horarios:<br>${specialistDetails}`);
+                }
+
+                if (data.room_conflicts.length > 0) {
+                    const roomDetails = data.room_conflicts
+                        .map(conflict => `Fecha: ${conflict.date}, Hora: ${conflict.time}`)
+                        .join('<br>');
+                    conflicts.push(`Conflicto con la sala en los siguientes horarios:<br>${roomDetails}`);
+                }
+
+                if (conflicts.length > 0) {
+                    Swal.fire('Conflictos detectados', conflicts.join('<br><br>'), 'error');
+                }
+            })
+            .catch(error => {
+                console.error('Error al verificar disponibilidad:', error);
+            });
+    } else {
+        console.warn("No se han completado todos los campos necesarios para verificar la disponibilidad.");
+    }
+}
+
+// Asociar la función a los eventos de cambio de los campos existentes
+document.addEventListener("DOMContentLoaded", function () {
+    const dateField = document.querySelector('[name="date"]');
+    const timeField = document.querySelector('[name="time"]');
+    const specialistField = document.querySelector('[name="specialist"]');
+    const roomField = document.querySelector('[name="room"]');
+
+    if (dateField) dateField.addEventListener('change', checkAvailability);
+    if (timeField) timeField.addEventListener('change', checkAvailability);
+    if (specialistField) specialistField.addEventListener('change', checkAvailability);
+    if (roomField) roomField.addEventListener('change', checkAvailability);
+});
+
+</script>
 {% endblock %}

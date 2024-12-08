@@ -72,7 +72,7 @@ class PatientForm(forms.ModelForm):
         model = Patient
         fields = [
             'name', 'surname', 'date_of_birth', 'gender', 'photo',
-            'marital_status', 'address', 'phone_number', 'email',
+            'marital_status', 'address','cost_session', 'phone_number', 'email',
             'medical_diagnosis', 'attachments', 'therapy', 'education',
             'therapist', 'medical_history', 'allergies',
             'emergency_contact_name', 'emergency_contact_phone',
@@ -121,7 +121,7 @@ class SessionForm(forms.ModelForm):
         fields = [
             'patient', 'specialist', 'room', 'date', 'time', 
             'objective', 'activity', 'materials', 'observation', 
-            'attachment', 'status','paid_in_advance'
+            'attachment', 'status', 'paid_in_advance'
         ]
         labels = {
             'date': 'Fecha',
@@ -137,19 +137,35 @@ class SessionForm(forms.ModelForm):
             'status': 'Estado de la sesión',
             'paid_in_advance': 'Pagada'
         }
-        
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'time': forms.TimeInput(attrs={'type': 'time'}),
-            'reserved_date': forms.DateInput(attrs={'type': 'date'}),
-            'reserved_time': forms.TimeInput(attrs={'type': 'time'}),
             'objective': forms.TextInput(attrs={'class': 'form-control'}),
             'activity': forms.Textarea(attrs={'rows': 4}),
             'materials': forms.Textarea(attrs={'rows': 4}),
             'observation': forms.Textarea(attrs={'rows': 4}),
-            'new_activity': forms.Textarea(attrs={'rows': 4}),
             'paid_in_advance': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
+
+    def clean(self):
+        cleaned_data = super().clean()
+        specialist = cleaned_data.get('specialist')
+        room = cleaned_data.get('room')
+        date = cleaned_data.get('date')
+        time = cleaned_data.get('time')
+
+        if not specialist or not room or not date or not time:
+            return cleaned_data
+
+        # Validar que el especialista no esté ocupado en el mismo horario
+        if Session.objects.filter(specialist=specialist, date=date, time=time).exists():
+            self.add_error('specialist', 'El especialista ya tiene una sesión en este horario.')
+
+        # Validar que la sala no esté ocupada en el mismo horario
+        if Session.objects.filter(room=room, date=date, time=time).exists():
+            self.add_error('room', 'La sala ya está reservada en este horario.')
+
+        return cleaned_data
 
 class SpecialistForm(forms.ModelForm):
     # Campos relacionados con User

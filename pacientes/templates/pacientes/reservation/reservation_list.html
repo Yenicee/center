@@ -43,7 +43,7 @@
                         <td>{{ date|date:"d/m/Y" }}</td>
                         <td>{{ session.time|time:"H:i" }}</td>
                         <td title="{{ session.patient.name }} {{ session.patient.surname }}">{{ session.patient.name }} {{ session.patient.surname }}</td>
-                        <td title="{{ session.specialist.name }}">{{ session.specialist.name }}</td>
+                        <td title="{{ session.specialist.user.first_name }} {{ session.specialist.user.last_name }}">{{ session.specialist.user.first_name }} {{ session.specialist.user.last_name }}</td>
                         <td>{{ session.room.name }}</td>
                         <td title="{{session.activity}}">{{ session.activity|truncatechars:30 }}</td>
                         <td class="status-cell">
