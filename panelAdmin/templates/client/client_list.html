@@ -1,0 +1,19 @@
+
+
+<h1>Lista de Clientes</h1>
+<table>
+    <tr>
+        <th>Nombre</th>
+        <th>Base de Datos</th>
+        <th>Administrador</th>
+        <th>Estado</th>
+    </tr>
+    {% for client in clients %}
+    <tr>
+        <td>{{ client.name }}</td>
+        <td>{{ client.database_name }}</td>
+        <td>{{ client.admin_email }}</td>
+        <td>{{ client.get_status_display }}</td>
+    </tr>
+    {% endfor %}
+</table>

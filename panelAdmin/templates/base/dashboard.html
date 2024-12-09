@@ -1,0 +1,18 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+</head>
+<body>
+    <h1>Dashboard</h1>
+    <p>Total de clientes: {{ metrics.total_clients }}</p>
+    <p>Clientes activos: {{ metrics.active_clients }}</p>
+    <p>Clientes en morosidad: {{ metrics.morose_clients }}</p>
+
+    {% block content %}
+    <!-- Contenido principal de las vistas hijas aquí -->
+    {% endblock %}
+    
+</body>
+</html>
