@@ -23,6 +23,5 @@ urlpatterns = [
     path('accounts/', include('django.contrib.auth.urls')),
     path('', include('pacientes.urls')),
     
-    
 ]
 

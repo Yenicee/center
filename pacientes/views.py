@@ -311,7 +311,7 @@ def specialist_list(request):
     specialists = Specialist.objects.all()
     return render(request, 'pacientes/specialist/specialist_list.html', {'specialists': specialists})
 
-@admin_only
+
 @login_required
 def create_specialist(request):
     if request.method == 'POST':
@@ -330,11 +330,13 @@ def create_specialist(request):
     
     return render(request, 'pacientes/specialist/new_specialist.html', {'form': form})
 
+
 def check_username_availability(request):
     username = request.GET.get('username', None)
     if username and User.objects.filter(username=username).exists():
         return JsonResponse({'available': False, 'message': 'El nombre de usuario ya está en uso.'})
     return JsonResponse({'available': True})
+
 
 @login_required
 def view_specialist(request, specialist_id):
@@ -342,6 +344,7 @@ def view_specialist(request, specialist_id):
     return render(request, 'pacientes/specialist/view_specialist.html', {
         'specialist': specialist
     })
+
 
 @login_required
 @admin_only
