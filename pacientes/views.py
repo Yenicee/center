@@ -15,7 +15,6 @@ from .forms import (
 )
 from django.http import JsonResponse
 from datetime import datetime, timedelta
-from django.contrib import messages
 
 
 #views para patient

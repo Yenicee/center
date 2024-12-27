@@ -13,7 +13,7 @@ class Client(models.Model):
         ('morose', 'Moroso'),
         ('suspended', 'Suspendido'),
     ]
-    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')  # Estado del cliente
+    status = models.CharField(max_length=10, choices=STATUS_CHOICES, default='active')  
 
     def __str__(self):
         return self.name
