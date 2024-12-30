@@ -1,19 +1,42 @@
+{% extends "base/dashboard.html" %}
 
-
+{% block content %}
 <h1>Lista de Clientes</h1>
-<table>
-    <tr>
-        <th>Nombre</th>
-        <th>Base de Datos</th>
-        <th>Administrador</th>
-        <th>Estado</th>
-    </tr>
-    {% for client in clients %}
-    <tr>
-        <td>{{ client.name }}</td>
-        <td>{{ client.database_name }}</td>
-        <td>{{ client.admin_email }}</td>
-        <td>{{ client.get_status_display }}</td>
-    </tr>
-    {% endfor %}
+
+<!-- Mostrar mensajes de éxito -->
+{% if messages %}
+    <ul>
+        {% for message in messages %}
+            <li style="color: green; font-weight: bold;">{{ message }}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+
+<!-- Tabla de clientes -->
+<table border="1">
+    <thead>
+        <tr>
+            <th>Nombre</th>
+            <th>Administrador</th>
+            <th>Correo</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for client in clients %}
+            <tr>
+                <td>{{ client.name }}</td>
+                <td>{{ client.admin_name }}</td>
+                <td>{{ client.admin_email }}</td>
+                <td>{{ client.get_status_display }}</td>
+                <td>
+                    <a href="{% url 'client_detail' client.id %}">Ver detalles</a>
+                    
+                </td>
+            </tr>
+        {% endfor %}
+    </tbody>
 </table>
+
+{% endblock %}

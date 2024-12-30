@@ -1,5 +1,42 @@
-{% extends "base/base.html" %}
+{% extends "base/dashboard.html" %}
 
 {% block content %}
+<h1>Detalle del Cliente</h1>
 
+<table border="1">
+    <tr>
+        <th>Nombre del cliente:</th>
+        <td>{{ client.name }}</td>
+    </tr>
+    <tr>
+        <th>Administrador:</th>
+        <td>{{ client.admin_name }}</td>
+    </tr>
+    <tr>
+        <th>Correo del administrador:</th>
+        <td>{{ client.admin_email }}</td>
+    </tr>
+    <tr>
+        <th>Nombre de la base de datos:</th>
+        <td>{{ client.database_name }}</td>
+    </tr>
+    <tr>
+        <th>Límite de especialistas:</th>
+        <td>{{ client.specialists_limit }}</td>
+    </tr>
+    <tr>
+        <th>Fecha de inicio:</th>
+        <td>{{ client.start_date }}</td>
+    </tr>
+    <tr>
+        <th>Pago mensual:</th>
+        <td>${{ client.monthly_payment }}</td>
+    </tr>
+    <tr>
+        <th>Estado:</th>
+        <td>{{ client.get_status_display }}</td>
+    </tr>
+</table>
+
+<a href="{% url 'client_list' %}">Volver a la lista de clientes</a>
 {% endblock %}
