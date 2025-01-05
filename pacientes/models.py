@@ -1,6 +1,6 @@
 from django.db import models 
 from django.contrib.auth.models import User
-
+from panelAdmin.models import Client #importe app y traje modelo 
 
 class Specialist(models.Model):
     ROLES = [
@@ -9,12 +9,12 @@ class Specialist(models.Model):
     ]
 
     # Relación con el modelo User de Django
-    #client = models.ForeignKey('panelAdmin.Client', on_delete=models.CASCADE, null=True) #vinculada al user de forma individual
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='specialists',null=True, blank=True ) 
     user = models.OneToOneField(
     User,
     on_delete=models.CASCADE,
     related_name='specialist_profile',
-    null=True  # Temporalmente permite nulos para manejar datos existentes
+    null=True
     )
     # Campos específicos del especialista
     specialty = models.CharField(max_length=100)
@@ -28,7 +28,7 @@ class Specialist(models.Model):
     
     
 class Room(models.Model):
-    #client = models.ForeignKey('panelAdmin.Client', on_delete=models.CASCADE, null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='rooms',null=True, blank=True  )
     name = models.CharField(max_length=100)
     capacity = models.IntegerField()
     location = models.CharField(max_length=100)
@@ -39,7 +39,7 @@ class Room(models.Model):
 
 class Patient(models.Model):
     
-    #client = models.ForeignKey('panelAdmin.Client', on_delete=models.CASCADE, null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='patients',null=True, blank=True )
     name = models.CharField(max_length=100)
     surname = models.CharField(max_length=100)
     date_of_birth = models.DateField()
@@ -81,7 +81,7 @@ class Session(models.Model):
         ('Cancelada', 'Cancelada')
     ]
     
-    #client = models.ForeignKey('panelAdmin.Client', on_delete=models.CASCADE, null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='sessions',null=True, blank=True )
     patient = models.ForeignKey(Patient, on_delete=models.CASCADE, related_name='sessions')
     specialist = models.ForeignKey(Specialist, on_delete=models.CASCADE, related_name='sessions')
     room = models.ForeignKey(Room, on_delete=models.SET_NULL, null=True, related_name='sessions')
@@ -133,7 +133,7 @@ class Session(models.Model):
 
 class Payment(models.Model):
     
-    #client = models.ForeignKey('panelAdmin.Client', on_delete=models.CASCADE, null=True)
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='payments',null=True, blank=True )
     session = models.OneToOneField(Session, on_delete=models.CASCADE, related_name='payment')
     is_paid = models.BooleanField(default=False)
     payment_date = models.DateField(null=True, blank=True)

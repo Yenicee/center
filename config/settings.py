@@ -26,11 +26,12 @@ SECRET_KEY = 'jkuihn^k(e+f(x^y570acg!8m4!4^pedjd^id60=ij2%mmq1!3j*#'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.localhost']
 
 # Application definition
 
 INSTALLED_APPS = [
+    'django_tenants', #para trabajar multitenencia
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -41,7 +42,13 @@ INSTALLED_APPS = [
     'pacientes', 
 ]
 
+DATABASE_ROUTERS = (
+    'django_tenants.routers.TenantSyncRouter',
+)
+
 MIDDLEWARE = [
+    'django_tenants.middleware.main.TenantMainMiddleware',
+    'django.middleware.security.SecurityMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -51,6 +58,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+PUBLIC_SCHEMA_NAME = 'public'
 ROOT_URLCONF = 'config.urls'
 
 TEMPLATES = [
@@ -78,7 +86,7 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql',
+        'ENGINE': 'django_tenants.postgresql_backend',
         'NAME': 'BD', 
         'USER': 'postgres',    
         'PASSWORD': '1234', 
@@ -89,6 +97,38 @@ DATABASES = {
         },
     }
 }
+
+# App que maneja los tenants
+TENANT_MODEL = "panelAdmin.Client"  # app.Model
+
+# App que maneja los dominios
+TENANT_DOMAIN_MODEL = "panelAdmin.Domain"  # app.Model
+
+# Apps compartidas entre todos los tenants
+SHARED_APPS = (
+    'django_tenants',
+    'panelAdmin',  #app administrativa
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+)
+
+# Apps específicas para cada tenant
+TENANT_APPS = (
+    'pacientes',
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+)
+
+# Combina ambas
+INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -130,6 +170,5 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger', 
 }
 
-LOGOUT_REDIRECT_URL = '/accounts/login/' 
 
-LOGIN_REDIRECT_URL = '/calendar/'
+
