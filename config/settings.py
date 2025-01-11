@@ -28,8 +28,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['127.0.0.1', 'localhost', '.localhost']
 
-# Application definition
-
 INSTALLED_APPS = [
     'django_tenants', #para trabajar multitenencia
     'django.contrib.admin',
@@ -169,6 +167,5 @@ MESSAGE_TAGS = {
     messages.WARNING: 'warning',
     messages.ERROR: 'danger', 
 }
-
 
 

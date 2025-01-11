@@ -5,14 +5,50 @@
     <title>Dashboard</title>
 </head>
 <body>
-    <h1>Dashboard</h1>
-    <p>Total de clientes: {{ metrics.total_clients }}</p>
-    <p>Clientes activos: {{ metrics.active_clients }}</p>
-    <p>Clientes en morosidad: {{ metrics.morose_clients }}</p>
+    <div>
+        <h1>Dashboard</h1>
 
-    {% block content %}
-    <!-- Contenido principal de las vistas hijas aquí -->
-    {% endblock %}
-    
+        <!-- Métricas Principales -->
+        <section>
+            <h2>Métricas Principales</h2>
+            
+            <div>
+                <h3>Clientes Activos</h3>
+                <div>{{ metrics.active_clients }}</div>
+                <p>del total de {{ metrics.total_clients }}</p>
+            </div>
+            
+            <div>
+                <h3>Ingresos Mensuales Proyectados</h3>
+                <div>${{ metrics.projected_monthly_income|floatformat:2 }}</div>
+                <p>basado en clientes activos</p>
+            </div>
+            
+            <div>
+                <h3>Clientes en Morosidad</h3>
+                <div>{{ metrics.morose_clients }}</div>
+                <p>pagos pendientes: ${{ metrics.pending_payments|floatformat:2 }}</p>
+            </div>
+            
+            <div>
+                <h3>Usuarios Totales</h3>
+                <div>{{ metrics.total_users }}</div>
+                <p>en todos los consultorios</p>
+            </div>
+        </section>
+
+        <!-- Acciones Rápidas -->
+        <section>
+            <h2>Acciones Rápidas</h2>
+            <div>
+                <a href="{% url 'client_list' %}">Ver Lista de Clientes</a>
+                <a href="#">Pagos Pendientes</a>
+            </div>
+        </section>
+
+        {% block content %}
+        <!-- Contenido adicional -->
+        {% endblock %}
+    </div>
 </body>
 </html>

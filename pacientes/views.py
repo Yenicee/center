@@ -13,7 +13,6 @@ from .forms import (
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 
-
 #views para patient
 def patient_list(request):
     patients = Patient.objects.all()
@@ -90,7 +89,6 @@ def delete_patient(request, patient_id):
 
 
 #views para manejo de session
-
 def calendar_view(request):
     return render(request, 'pacientes/calendar/calendar.html')
 

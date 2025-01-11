@@ -2,6 +2,8 @@ from django.urls import path
 from . import views
 from django.conf import settings
 from django.conf.urls.static import static
+from django.contrib.auth import views as auth_views
+
 
 
 urlpatterns = [
@@ -19,7 +21,6 @@ urlpatterns = [
     path('new-session/', views.new_session, name='new_session'),
     path('update-session-status/', views.update_session_status, name='update_session_status'),
     
-
 
     # Especialistas URLs
     path('specialists/', views.specialist_list, name='specialist_list'),
@@ -48,6 +49,8 @@ urlpatterns = [
     
     #Reservaciones URLs
     path('reservations/', views.reservation_list, name='reservation_list'),
+    
+    #Login Cliente URLs
 
 ] 
 if settings.DEBUG:

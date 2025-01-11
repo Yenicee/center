@@ -106,10 +106,10 @@
 				<ul class="profile-link">
 					{% if user.is_authenticated %}
 					<li>
-						<form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
-							{% csrf_token %}
+						<form id="#" method="post" style="display: none;">
+							
 						</form>
-						<a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+						<a href="#" onclick="event.preventDefault(); document.getElementById('#').submit();">
 							<i class='bx bxs-log-out-circle'></i>Cerrar sesión
 						</a>
 					</li>
