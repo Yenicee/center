@@ -2,6 +2,7 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.contrib import messages
+
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from .models import Patient, Session, Specialist, Room, Payment
@@ -10,6 +11,7 @@ from .forms import (
     SpecialistForm, RoomForm,
     PaymentForm
 )
+
 from django.http import JsonResponse
 from datetime import datetime, timedelta
 
@@ -66,7 +68,6 @@ def create_patient(request):
     return render(request, 'pacientes/patient/new_patient.html',{'form': form})
 
 
-
 def edit_patient(request, patient_id):
     patient = get_object_or_404(Patient, pk=patient_id)
     if request.method == 'POST':
@@ -77,7 +78,6 @@ def edit_patient(request, patient_id):
     else:
         form = PatientForm(instance=patient)
     return render(request, 'pacientes/patient/edit_patient.html', {'form': form, 'patient': patient})
-
 
 
 def delete_patient(request, patient_id):
@@ -209,7 +209,6 @@ def check_availability(request):
     })
 
 
-
 def session_detail(request, session_id):
     session = get_object_or_404(Session, id=session_id)
     if request.method == 'POST':
@@ -299,7 +298,6 @@ def update_session_status(request):
     except Exception as e:
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
-
 # Nuevas vistas para Specialist
 
 def specialist_list(request):
@@ -307,21 +305,20 @@ def specialist_list(request):
     return render(request, 'pacientes/specialist/specialist_list.html', {'specialists': specialists})
 
 
-
 def create_specialist(request):
     if request.method == 'POST':
-        form = SpecialistForm(request.POST, request.FILES)
+        form = SpecialistForm(request.POST, request.FILES, request=request)
         if form.is_valid():
-            # Si el formulario es válido, guarda los datos
-            form.save()
-            messages.success(request, 'Especialista creado exitosamente.')
-            return redirect('specialist_list')
+            try:
+                specialist = form.save()
+                messages.success(request, 'Especialista creado exitosamente.')
+                return redirect('specialist_list')
+            except ValidationError as e:
+                messages.error(request, str(e))
         else:
-            # Manejo de errores: Agrega un mensaje y registra los errores en la consola
-            messages.error(request, f'Error en el formulario: {form.errors}')
-            print(form.errors)  # Útil para debug en consola
+            messages.error(request, 'Por favor corrija los errores en el formulario.')
     else:
-        form = SpecialistForm()
+        form = SpecialistForm(request=request)
     
     return render(request, 'pacientes/specialist/new_specialist.html', {'form': form})
 
@@ -333,14 +330,11 @@ def check_username_availability(request):
     return JsonResponse({'available': True})
 
 
-
 def view_specialist(request, specialist_id):
     specialist = get_object_or_404(Specialist, id=specialist_id)
     return render(request, 'pacientes/specialist/view_specialist.html', {
         'specialist': specialist
     })
-
-
 
 
 def delete_specialist(request, specialist_id):

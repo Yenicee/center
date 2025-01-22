@@ -2,6 +2,9 @@ from django import forms
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
 from .models import Patient, Session, Specialist, Room, Payment
+from panelAdmin.models import Client
+from django.core.exceptions import ValidationError
+
 
 class PatientForm(forms.ModelForm):
     class Meta:
@@ -104,7 +107,6 @@ class SessionForm(forms.ModelForm):
         return cleaned_data
 
 class SpecialistForm(forms.ModelForm):
-    # Campos relacionados con User
     username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')
     email = forms.EmailField(required=True, label='Correo Electrónico')
     first_name = forms.CharField(max_length=30, required=True, label='Nombre')
@@ -112,10 +114,9 @@ class SpecialistForm(forms.ModelForm):
     password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña')
     confirm_password = forms.CharField(widget=forms.PasswordInput(), label='Confirmar Contraseña')
 
-    # Campos relacionados con Specialist
     class Meta:
         model = Specialist
-        fields = ['specialty', 'phone', 'dni', 'profile_image', 'role']
+        fields = ['client', 'specialty', 'phone', 'dni', 'profile_image', 'role']
         labels = {
             'specialty': 'Especialidad',
             'phone': 'Teléfono',
@@ -127,18 +128,65 @@ class SpecialistForm(forms.ModelForm):
             'role': forms.Select(choices=Specialist.ROLES),
         }
 
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+        
+        if self.request and self.request.tenant:
+            client = self.request.tenant
+            # Filtrar para mostrar solo el cliente actual
+            self.fields['client'].queryset = Client.objects.filter(id=client.id)
+            self.fields['client'].initial = client
+            self.fields['client'].widget.attrs['readonly'] = True
+            self.fields['client'].disabled = True
+
+            # Verificar el límite de especialistas al inicializar el formulario
+            current_count = Specialist.objects.filter(client=client).count()
+            if current_count >= client.specialists_limit:
+                self.fields['client'].help_text = (
+                    f"No se pueden crear más especialistas. "
+                    f"Límite: {client.specialists_limit}, "
+                    f"Actuales: {current_count}"
+                )
+
     def clean(self):
-        # Validar que las contraseñas coincidan
         cleaned_data = super().clean()
+        
+        # Validación de contraseñas
         password = cleaned_data.get('password')
         confirm_password = cleaned_data.get('confirm_password')
-
         if password != confirm_password:
-            raise forms.ValidationError("Las contraseñas no coinciden.")
+            raise ValidationError("Las contraseñas no coinciden.")
+
+        # Validación del límite de especialistas
+        if self.request and self.request.tenant:
+            client = self.request.tenant
+            current_specialists_count = Specialist.objects.filter(client=client).count()
+            
+            print(f"DEBUG - Cliente actual: {client.name}")
+            print(f"DEBUG - Límite de especialistas: {client.specialists_limit}")
+            print(f"DEBUG - Especialistas actuales: {current_specialists_count}")
+            
+            if current_specialists_count >= client.specialists_limit:
+                raise ValidationError({
+                    'client': f"No se pueden crear más especialistas. "
+                             f"El límite es de {client.specialists_limit} especialistas "
+                             f"y actualmente tiene {current_specialists_count}."
+                })
+
         return cleaned_data
 
     def save(self, commit=True):
-        # Sobrescribir el método save para manejar User y Specialist
+        if self.request and self.request.tenant:
+            client = self.request.tenant
+            # Verificar una última vez antes de guardar
+            current_count = Specialist.objects.filter(client=client).count()
+            if current_count >= client.specialists_limit:
+                raise ValidationError(
+                    f"No se pueden crear más especialistas. "
+                    f"Límite alcanzado: {client.specialists_limit}"
+                )
+
         user = User(
             username=self.cleaned_data['username'],
             email=self.cleaned_data['email'],
@@ -148,12 +196,15 @@ class SpecialistForm(forms.ModelForm):
         user.set_password(self.cleaned_data['password'])
 
         if commit:
-            user.save()  # Guardar el usuario primero
+            user.save()
             specialist = super().save(commit=False)
             specialist.user = user
+            if self.request and self.request.tenant:
+                specialist.client = self.request.tenant
             specialist.save()
 
         return specialist
+    
         
 class RoomForm(forms.ModelForm):
     class Meta:

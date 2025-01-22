@@ -1,5 +1,6 @@
 {% extends "pacientes/base/base.html" %}
 {% block content %}
+
 <h1 class="title">Nuevo Especialista</h1>
 <ul class="breadcrumbs">
     <li><a href="{% url 'patient_list' %}">Home</a></li>
@@ -16,68 +17,89 @@
             <h3>Registro de Especialista</h3>
             <p>Completa la información del especialista</p>
         </div>
+
         <div class="col-fields">
+            
             <form method="POST" enctype="multipart/form-data" class="add-form">
                 {% csrf_token %}
                 {{ form.non_field_errors }}
+
+                <!-- Campo Client -->
+                <div class="form-group">
+                    <label for="{{ form.client.id_for_label }}">Cliente</label>
+                    {{ form.client }}
+                    <div class="disabled-field-note">Este campo se asigna automáticamente</div>
+                    <div class="text-danger">{{ form.client.errors }}</div>
+                </div>
 
                 <!-- Campos relacionados con User -->
                 <div class="form-group">
                     <label for="{{ form.first_name.id_for_label }}">Nombre</label>
                     {{ form.first_name }}
+                    <div class="text-danger">{{ form.first_name.errors }}</div>
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.last_name.id_for_label }}">Apellido</label>
                     {{ form.last_name }}
+                    <div class="text-danger">{{ form.last_name.errors }}</div>
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.username.id_for_label }}">Nombre de Usuario</label>
                     {{ form.username }}
                     <small class="error-message" id="username-feedback"></small>
+                    <div class="text-danger">{{ form.username.errors }}</div>
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.email.id_for_label }}">Correo Electrónico</label>
                     {{ form.email }}
+                    <div class="text-danger">{{ form.email.errors }}</div>
                 </div>
 
                 <!-- Campos relacionados con Specialist -->
                 <div class="form-group">
                     <label for="{{ form.specialty.id_for_label }}">Especialidad</label>
                     {{ form.specialty }}
+                    <div class="text-danger">{{ form.specialty.errors }}</div>
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.dni.id_for_label }}">DNI</label>
                     {{ form.dni }}
+                    <div class="text-danger">{{ form.dni.errors }}</div>
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.phone.id_for_label }}">Teléfono</label>
                     {{ form.phone }}
+                    <div class="text-danger">{{ form.phone.errors }}</div>
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.profile_image.id_for_label }}">Imagen de Perfil</label>
                     {{ form.profile_image }}
+                    <div class="text-danger">{{ form.profile_image.errors }}</div>
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.role.id_for_label }}">Rol</label>
                     {{ form.role }}
+                    <div class="text-danger">{{ form.role.errors }}</div>
                 </div>
 
                 <!-- Contraseña -->
                 <div class="form-group">
                     <label for="{{ form.password.id_for_label }}">Contraseña</label>
                     {{ form.password }}
+                    <div class="text-danger">{{ form.password.errors }}</div>
                 </div>
 
                 <div class="form-group">
                     <label for="{{ form.confirm_password.id_for_label }}">Confirmar Contraseña</label>
                     {{ form.confirm_password }}
+                    <div class="text-danger">{{ form.confirm_password.errors }}</div>
                 </div>
 
                 <div class="form-actions">
@@ -124,3 +146,4 @@
     });
 </script>
 {% endblock %}
+

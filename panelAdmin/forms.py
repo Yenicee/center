@@ -66,3 +66,4 @@ class ClientForm(forms.ModelForm):
             self.fields['schema_name'].widget.attrs['readonly'] = True
             self.fields['admin_email'].widget.attrs['readonly'] = True
             self.fields['initial_password'].required = False
+
