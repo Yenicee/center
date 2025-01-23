@@ -316,7 +316,7 @@ def create_specialist(request):
             except ValidationError as e:
                 messages.error(request, str(e))
         else:
-            messages.error(request, 'Por favor corrija los errores en el formulario.')
+            messages.error(request, 'Usted esta pasando el limite para crear mas especialistas de su plan de pago.')
     else:
         form = SpecialistForm(request=request)
     

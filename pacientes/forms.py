@@ -106,102 +106,68 @@ class SessionForm(forms.ModelForm):
 
         return cleaned_data
 
+
 class SpecialistForm(forms.ModelForm):
-    username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')
-    email = forms.EmailField(required=True, label='Correo Electrónico')
-    first_name = forms.CharField(max_length=30, required=True, label='Nombre')
-    last_name = forms.CharField(max_length=30, required=True, label='Apellido')
-    password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña')
-    confirm_password = forms.CharField(widget=forms.PasswordInput(), label='Confirmar Contraseña')
+   username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')
+   email = forms.EmailField(required=True, label='Correo Electrónico')
+   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
+   last_name = forms.CharField(max_length=30, required=True, label='Apellido')
+   password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña')
+   confirm_password = forms.CharField(widget=forms.PasswordInput(), label='Confirmar Contraseña')
 
-    class Meta:
-        model = Specialist
-        fields = ['client', 'specialty', 'phone', 'dni', 'profile_image', 'role']
-        labels = {
-            'specialty': 'Especialidad',
-            'phone': 'Teléfono',
-            'dni': 'DNI',
-            'profile_image': 'Imagen de Perfil',
-            'role': 'Rol',
-        }
-        widgets = {
-            'role': forms.Select(choices=Specialist.ROLES),
-        }
+   class Meta:
+       model = Specialist
+       fields = ['client', 'specialty', 'phone', 'dni', 'profile_image', 'role']
+       labels = {'specialty': 'Especialidad', 'phone': 'Teléfono', 'dni': 'DNI', 'profile_image': 'Imagen de Perfil', 'role': 'Rol'}
+       widgets = {'role': forms.Select(choices=Specialist.ROLES)}
 
-    def __init__(self, *args, **kwargs):
-        self.request = kwargs.pop('request', None)
-        super().__init__(*args, **kwargs)
-        
-        if self.request and self.request.tenant:
-            client = self.request.tenant
-            # Filtrar para mostrar solo el cliente actual
-            self.fields['client'].queryset = Client.objects.filter(id=client.id)
-            self.fields['client'].initial = client
-            self.fields['client'].widget.attrs['readonly'] = True
-            self.fields['client'].disabled = True
+   def __init__(self, *args, **kwargs):
+       self.request = kwargs.pop('request', None)
+       super().__init__(*args, **kwargs)
+       
+       if self.request and self.request.tenant:
+           client = self.request.tenant
+           self.fields['client'].queryset = Client.objects.filter(id=client.id)
+           self.fields['client'].initial = self.fields['client'].widget.attrs['readonly'] = client
+           self.fields['client'].disabled = True
 
-            # Verificar el límite de especialistas al inicializar el formulario
-            current_count = Specialist.objects.filter(client=client).count()
-            if current_count >= client.specialists_limit:
-                self.fields['client'].help_text = (
-                    f"No se pueden crear más especialistas. "
-                    f"Límite: {client.specialists_limit}, "
-                    f"Actuales: {current_count}"
-                )
+           current_count = Specialist.objects.filter(client=client).count()
+           if current_count >= client.specialists_limit:
+               self.fields['client'].help_text = f"Límite: {client.specialists_limit}, Actuales: {current_count}"
 
-    def clean(self):
-        cleaned_data = super().clean()
-        
-        # Validación de contraseñas
-        password = cleaned_data.get('password')
-        confirm_password = cleaned_data.get('confirm_password')
-        if password != confirm_password:
-            raise ValidationError("Las contraseñas no coinciden.")
+   def clean(self):
+       cleaned_data = super().clean()
+       
+       if cleaned_data.get('password') != cleaned_data.get('confirm_password'):
+           raise ValidationError("Las contraseñas no coinciden.")
 
-        # Validación del límite de especialistas
-        if self.request and self.request.tenant:
-            client = self.request.tenant
-            current_specialists_count = Specialist.objects.filter(client=client).count()
-            
-            if current_specialists_count >= client.specialists_limit:
-                raise ValidationError({
-                    'client': f"No se pueden crear más especialistas. "
-                             f"El límite es de {client.specialists_limit} especialistas "
-                             f"y actualmente tiene {current_specialists_count}."
-                })
+       if self.request and self.request.tenant:
+           client = self.request.tenant
+           current_count = Specialist.objects.filter(client=client).count()
+           
+           if current_count >= client.specialists_limit:
+               raise ValidationError({'client': f"Límite alcanzado: {current_count}/{client.specialists_limit}"})
 
-        return cleaned_data
+       return cleaned_data
 
-    def save(self, commit=True):
-        if self.request and self.request.tenant:
-            client = self.request.tenant
-            # Verificar una última vez antes de guardar
-            current_count = Specialist.objects.filter(client=client).count()
-            if current_count >= client.specialists_limit:
-                raise ValidationError(
-                    f"No se pueden crear más especialistas. "
-                    f"Límite alcanzado: {client.specialists_limit}"
-                )
+   def save(self, commit=True):
+       if self.request and self.request.tenant:
+           client = self.request.tenant
+           if Specialist.objects.filter(client=client).count() >= client.specialists_limit:
+               raise ValidationError(f"Límite de especialistas alcanzado: {client.specialists_limit}")
 
-        user = User(
-            username=self.cleaned_data['username'],
-            email=self.cleaned_data['email'],
-            first_name=self.cleaned_data['first_name'],
-            last_name=self.cleaned_data['last_name']
-        )
-        user.set_password(self.cleaned_data['password'])
+       user = User(**{k: self.cleaned_data[k] for k in ['username', 'email', 'first_name', 'last_name']})
+       user.set_password(self.cleaned_data['password'])
+       user.save() if commit else None
 
-        if commit:
-            user.save()
-            specialist = super().save(commit=False)
-            specialist.user = user
-            if self.request and self.request.tenant:
-                specialist.client = self.request.tenant
-            specialist.save()
+       specialist = super().save(commit=False)
+       specialist.user = user
+       specialist.client = self.request.tenant if self.request and self.request.tenant else None
+       specialist.save() if commit else None
 
-        return specialist
+       return specialist
+
     
-        
 class RoomForm(forms.ModelForm):
     class Meta:
         model = Room
