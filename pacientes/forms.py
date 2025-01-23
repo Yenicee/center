@@ -163,10 +163,6 @@ class SpecialistForm(forms.ModelForm):
             client = self.request.tenant
             current_specialists_count = Specialist.objects.filter(client=client).count()
             
-            print(f"DEBUG - Cliente actual: {client.name}")
-            print(f"DEBUG - Límite de especialistas: {client.specialists_limit}")
-            print(f"DEBUG - Especialistas actuales: {current_specialists_count}")
-            
             if current_specialists_count >= client.specialists_limit:
                 raise ValidationError({
                     'client': f"No se pueden crear más especialistas. "
