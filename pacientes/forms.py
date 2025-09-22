@@ -4,6 +4,36 @@ from django.utils.translation import gettext_lazy as _
 from .models import Patient, Session, Specialist, Room, Payment
 from panelAdmin.models import Client
 from django.core.exceptions import ValidationError
+from django.contrib.auth import authenticate
+
+
+class EmailLoginForm(forms.Form):
+    email = forms.EmailField(
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Correo electrónico'
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Contraseña'
+        })
+    )
+
+    def clean(self):
+        cleaned_data = super().clean()
+        email = cleaned_data.get('email')
+        password = cleaned_data.get('password')
+
+        if email and password:
+            user = authenticate(username=email, password=password)
+            if not user:
+                raise ValidationError('Correo electrónico o contraseña incorrectos')
+            if not user.is_active:
+                raise ValidationError('Esta cuenta está desactivada')
+            cleaned_data['user'] = user
+        return cleaned_data
 
 
 class PatientForm(forms.ModelForm):
@@ -106,7 +136,6 @@ class SessionForm(forms.ModelForm):
 
         return cleaned_data
 
-
 class SpecialistForm(forms.ModelForm):
    username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')
    email = forms.EmailField(required=True, label='Correo Electrónico')
@@ -166,8 +195,7 @@ class SpecialistForm(forms.ModelForm):
        specialist.save() if commit else None
 
        return specialist
-
-    
+  
 class RoomForm(forms.ModelForm):
     class Meta:
         model = Room

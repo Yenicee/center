@@ -1,39 +1,41 @@
-{% extends "pacientes/base/base.html" %}
+{% extends 'pacientes/base/base.html' %}
 
 {% block content %}
-<h1 >Eliminar Paciente</h1>
-<ul class="breadcrumbs">
-    <li><a href="{% url 'patient_list' %}">Home</a></li>
-    <li >/</li>
-    <li><a href="{% url 'patient_list' %}">Pacientes</a></li>
-    <li >/</li>
-    <li><a href="#" class="active">Eliminar</a></li>
-</ul>
+  <h1>Eliminar Paciente</h1>
+  <ul class="breadcrumbs">
+    <li>
+      <a href="{% url 'patient_list' %}">Home</a>
+    </li>
+    <li>/</li>
+    <li>
+      <a href="{% url 'patient_list' %}">Pacientes</a>
+    </li>
+    <li>/</li>
+    <li>
+      <a href="#" class="active">Eliminar</a>
+    </li>
+  </ul>
 
-<div class="form-container">
+  <div class="form-container">
     <div class="row section">
-        <div class="col-title">
-            <i class="fa-solid fa-user-times"></i> <!-- Ícono representativo para eliminar -->
-            <h3>Eliminar Paciente</h3>
-            <p>Por favor, confirma la eliminación del paciente.</p>
+      <div class="col-title">
+        <i class="fa-solid fa-user-times"></i> <!-- Ícono representativo para eliminar -->
+        <h3>Eliminar Paciente</h3>
+        <p>Por favor, confirma la eliminación del paciente.</p>
+      </div>
+      <div class="col-fields">
+        <div class="alert alert-warning">
+          <h4>¿Está seguro que desea eliminar al paciente "{{ patient.name }} {{ patient.surname }}"?</h4>
+          <p>Esta acción no se puede deshacer y eliminará toda la información asociada al paciente.</p>
         </div>
-        <div class="col-fields">
-            <div class="alert alert-warning">
-                <h4>¿Está seguro que desea eliminar al paciente "{{ patient.name }} {{ patient.surname }}"?</h4>
-                <p>Esta acción no se puede deshacer y eliminará toda la información asociada al paciente.</p>
-            </div>
-            <form method="POST" class="delete-form">
-                {% csrf_token %}
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-danger">
-                        Confirmar Eliminación
-                    </button>
-                    <a href="{% url 'patient_list' %}" class="btn btn-secondary">
-                        Cancelar
-                    </a>
-                </div>
-            </form>
-        </div>
+        <form method="POST" class="delete-form">
+          {% csrf_token %}
+          <div class="form-actions">
+            <button type="submit" class="btn btn-danger">Confirmar Eliminación</button>
+            <a href="{% url 'patient_list' %}" class="btn btn-secondary">Cancelar</a>
+          </div>
+        </form>
+      </div>
     </div>
-</div>
+  </div>
 {% endblock %}

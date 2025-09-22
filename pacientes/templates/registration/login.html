@@ -1,0 +1,27 @@
+{% extends 'pacientes/base/base.html' %}
+
+{% block content %}
+  <div class="login-container">
+    <h2>Iniciar sesión</h2>
+
+    {% if messages %}
+      <div class="messages">
+        <ul>
+          {% for message in messages %}
+            <li>{{ message }}</li>
+          {% endfor %}
+        </ul>
+      </div>
+    {% endif %}
+
+    <!-- Formulario de inicio de sesión -->
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit">Iniciar sesión</button>
+    </form>
+    <p>
+      ¿Olvidaste tu contraseña? <a href="{% url 'password_reset' %}">Restablecer contraseña</a>
+    </p>
+  </div>
+{% endblock %}

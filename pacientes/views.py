@@ -2,20 +2,63 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from django.contrib import messages
-
+from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from .models import Patient, Session, Specialist, Room, Payment
 from .forms import (
     PatientForm, SessionForm,
     SpecialistForm, RoomForm,
-    PaymentForm
+    PaymentForm,EmailLoginForm
 )
-
+from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
 from datetime import datetime, timedelta
+from django.contrib.auth import login, logout
+from django.views.decorators.cache import never_cache
+from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.debug import sensitive_post_parameters
+
+
+#views para login
+@sensitive_post_parameters()
+@csrf_protect
+@never_cache
+def login_view(request):
+    if request.user.is_authenticated:
+        return redirect('patient_list')
+        
+    if request.method == 'POST':
+        form = EmailLoginForm(request.POST)
+        if form.is_valid():
+            user = form.cleaned_data['user']
+            login(request, user)
+            
+            # Obtener el tenant del usuario
+            try:
+                client = user.client
+                if client.status == 'suspended':
+                    logout(request)
+                    messages.error(request, 'Esta cuenta está suspendida. Por favor contacte al administrador.')
+                    return redirect('login')
+            except:
+                pass
+                
+            next_url = request.GET.get('next', 'patient_list')
+            return redirect(next_url)
+    else:
+        form = EmailLoginForm()
+    
+    return render(request, 'pacientes/login.html', {'form': form})
+
+@login_required
+def logout_view(request):
+    logout(request)
+    messages.success(request, 'Has cerrado sesión exitosamente')
+    return redirect('login')
 
 #views para patient
+
 def patient_list(request):
     patients = Patient.objects.all()
     return render(request, 'pacientes/patient/patient_list.html', {'patients': patients})
@@ -456,4 +499,8 @@ def toggle_payment_status(request):
     payment.is_paid = not payment.is_paid
     payment.save()
     return JsonResponse({'success': True, 'is_paid': payment.is_paid})
+
+
+
+
 

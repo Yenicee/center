@@ -1,141 +1,146 @@
-{% extends "pacientes/base/base.html" %}
+{% extends 'pacientes/base/base.html' %}
 
-{% block title %}Nuevo Paciente{% endblock %}
-
-{% block content %}
-<h1>Nuevo Pacientes</h1>
-<ul class="breadcrumbs">
-    <li><a href="{% url 'patient_list' %}">Home</a></li>
-    <li class="divider">/</li>
-    <li><a href="#" class="active">Pacientes</a></li>
-</ul>
-<div class="form-container">
-    <form method="post" enctype="multipart/form-data" class="add-form">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        <!-- Información Básica -->
-        <div class="row section">
-            <div class="col-title">
-                <i class="far fa-id-card"></i>
-                <h3>Información Básica</h3>
-                <p>Rellene la Información basica del paciente</p>
-            </div>
-            <div class="col-fields">
-                <div class="form-group">
-                    <label for="{{ form.name.id_for_label }}">Nombre</label>
-                    {{ form.name }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.surname.id_for_label }}">Apellido</label>
-                    {{ form.surname }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.date_of_birth.id_for_label }}">Fecha de Nacimiento</label>
-                    {{ form.date_of_birth }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.gender.id_for_label }}">Género</label>
-                    {{ form.gender }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.address.id_for_label }}">Dirección</label>
-                    {{ form.address }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.phone_number.id_for_label }}">Teléfono</label>
-                    {{ form.phone_number }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.email.id_for_label }}">Email</label>
-                    {{ form.email }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.marital_status.id_for_label }}">Estado Civil</label>
-                    {{ form.marital_status }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.education.id_for_label }}">Educación</label>
-                    {{ form.education }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.photo.id_for_label }}">Foto</label>
-                    {{ form.photo }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.cost_session.id_for_label }}">Costo por Sesión</label>
-                    {{ form.cost_session }}
-                </div>
-            </div>
-        </div>
-
-        <!-- Información Médica -->
-        <div class="row section">
-            <div class="col-title">
-                <i class="fa-solid fa-file-medical"></i>
-                <h3>Información Médica</h3>
-                <p>Rellene la informacion medica completa del paciente</p>
-            </div>
-            <div class="col-fields">
-                <div class="form-group">
-                    <label for="{{ form.medical_diagnosis.id_for_label }}">Diagnóstico Médico</label>
-                    {{ form.medical_diagnosis }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.medical_history.id_for_label }}">Historia Médica</label>
-                    {{ form.medical_history }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.allergies.id_for_label }}">Alergias</label>
-                    {{ form.allergies }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.therapy.id_for_label }}">Terapia</label>
-                    {{ form.therapy }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.therapist.id_for_label }}">Terapeuta</label>
-                    {{ form.therapist }}
-                </div>
-            </div>
-        </div>
-
-        <!-- Contacto de Emergencia -->
-        <div class="row section">
-            <div class="col-title">
-                <i class="fa-solid fa-truck-medical"></i>
-                <h3>Contacto de Emergencia</h3>
-            </div>
-            <div class="col-fields">
-                <div class="form-group">
-                    <label for="{{ form.emergency_contact_name.id_for_label }}">Nombre</label>
-                    {{ form.emergency_contact_name }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.emergency_contact_phone.id_for_label }}">Teléfono</label>
-                    {{ form.emergency_contact_phone }}
-                </div>
-            </div>
-        </div>
-
-        <!-- Notas y Adjuntos -->
-        <div class="row section">
-            <div class="col-title">
-                <i class="fa-regular fa-note-sticky"></i>
-                <h3>Notas y Adjuntos</h3>
-            </div>
-            <div class="col-fields">
-                <div class="form-group">
-                    <label for="{{ form.notes.id_for_label }}">Notas</label>
-                    {{ form.notes }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.attachments.id_for_label }}">Adjuntos</label>
-                    {{ form.attachments }}
-                </div>
-            </div>
-        </div>
-        <button type="submit" class="btn btn-primary">Guardar Paciente</button>
-    </form>
-</div>
+{% block title %}
+  Nuevo Paciente
 {% endblock %}
 
+{% block content %}
+  <h1>Nuevo Pacientes</h1>
+  <ul class="breadcrumbs">
+    <li>
+      <a href="{% url 'patient_list' %}">Home</a>
+    </li>
+    <li class="divider">/</li>
+    <li>
+      <a href="#" class="active">Pacientes</a>
+    </li>
+  </ul>
+  <div class="form-container">
+    <form method="post" enctype="multipart/form-data" class="add-form">
+      {% csrf_token %}
+      {{ form.non_field_errors }}
+      <!-- Información Básica -->
+      <div class="row section">
+        <div class="col-title">
+          <i class="far fa-id-card"></i>
+          <h3>Información Básica</h3>
+          <p>Rellene la Información basica del paciente</p>
+        </div>
+        <div class="col-fields">
+          <div class="form-group">
+            <label for="{{ form.name.id_for_label }}">Nombre</label>
+            {{ form.name }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.surname.id_for_label }}">Apellido</label>
+            {{ form.surname }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.date_of_birth.id_for_label }}">Fecha de Nacimiento</label>
+            {{ form.date_of_birth }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.gender.id_for_label }}">Género</label>
+            {{ form.gender }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.address.id_for_label }}">Dirección</label>
+            {{ form.address }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.phone_number.id_for_label }}">Teléfono</label>
+            {{ form.phone_number }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.email.id_for_label }}">Email</label>
+            {{ form.email }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.marital_status.id_for_label }}">Estado Civil</label>
+            {{ form.marital_status }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.education.id_for_label }}">Educación</label>
+            {{ form.education }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.photo.id_for_label }}">Foto</label>
+            {{ form.photo }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.cost_session.id_for_label }}">Costo por Sesión</label>
+            {{ form.cost_session }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Información Médica -->
+      <div class="row section">
+        <div class="col-title">
+          <i class="fa-solid fa-file-medical"></i>
+          <h3>Información Médica</h3>
+          <p>Rellene la informacion medica completa del paciente</p>
+        </div>
+        <div class="col-fields">
+          <div class="form-group">
+            <label for="{{ form.medical_diagnosis.id_for_label }}">Diagnóstico Médico</label>
+            {{ form.medical_diagnosis }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.medical_history.id_for_label }}">Historia Médica</label>
+            {{ form.medical_history }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.allergies.id_for_label }}">Alergias</label>
+            {{ form.allergies }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.therapy.id_for_label }}">Terapia</label>
+            {{ form.therapy }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.therapist.id_for_label }}">Terapeuta</label>
+            {{ form.therapist }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Contacto de Emergencia -->
+      <div class="row section">
+        <div class="col-title">
+          <i class="fa-solid fa-truck-medical"></i>
+          <h3>Contacto de Emergencia</h3>
+        </div>
+        <div class="col-fields">
+          <div class="form-group">
+            <label for="{{ form.emergency_contact_name.id_for_label }}">Nombre</label>
+            {{ form.emergency_contact_name }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.emergency_contact_phone.id_for_label }}">Teléfono</label>
+            {{ form.emergency_contact_phone }}
+          </div>
+        </div>
+      </div>
+
+      <!-- Notas y Adjuntos -->
+      <div class="row section">
+        <div class="col-title">
+          <i class="fa-regular fa-note-sticky"></i>
+          <h3>Notas y Adjuntos</h3>
+        </div>
+        <div class="col-fields">
+          <div class="form-group">
+            <label for="{{ form.notes.id_for_label }}">Notas</label>
+            {{ form.notes }}
+          </div>
+          <div class="form-group">
+            <label for="{{ form.attachments.id_for_label }}">Adjuntos</label>
+            {{ form.attachments }}
+          </div>
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">Guardar Paciente</button>
+    </form>
+  </div>
+{% endblock %}
