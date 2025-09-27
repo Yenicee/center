@@ -37,7 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'panelAdmin',
+    'panelAdmin.apps.PaneladminConfig',  
     'pacientes', 
 ]
 
@@ -106,7 +106,7 @@ TENANT_DOMAIN_MODEL = "panelAdmin.Domain"  # app.Model
 # Apps compartidas entre todos los tenants
 SHARED_APPS = (
     'django_tenants',
-    'panelAdmin',  #app administrativa
+    'panelAdmin.apps.PaneladminConfig', 
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -126,8 +126,6 @@ TENANT_APPS = (
     'django.contrib.staticfiles',
 )
 
-# Combina ambas
-INSTALLED_APPS = list(SHARED_APPS) + [app for app in TENANT_APPS if app not in SHARED_APPS]
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -169,4 +167,9 @@ MESSAGE_TAGS = {
     messages.ERROR: 'danger', 
 }
 
-LOGIN_URL = 'login'
+LOGIN_URL = '/pacientes/login/'
+
+AUTHENTICATION_BACKENDS = [
+    'pacientes.backends.EmailBackend',  # backend personalizado para email
+    'django.contrib.auth.backends.ModelBackend',  # Backend por defecto de Django
+]

@@ -1,58 +1,64 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/dash.css' %}">
-    <title>Dashboard - Bienestar</title>   
-</head>
-<body>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="{% static 'css/dash.css' %}" />
+    <title>Dashboard - Bienestar</title>
+  </head>
+  <body>
     <div class="dashboard-container">
-        <header class="dashboard-header">
-            <h1>Panel Administrativo</h1>
-        </header>
+      <header class="dashboard-header">
+        <h1>Panel Administrativo</h1>
+      </header>
 
-        <!-- Métricas Principales -->
-        <section class="metrics-section">
-            <h2>Métricas Principales</h2>
-            <div class="metrics-grid">
-                <div class="metric-card">
-                    <h3>Clientes Activos</h3>
-                    <div>{{ metrics.active_clients }}</div>
-                    <p>del total de {{ metrics.total_clients }}</p>
-                </div>
-                <div class="metric-card">
-                    <h3>Ingresos Mensuales Proyectados</h3>
-                    <div>${{ metrics.projected_monthly_income|floatformat:2 }}</div>
-                    <p>basado en clientes activos</p>
-                </div>
-                <div class="metric-card">
-                    <h3>Clientes en Morosidad</h3>
-                    <div>{{ metrics.morose_clients }}</div>
-                    <p>pagos pendientes: ${{ metrics.pending_payments|floatformat:2 }}</p>
-                </div>
-                <div class="metric-card">
-                    <h3>Usuarios Totales</h3>
-                    <div>{{ metrics.total_users }}</div>
-                    <p>en todos los consultorios</p>
-                </div>
-            </div>
-        </section>
+      <!-- Métricas Principales -->
+      <section class="metrics-section">
+        <h2>Métricas Principales</h2>
+        <div class="metrics-grid">
+          <div class="metric-card">
+            <h3>Clientes Activos</h3>
+            <div>{{ metrics.active_clients }}</div>
+            <p>del total de {{ metrics.total_clients }}</p>
+          </div>
+          <div class="metric-card">
+            <h3>Ingresos Mensuales Proyectados</h3>
+            <div>${{ metrics.projected_monthly_income|floatformat:2 }}</div>
+            <p>basado en clientes activos</p>
+          </div>
+          <div class="metric-card">
+            <h3>Clientes en Morosidad</h3>
+            <div>{{ metrics.morose_clients }}</div>
+            <p>
+              pagos pendientes: ${{ metrics.pending_payments|floatformat:2 }}
+            </p>
+          </div>
+          <div class="metric-card">
+            <h3>Usuarios Totales</h3>
+            <div>{{ metrics.total_users }}</div>
+            <p>en todos los consultorios</p>
+          </div>
+        </div>
+      </section>
 
-        <!-- Acciones Rápidas -->
-        <section class="quick-actions">
-            <h2>Acciones Rápidas</h2>
-            <div class="actions-grid">
-                <a href="{% url 'client_list' %}" class="action-button">Ver Lista de Clientes</a>
-                <a href="#" class="action-button">Pagos Pendientes</a>
-            </div>
-        </section>
+      <!-- Acciones Rápidas -->
+      <section class="quick-actions">
+        <h2>Acciones Rápidas</h2>
+        <div class="actions-grid">
+          <a href="{% url 'client_list' %}" class="action-button"
+            >Ver Lista de Clientes</a
+          >
+          <a href="{%url 'client_form'%}" class="action-button"
+            > Nuevo Cliente</a
+          >
+          <a href="#" class="action-button">Pagos Pendientes</a>
+        </div>
+      </section>
 
-        {% block content %}
-        <!-- Contenido adicional -->
-        {% endblock %}
+      {% block content %}
+      <!-- Contenido adicional -->
+      {% endblock %}
     </div>
-</body>
+  </body>
 </html>

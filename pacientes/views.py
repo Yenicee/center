@@ -51,14 +51,13 @@ def login_view(request):
     
     return render(request, 'pacientes/login.html', {'form': form})
 
-@login_required
+
 def logout_view(request):
     logout(request)
     messages.success(request, 'Has cerrado sesión exitosamente')
     return redirect('login')
 
 #views para patient
-
 def patient_list(request):
     patients = Patient.objects.all()
     return render(request, 'pacientes/patient/patient_list.html', {'patients': patients})

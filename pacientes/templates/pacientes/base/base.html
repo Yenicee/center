@@ -95,26 +95,25 @@
 			</form>
 			<div class="profile">
 				<span class="username">
-					{{ user.username }}
-					{% if user.specialist_profile %}
-						- Rol: {{ user.specialist_profile.role|title }}
-					{% else %}
-						- Rol: Usuario sin perfil asignado
-					{% endif %}
-				</span>
+                   {% if user.first_name %}
+                    {{ user.first_name }} {{ user.last_name }}
+                    {% else %}
+                     {{ user.username }}
+                    {% endif %}
+                </span>
 				<img src="{% static 'pacientes/images/usuario.png' %}" alt="">
 				<ul class="profile-link">
-					{% if user.is_authenticated %}
-					<li>
-						<form id="#" method="post" style="display: none;">
-							
-						</form>
-						<a href="#" onclick="event.preventDefault(); document.getElementById('#').submit();">
-							<i class='bx bxs-log-out-circle'></i>Cerrar sesión
-						</a>
-					</li>
-					{% endif %}
-				</ul>
+                 {% if user.is_authenticated %}
+                   <li>
+                      <form id="logout-form" method="post" action="{% url 'logout' %}" style="display: none;">
+                        {% csrf_token %}
+                      </form>
+                      <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+                       <i class='bx bxs-log-out-circle'></i>Cerrar sesión
+                      </a>
+                    </li>
+                 {% endif %}
+                </ul>
 			</div>
 		</nav>
 		<!-- NAVBAR -->

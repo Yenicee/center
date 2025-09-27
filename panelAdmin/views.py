@@ -8,6 +8,7 @@ from django.db import transaction
 from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.db.models import Sum
+from django_tenants.utils import schema_context 
 
 
 def dashboard(request):
@@ -59,7 +60,7 @@ def client_create(request):
                         
                     username = form.cleaned_data['admin_email']
                     
-                    # Crear usuario
+                    # Crear usuario EN EL ESQUEMA PÚBLICO
                     user = User.objects.create_user(
                         username=username,
                         email=form.cleaned_data['admin_email'],
@@ -68,16 +69,34 @@ def client_create(request):
                     
                     client.user = user
                     client.initial_password = password
-                    client.save()
+                    client.save()  # Esto crea el tenant y ejecuta migraciones
                     
-                    # Esto es para dominio
+                    # Crear dominio
                     domain = Domain.objects.create(
                         domain=f"{schema_name}.localhost",
                         tenant=client,
                         is_primary=True
                     )
 
-                    messages.success(request, 'Cliente creado exitosamente')
+                    # AGREGAR: Crear usuario EN EL TENANT después de las migraciones
+                    try:
+                        with schema_context(schema_name):
+                            if not User.objects.filter(email=form.cleaned_data['admin_email']).exists():
+                                tenant_user = User.objects.create_user(
+                                    username=form.cleaned_data['admin_name'].lower().replace(' ', '.'),
+                                    email=form.cleaned_data['admin_email'],
+                                    password=password,
+                                    first_name=form.cleaned_data['admin_name'].split(' ')[0] if form.cleaned_data['admin_name'] else '',
+                                    last_name=' '.join(form.cleaned_data['admin_name'].split(' ')[1:]) if form.cleaned_data['admin_name'] and len(form.cleaned_data['admin_name'].split(' ')) > 1 else '',
+                                    is_staff=True,
+                                    is_active=True
+                                )
+                                print(f"✅ Usuario creado en tenant {schema_name}: {tenant_user.email}")
+                    except Exception as tenant_error:
+                        print(f"Error creando usuario en tenant: {tenant_error}")
+                     
+
+                    messages.success(request, f'Cliente creado exitosamente. Contraseña: {password}')
                     return redirect('client_list')
 
             except IntegrityError as e:
@@ -102,6 +121,7 @@ def client_create(request):
         form = ClientForm()
 
     return render(request, 'client/client_form.html', {'form': form})
+
 
 
 def client_edit(request, client_id):
