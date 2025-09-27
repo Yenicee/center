@@ -231,4 +231,4 @@ Para reportar bugs o solicitar funcionalidades, crear un issue en GitHub.
 
 ## Contacto
 
-- Desarrollador: Yenice Vazquez, Jose 
+- Desarrollador: Yenice Vazquez, José Yañez.
