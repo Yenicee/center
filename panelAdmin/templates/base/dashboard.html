@@ -1,64 +1,72 @@
 {% load static %}
 <!DOCTYPE html>
-<html lang="en">
-  <head>
+<html lang="es">
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="{% static 'css/dash.css' %}" />
-    <title>Dashboard - Bienestar</title>
-  </head>
-  <body>
-    <div class="dashboard-container">
-      <header class="dashboard-header">
-        <h1>Panel Administrativo</h1>
-      </header>
+    <title>Dashboard - Panel Administrativo</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+</head>
+<body>
+    <div class="dashboard-wrapper">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <h1>📊 Panel Administrativo</h1>
+            <p>Vista general del negocio y métricas clave</p>
+        </header>
 
-      <!-- Métricas Principales -->
-      <section class="metrics-section">
-        <h2>Métricas Principales</h2>
+        <!-- Métricas Principales -->
         <div class="metrics-grid">
-          <div class="metric-card">
-            <h3>Clientes Activos</h3>
-            <div>{{ metrics.active_clients }}</div>
-            <p>del total de {{ metrics.total_clients }}</p>
-          </div>
-          <div class="metric-card">
-            <h3>Ingresos Mensuales Proyectados</h3>
-            <div>${{ metrics.projected_monthly_income|floatformat:2 }}</div>
-            <p>basado en clientes activos</p>
-          </div>
-          <div class="metric-card">
-            <h3>Clientes en Morosidad</h3>
-            <div>{{ metrics.morose_clients }}</div>
-            <p>
-              pagos pendientes: ${{ metrics.pending_payments|floatformat:2 }}
-            </p>
-          </div>
-          <div class="metric-card">
-            <h3>Usuarios Totales</h3>
-            <div>{{ metrics.total_users }}</div>
-            <p>en todos los consultorios</p>
-          </div>
+            <div class="metric-card">
+                <h3>Total Clientes</h3>
+                <div class="metric-value">{{ metrics.total_clients }}</div>
+                <p>Clientes en el sistema</p>
+            </div>
+            <div class="metric-card">
+                <h3>Clientes Activos</h3>
+                <div class="metric-value success">{{ metrics.active_clients }}</div>
+                <p>Con pagos al día</p>
+            </div>
+            <div class="metric-card">
+                <h3>Ingresos Proyectados</h3>
+                <div class="metric-value info">${{ metrics.projected_monthly_income|floatformat:0 }}</div>
+                <p>Mensuales estimados</p>
+            </div>
+            <div class="metric-card">
+                <h3>Clientes Morosos</h3>
+                <div class="metric-value alert">{{ metrics.morose_clients }}</div>
+                <p>Deuda: ${{ metrics.pending_payments|floatformat:0 }}</p>
+            </div>
         </div>
-      </section>
 
-      <!-- Acciones Rápidas -->
-      <section class="quick-actions">
-        <h2>Acciones Rápidas</h2>
-        <div class="actions-grid">
-          <a href="{% url 'client_list' %}" class="action-button"
-            >Ver Lista de Clientes</a
-          >
-          <a href="{%url 'client_form'%}" class="action-button"
-            > Nuevo Cliente</a
-          >
-          <a href="#" class="action-button">Pagos Pendientes</a>
-        </div>
-      </section>
+        <!-- Gráficos -->
+        <section class="charts-section">
+            <h2 class="section-title">📈 Análisis Visual</h2>
+            
+            <div class="charts-grid">
+                <div class="chart-card">
+                    {{ chart_status|safe }}
+                </div>
+                <div class="chart-card">
+                    {{ chart_revenue|safe }}
+                </div>
+            </div>
 
-      {% block content %}
-      <!-- Contenido adicional -->
-      {% endblock %}
+            <div class="chart-full">
+                {{ chart_top_clients|safe }}
+            </div>
+        </section>
+
+        <!-- Acciones Rápidas -->
+        <section class="quick-actions">
+            <h2>⚡ Acciones Rápidas</h2>
+            <div class="actions-grid">
+                <a href="{% url 'client_list' %}" class="action-button">📋 Ver Clientes</a>
+                <a href="{% url 'client_form' %}" class="action-button">➕ Nuevo Cliente</a>
+                <a href="#" class="action-button">💰 Pagos Pendientes</a>
+            </div>
+        </section>
     </div>
-  </body>
+</body>
 </html>

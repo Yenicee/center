@@ -9,31 +9,137 @@ from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.db.models import Sum
 from django_tenants.utils import schema_context 
-
+import plotly.graph_objects as go
+import plotly.express as px
+from plotly.subplots import make_subplots
+import json
 
 def dashboard(request):
     clients = Client.objects.all()
     
     active_clients = clients.filter(status='active')
-    monthly_income = active_clients.aggregate(
-        total=Sum('monthly_payment'))['total'] or 0
+    morose_clients = clients.filter(status='morose')
+    suspended_clients = clients.filter(status='suspended')
     
+    monthly_income = active_clients.aggregate(total=Sum('monthly_payment'))['total'] or 0
     total_users = User.objects.count()
- 
-    pending_payments = clients.filter(
-        status='morose'
-    ).aggregate(total=Sum('monthly_payment'))['total'] or 0
+    pending_payments = morose_clients.aggregate(total=Sum('monthly_payment'))['total'] or 0
     
     metrics = {
         'total_clients': clients.count(),
         'active_clients': active_clients.count(),
-        'morose_clients': clients.filter(status='morose').count(),
+        'morose_clients': morose_clients.count(),
+        'suspended_clients': suspended_clients.count(),
         'projected_monthly_income': monthly_income,
         'total_users': total_users,
         'pending_payments': pending_payments,
     }
     
-    return render(request, 'base/dashboard.html', {'metrics': metrics})
+    # GRÁFICO 1: Estado de Clientes (Donut)
+    fig_status = go.Figure(data=[go.Pie(
+        labels=['Activos', 'Morosos', 'Suspendidos'],
+        values=[metrics['active_clients'], metrics['morose_clients'], metrics['suspended_clients']],
+        marker=dict(colors=['#28a745', '#dc3545', '#ffc107']),
+        hole=0.5,
+        textinfo='label+percent',
+        textposition='outside',
+        hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
+    )])
+    
+    fig_status.update_layout(
+        title={'text': 'Distribución de Clientes por Estado', 'x': 0.5, 'xanchor': 'center'},
+        height=350,
+        margin=dict(t=50, b=20, l=20, r=20),
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
+        paper_bgcolor='white',
+        font=dict(family="Arial, sans-serif", size=12)
+    )
+    
+    # GRÁFICO 2: Análisis Financiero (Barras)
+    fig_revenue = go.Figure()
+    
+    fig_revenue.add_trace(go.Bar(
+        x=['Ingresos'],
+        y=[float(metrics['projected_monthly_income'])],
+        name='Ingresos Proyectados',
+        marker_color='#28a745',
+        text=['$' + f"{metrics['projected_monthly_income']:,.2f}"],
+        textposition='outside',
+        hovertemplate='<b>Ingresos Proyectados</b><br>$%{y:,.2f}<extra></extra>'
+    ))
+    
+    fig_revenue.add_trace(go.Bar(
+        x=['Deudas'],
+        y=[float(metrics['pending_payments'])],
+        name='Pagos Pendientes',
+        marker_color='#dc3545',
+        text=['$' + f"{metrics['pending_payments']:,.2f}"],
+        textposition='outside',
+        hovertemplate='<b>Pagos Pendientes</b><br>$%{y:,.2f}<extra></extra>'
+    ))
+    
+    fig_revenue.update_layout(
+        title={'text': 'Análisis Financiero Mensual', 'x': 0.5, 'xanchor': 'center'},
+        height=350,
+        margin=dict(t=50, b=60, l=60, r=20),
+        yaxis_title='Monto ($)',
+        showlegend=True,
+        legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
+        paper_bgcolor='white',
+        plot_bgcolor='white',
+        font=dict(family="Arial, sans-serif", size=12),
+        xaxis=dict(showticklabels=False)
+    )
+    
+    # GRÁFICO 3: Top Clientes
+    top_clients = active_clients.order_by('-monthly_payment')[:5]
+    
+    if top_clients.exists():
+        fig_top_clients = go.Figure(data=[
+            go.Bar(
+                y=[client.name[:20] + '...' if len(client.name) > 20 else client.name for client in top_clients],
+                x=[float(client.monthly_payment) for client in top_clients],
+                orientation='h',
+                marker=dict(color='#007bff', line=dict(color='#0056b3', width=1)),
+                text=['$' + f"{float(client.monthly_payment):,.2f}" for client in top_clients],
+                textposition='outside',
+                hovertemplate='<b>%{y}</b><br>Facturación: $%{x:,.2f}<extra></extra>'
+            )
+        ])
+        
+        fig_top_clients.update_layout(
+            title={'text': 'Top 5 Clientes por Facturación', 'x': 0.5, 'xanchor': 'center'},
+            xaxis_title='Facturación Mensual ($)',
+            height=350,
+            margin=dict(t=50, b=60, l=150, r=60),
+            showlegend=False,
+            paper_bgcolor='white',
+            plot_bgcolor='white',
+            font=dict(family="Arial, sans-serif", size=12)
+        )
+    else:
+        fig_top_clients = go.Figure()
+        fig_top_clients.update_layout(
+            title='Top 5 Clientes por Facturación',
+            annotations=[dict(text="No hay datos disponibles", xref="paper", yref="paper", 
+                             x=0.5, y=0.5, showarrow=False, font=dict(size=16))]
+        )
+    
+    #gráficos a HTML
+    config = {'displayModeBar': False, 'responsive': True}
+    chart_status = fig_status.to_html(full_html=False, include_plotlyjs='cdn', config=config)
+    chart_revenue = fig_revenue.to_html(full_html=False, include_plotlyjs=False, config=config)
+    chart_top_clients = fig_top_clients.to_html(full_html=False, include_plotlyjs=False, config=config)
+    
+    context = {
+        'metrics': metrics,
+        'chart_status': chart_status,
+        'chart_revenue': chart_revenue,
+        'chart_top_clients': chart_top_clients,
+    }
+    
+    return render(request, 'base/dashboard.html', context)
 
 
 def client_list(request):
@@ -123,7 +229,6 @@ def client_create(request):
     return render(request, 'client/client_form.html', {'form': form})
 
 
-
 def client_edit(request, client_id):
     client = get_object_or_404(Client, id=client_id)
     if request.method == 'POST':
@@ -178,6 +283,11 @@ def client_edit(request, client_id):
         'client': client
     })
 
+
 def client_detail(request, client_id):
     client = get_object_or_404(Client, id=client_id)
     return render(request, 'client/client_detail.html', {'client': client})
+
+
+
+

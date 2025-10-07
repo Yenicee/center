@@ -58,11 +58,12 @@ def logout_view(request):
     return redirect('login')
 
 #views para patient
+@login_required
 def patient_list(request):
     patients = Patient.objects.all()
     return render(request, 'pacientes/patient/patient_list.html', {'patients': patients})
 
-
+@login_required
 def patient_schedule(request, patient_id):
     # 1. Obtener el paciente
     
@@ -98,7 +99,7 @@ def patient_schedule(request, patient_id):
         'rooms': rooms,
     })
 
-
+@login_required
 def create_patient(request):
     if request.method == 'POST':
         form = PatientForm(request.POST, request.FILES)
@@ -109,7 +110,7 @@ def create_patient(request):
         form = PatientForm()
     return render(request, 'pacientes/patient/new_patient.html',{'form': form})
 
-
+@login_required
 def edit_patient(request, patient_id):
     patient = get_object_or_404(Patient, pk=patient_id)
     if request.method == 'POST':
@@ -121,7 +122,7 @@ def edit_patient(request, patient_id):
         form = PatientForm(instance=patient)
     return render(request, 'pacientes/patient/edit_patient.html', {'form': form, 'patient': patient})
 
-
+@login_required
 def delete_patient(request, patient_id):
     patient = get_object_or_404(Patient, pk=patient_id)
     if request.method == 'POST':
@@ -131,10 +132,11 @@ def delete_patient(request, patient_id):
 
 
 #views para manejo de session
+@login_required
 def calendar_view(request):
     return render(request, 'pacientes/calendar/calendar.html')
 
-
+@login_required
 def new_session(request):
     if request.method == 'POST':
         form = SessionForm(request.POST, request.FILES)
@@ -200,7 +202,7 @@ def new_session(request):
 
     return render(request, 'pacientes/session/new_session.html', {'form': form})
 
-
+@login_required
 def check_availability(request):
     # Obtener los parámetros de la solicitud
     dates = request.GET.getlist('dates[]')  # Lista de fechas
@@ -250,7 +252,7 @@ def check_availability(request):
         'room_conflicts': room_conflicts,
     })
 
-
+@login_required
 def session_detail(request, session_id):
     session = get_object_or_404(Session, id=session_id)
     if request.method == 'POST':
@@ -266,7 +268,7 @@ def session_detail(request, session_id):
             })
     return render(request, 'pacientes/session/session_detail.html', {'session': session})
 
-
+@login_required
 def get_sessions(request):
     try:
         sessions = Session.objects.filter(status__in=["Pendiente", "Cancelada"])
@@ -310,7 +312,7 @@ def get_sessions(request):
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
 
-
+@login_required
 def edit_session(request, session_id):
     session = get_object_or_404(Session, id=session_id)
     if request.method == 'POST':
@@ -325,7 +327,7 @@ def edit_session(request, session_id):
     return render(request, 'pacientes/session/edit_session.html', {'form': form, 'session': session})
 
 @require_POST
-
+@login_required
 def update_session_status(request):
     session_id = request.POST.get('session_id')
     new_status = request.POST.get('new_status')
@@ -341,12 +343,12 @@ def update_session_status(request):
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
 
 # Nuevas vistas para Specialist
-
+@login_required
 def specialist_list(request):
     specialists = Specialist.objects.all()
     return render(request, 'pacientes/specialist/specialist_list.html', {'specialists': specialists})
 
-
+@login_required
 def create_specialist(request):
     if request.method == 'POST':
         form = SpecialistForm(request.POST, request.FILES, request=request)
@@ -364,21 +366,21 @@ def create_specialist(request):
     
     return render(request, 'pacientes/specialist/new_specialist.html', {'form': form})
 
-
+@login_required
 def check_username_availability(request):
     username = request.GET.get('username', None)
     if username and User.objects.filter(username=username).exists():
         return JsonResponse({'available': False, 'message': 'El nombre de usuario ya está en uso.'})
     return JsonResponse({'available': True})
 
-
+@login_required
 def view_specialist(request, specialist_id):
     specialist = get_object_or_404(Specialist, id=specialist_id)
     return render(request, 'pacientes/specialist/view_specialist.html', {
         'specialist': specialist
     })
 
-
+@login_required
 def delete_specialist(request, specialist_id):
     specialist = get_object_or_404(Specialist, id=specialist_id)
     user = specialist.user  # Obtener el usuario relacionado
@@ -389,12 +391,12 @@ def delete_specialist(request, specialist_id):
     return render(request, 'pacientes/specialist/delete_specialist.html', {'specialist': specialist})
         
 #views encargadas de room
-
+@login_required
 def room_list(request):
     rooms = Room.objects.all()
     return render(request, 'pacientes/room/room_list.html', {'rooms': rooms})
 
-
+@login_required
 def create_room(request):
     if request.method == 'POST':
         form = RoomForm(request.POST)
@@ -405,7 +407,7 @@ def create_room(request):
         form = RoomForm()
     return render(request, 'pacientes/room/new_room.html', {'form': form})
 
-
+@login_required
 def edit_room(request, room_id):
     room = get_object_or_404(Room, pk=room_id)
     if request.method == 'POST':
@@ -417,7 +419,7 @@ def edit_room(request, room_id):
         form = RoomForm(instance=room)
     return render(request, 'pacientes/room/edit_room.html', {'form': form, 'room': room})
 
-
+@login_required
 def delete_room(request, room_id):
     room = get_object_or_404(Room, pk=room_id)
     if request.method == 'POST':
@@ -426,7 +428,7 @@ def delete_room(request, room_id):
     return render(request, 'pacientes/room/delete_room.html', {'room': room})
 
 #views encargado de la parte de reservation_list
-
+@login_required
 def reservation_list(request):
    
     today = datetime.now().date()
@@ -447,13 +449,13 @@ def reservation_list(request):
     return render(request, 'pacientes/reservation/reservation_list.html', context)
 
 #views encargada de payment
-
+@login_required
 def payment_list(request):
     # Filtrar pagos solo de sesiones Pendientes o Realizadas
     payments = Payment.objects.filter(session__status__in=['Pendiente', 'Realizada']).order_by('-session__date')
     return render(request, 'pacientes/payments/payment_list.html', {'payments': payments})
 
-
+@login_required
 def create_payment(request):
     if request.method == 'POST':
         form = PaymentForm(request.POST)
@@ -464,7 +466,7 @@ def create_payment(request):
         form = PaymentForm()
     return render(request, 'pacientes/payments/create_payment.html', {'form': form})
 
-
+@login_required
 def edit_payment(request, payment_id):
     payment = get_object_or_404(Payment, pk=payment_id)
     if request.method == 'POST':
@@ -477,7 +479,7 @@ def edit_payment(request, payment_id):
     return render(request, 'pacientes/payments/edit_payment.html', 
                  {'form': form, 'payment': payment})
 
-
+@login_required
 def delete_payment(request, payment_id):
     payment = get_object_or_404(Payment, pk=payment_id)
     if request.method == 'POST':
@@ -486,12 +488,13 @@ def delete_payment(request, payment_id):
     return render(request, 'pacientes/payments/delete_payment.html', 
                  {'payment': payment})
 
-
+@login_required
 def payment_detail(request, payment_id):
     payment = get_object_or_404(Payment, id=payment_id)
     return render(request, 'pacientes/payments/payment_detail.html', 
                  {'payment': payment})
 
+@login_required
 def toggle_payment_status(request):
     payment_id = request.POST.get('payment_id')
     payment = get_object_or_404(Payment, id=payment_id)
