@@ -1,7 +1,8 @@
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet');
 
 * {
-	font-family: 'Montserrat', sans-serif;
+	font-family: 'Roboto', system-ui, -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+	font-weight: 400;
 	margin: 0;
 	padding: 0;
 	box-sizing: border-box;
@@ -14,9 +15,9 @@
 	--dark: #000;
 	--green: #81D43A;
 	--light-green: #E3FFCB;
-	--blue: #1775F1;
+	--blue: #3B82F6;
 	--light-blue: #D0E4FF;
-	--dark-blue: #0C5FCD;
+	--dark-blue: #02060a;
 	--red: #FC3B56;
 }
 
@@ -33,7 +34,7 @@ a {
 	text-decoration: none;
 }
 h1{
-	color: #000;
+	color: #1f1f1f;
 }
 li {
 	list-style: none;
@@ -1332,4 +1333,190 @@ th.sorting_desc::after {
     color: #666;
     border: 2px solid #ddd;
 }
+/* Modo A: solo scroll de página */
+@media (min-width:1280px){
+  #agenda-layout #calendar,
+  #agenda-layout .side-panel{
+    height:auto !important;
+    min-height:unset !important;
+    max-height:none !important;
+    overflow:visible !important;
+    padding:18px;
+  }
+}
 
+/* Headers de días más finos */
+.fc .fc-col-header-cell-cushion{
+  padding:6px 8px !important;
+  font-weight:600 !important;
+  font-size:0.95rem !important;
+  line-height:1.2 !important;
+}
+
+/* ===== Desktop ≥1280px: 70/30 con Flex, limpio y sin wrap ===== */
+@media (min-width:1280px){
+  #agenda-layout{
+    display:flex !important;
+    flex-wrap:nowrap !important;
+    gap:18px !important;
+    align-items:stretch !important;
+    width:100% !important;
+  }
+
+  /* columnas sin herencias molestas */
+  #agenda-layout .col-calendar,
+  #agenda-layout .col-panel{
+    float:none !important; clear:none !important;
+    display:block !important; position:relative !important;
+    width:auto !important; max-width:none !important;
+    margin:0 !important; padding:0 !important; min-width:0 !important;
+    box-sizing:border-box !important;
+  }
+
+  /* 70/30 */
+  #agenda-layout .col-calendar{ flex:0 0 calc(70% - 9px) !important; }
+  #agenda-layout .col-panel{    flex:0 0 calc(30% - 9px) !important; }
+
+  /* tarjeta calendario y panel: más aire y mejor lectura */
+  #agenda-layout #calendar,
+  #agenda-layout .side-panel{
+    height:78vh !important; min-height:640px !important;
+    padding:18px; 
+    overflow:auto;
+  }
+
+  /* neutraliza #calendar globales que tenías */
+  #agenda-layout #calendar{
+    max-width:none !important; margin:0 !important; flex:initial !important;
+  }
+}
+
+/* <1280px: una columna con el mismo look */
+@media (max-width:1279.98px){
+  #agenda-layout{ display:block !important; }
+  #agenda-layout #calendar,
+  #agenda-layout .side-panel{
+    background:#fff; border-radius:12px;
+    box-shadow:0 6px 18px rgba(20,20,20,.06);
+    padding:16px; margin-bottom:14px;
+  }
+}
+
+/* —— Panel lateral (tipografía + espacios) —— */
+.side-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;}
+.side-title{font-weight:700;font-size:1.05rem;}
+.date-indicator{font-size:.92rem;opacity:.8;}
+.events-list{overflow:auto;border-top:1px solid #eef0f3;padding-top:10px;margin-top:8px;}
+.event-row{
+  border:1px solid #e6e9ef; border-radius:10px;
+  padding:12px 14px; margin-bottom:10px; cursor:pointer;
+  transition:box-shadow .15s ease, transform .05s ease, border-color .15s ease;
+  background:#fff;
+}
+.event-row:hover{box-shadow:0 4px 14px rgba(20,20,20,.08); transform:translateY(-1px); border-color:#d7dce6;}
+.event-row .time{font-size:.85rem; color:#555; margin-bottom:6px;}
+/* Alineación del encabezado del panel (margin-top se ajusta por JS) */
+.side-header { margin-bottom: 10px; }
+
+/* Card/nubecita del detalle */
+.selected-card{
+  position:relative; background:#fff; border:1px solid #e6e9ef; border-radius:12px;
+  padding:14px 16px 16px; box-shadow:0 6px 18px rgba(20,20,20,.06); margin-top:12px;
+}
+.selected-card::before{
+  content:""; position:absolute; left:18px; top:-8px; width:14px; height:14px; background:#fff;
+  border-left:1px solid #e6e9ef; border-top:1px solid #e6e9ef; transform:rotate(45deg);
+}
+.event-row{
+  border:1px solid #e6e9ef; border-radius:12px; padding:10px 12px; margin-bottom:10px; background:#fff;
+}
+.card-close{
+  position: absolute;
+  top: 8px; right: 8px;
+  width: 28px; height: 28px;
+  border: none; border-radius: 999px;
+  background: #f3f4f6; color: #111827;
+  cursor: pointer; line-height: 18px; text-align: center;
+}
+.card-close:hover{ background: #e7e9ee; }
+
+.selected-title{ font-weight: 700; display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+
+/* ——— Mejora tipográfica de la ficha ——— */
+.details{
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 8px;
+  margin: 6px 0 10px 0;
+}
+.details .row{
+  display: grid;
+  grid-template-columns: 140px 1fr;   /* etiqueta / valor */
+  gap: 10px;
+  align-items: start;
+  padding: 6px 0;
+  border-bottom: 1px dashed #edf0f4;
+}
+.details .row:last-child{ border-bottom: 0; }
+.details dt{
+  color: #6b7280;                      /* gris suave para etiqueta */
+  font-size: .82rem;
+  line-height: 1.25;
+  white-space: nowrap;
+}
+.details dd{
+  margin: 0;
+  color: #111827;
+  font-size: .95rem;
+  line-height: 1.35;
+  font-weight: 500;                     /* da jerarquía al valor */
+}
+.details .row-full{ grid-column: 1 / -1; grid-template-columns: 140px 1fr; }
+
+/* Responsive: en pantallas estrechas, etiqueta arriba y valor abajo */
+@media (max-width: 420px){
+  .details .row, .details .row-full{ grid-template-columns: 1fr; }
+  .details dt{ margin-bottom: 2px; }
+}
+
+/* ——— Botones alineados a la derecha y al mismo alto ——— */
+.actions{
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 12px;
+}
+.actions .btn{
+  min-height: 40px;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: 10px;
+}
+
+/* Ajustes a la X para que quede perfecta */
+.card-close{
+  top: 10px;            /* ajusta fino si hace falta */
+  right: 12px;
+  width: 30px; height: 30px;
+  display: flex; align-items: center; justify-content: center;
+  line-height: 1; font-size: 14px;
+}
+.card-close svg{ width: 16px; height: 16px; }
+
+/* Opcional: separadores y cards de la lista un poco más densos */
+.event-row{
+  border: 1px solid #e6e9ef; border-radius: 12px;
+  padding: 10px 12px; margin-bottom: 10px; background: #fff;
+}
+.event-row small{ color: #6b7280; }
+
+/* Suaviza la transición del alto interno del calendario */
+#agenda-layout #calendar .fc-view-harness {
+  transition: height .22s ease;
+}
+
+/* Evita desbordes durante la animación de layout */
+#agenda-layout .col-calendar { overflow: hidden; }

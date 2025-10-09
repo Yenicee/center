@@ -1,158 +1,381 @@
 {% extends "pacientes/base/base.html" %}
-
 {% load static %}
+
+{% block title %}Agenda – Calendario{% endblock %}
 
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
 <style>
-    .fc-event {
-        margin: 2px 0;
-        padding: 2px;
-    }
-    
-    .fc-event-title {
-        font-weight: bold;
-        white-space: normal;
-    }
-    
-    .fc-daygrid-event {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        color: white;
-        white-space: normal !important;
-        overflow: hidden;
-    }
-    
-    .fc-description {
-        font-size: 0.875em;
-        opacity: 0.9;
-        margin-top: 2px;
-    }
-    
-    #calendar {
-        background: white;
-        padding: 15px;
-        border-radius: 8px;
-        box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        height: 800px;
-        margin: 20px;
-    }
+/* ======= Layout 70/30 limpio ======= */
+@media (min-width:1280px){
+  #agenda-layout{ display:flex; flex-wrap:nowrap; gap:18px; align-items:flex-start; width:100%; }
+  #agenda-layout .col-calendar{ flex:0 0 70%; min-width:0; }
+  #agenda-layout .col-panel{    flex:0 0 30%; min-width:0; }
 
-    /* Mejoras adicionales para la visualización */
-    .fc-daygrid-day-events {
-        margin-bottom: 0;
-    }
+  /* Tarjetas contenedoras */
+  #agenda-layout #calendar,
+  #agenda-layout .side-panel{
+    background:#fff; border-radius:12px; box-shadow:0 6px 18px rgba(20,20,20,.06);
+    padding:18px;
+  }
+}
+/* <1280px: una columna */
+@media (max-width:1279.98px){
+  #agenda-layout{ display:block; }
+  #agenda-layout #calendar,
+  #agenda-layout .side-panel{
+    background:#fff; border-radius:12px; box-shadow:0 6px 18px rgba(20,20,20,.06);
+    padding:16px; margin-bottom:14px;
+  }
+}
 
-    .fc-event-time {
-        font-weight: bold;
-    }
+/* Panel lateral */
+.side-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+.side-title{ font-weight:700; font-size:1.05rem; }
+.date-indicator{ font-size:.92rem; opacity:.8; }
+.events-list{ overflow:visible; border-top:1px solid #eef0f3; padding-top:10px; margin-top:8px; }
+.event-row{
+  border:1px solid #e6e9ef; border-radius:10px; padding:12px 14px; margin-bottom:10px;
+  cursor:pointer; transition:box-shadow .15s ease, transform .05s ease, border-color .15s ease; background:#fff;
+}
+.event-row:hover{ box-shadow:0 4px 14px rgba(20,20,20,.08); transform:translateY(-1px); border-color:#d7dce6; }
+.event-row .time{ font-weight:700; margin-right:6px; }
+.event-row .patient{ font-weight:600; }
+.badge{ font-size:.75rem; padding:3px 8px; border-radius:999px; background:#eef2ff; color:#3730a3; }
+.btn{ display:inline-block; padding:8px 12px; border-radius:8px; text-decoration:none; }
+.btn-primary{ background:#0d6efd; color:#fff; }
+.btn-secondary{ background:#f3f4f6; color:#111827; }
 
-    .fc-toolbar-title {
-        font-size: 1.5em !important;
-        font-weight: bold;
-    }
+/* Card / nubecita de detalle */
+.selected-card{
+  position: relative; background: #fff; border: 1px solid #e6e9ef; border-radius: 12px;
+  padding: 14px 16px 16px 16px; box-shadow: 0 6px 18px rgba(20,20,20,.06); margin-top: 12px;
+}
+.selected-card::before{
+  content: ""; position: absolute; left: 18px; top: -8px; width: 14px; height: 14px; background: #fff;
+  border-left: 1px solid #e6e9ef; border-top: 1px solid #e6e9ef; transform: rotate(45deg);
+  box-shadow: -2px -2px 6px rgba(20,20,20,.03);
+}
+.card-close{
+  position: absolute; top: 8px; right: 10px; width: 28px; height: 28px; border: none; border-radius: 999px;
+  background: #f3f4f6; color: #111827; cursor: pointer; line-height: 28px; text-align: center;
+}
+.card-close:hover{ background: #e7e9ee; }
+.selected-title{ font-weight: 700; display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+.selected-grid{ display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.field{ font-size:.94rem; line-height:1.35; }
+.field label{ display:block; font-size:.75rem; color:#6b7280; margin-bottom:3px; }
+.field p{ margin:0; }
 
-    .fc-button-primary {
-        background-color: #0d6efd !important;
-        border-color: #0d6efd !important;
-    }
-
-    .fc-button-primary:hover {
-        background-color: #0b5ed7 !important;
-        border-color: #0a58ca !important;
-    }
-
-    /* Mejorar la visualización en vista semanal y diaria */
-    .fc-timegrid-event {
-        background-color: #0d6efd;
-        border-color: #0d6efd;
-        padding: 4px;
-    }
-
-    .fc-timegrid-event .fc-event-main {
-        padding: 2px 4px;
-    }
+/* FullCalendar - headers más compactos + eventos coloreados */
+.fc .fc-col-header-cell-cushion{ padding:6px 8px !important; font-weight:600 !important; font-size:0.95rem !important; line-height:1.2 !important; }
+.fc .fc-toolbar-title{ font-weight:800 !important; letter-spacing:.2px; }
+.fc-daygrid-event, .fc-timegrid-event{ background:#0d6efd; border-color:#0d6efd; color:#fff; }
+.fc-timegrid-event .fc-event-main{ padding:4px 6px; }
 </style>
-
 {% endblock %}
 
-{% block right_column_class %}hidden{% endblock %}
-{% block left_column_class %}left-full{% endblock %}
-
 {% block left_content %}
-<div id="calendar"></div>
+<div id="agenda-layout">
+  <!-- 70% -->
+  <div class="col-calendar">
+    <div id="calendar"></div>
+  </div>
+
+  <!-- 30% -->
+  <aside class="col-panel side-panel">
+    <div class="side-header">
+      <div>
+        <div class="side-title">Eventos del día</div>
+        <div id="current-day-label" class="date-indicator"></div>
+      </div>
+      <button id="btn-today" class="btn btn-secondary" type="button">Hoy</button>
+    </div>
+
+    <div id="day-events" class="events-list"></div>
+
+    <!-- Card de detalle -->
+    <div id="selected-event" class="selected-card" hidden>
+    <button id="sel-close" class="card-close" type="button" aria-label="Cerrar">
+        <svg width="14" height="14" viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M18 6L6 18M6 6l12 12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+    </button>
+
+    <div class="selected-title">Vista rápida <span id="selected-status" class="badge"></span></div>
+
+    <!-- ficha de datos -->
+    <dl class="details">
+        <div class="row">
+        <dt>Hora</dt><dd id="sel-time">—</dd>
+        </div>
+        <div class="row">
+        <dt>Sala</dt><dd id="sel-room">—</dd>
+        </div>
+        <div class="row">
+        <dt>Paciente</dt><dd id="sel-patient">—</dd>
+        </div>
+        <div class="row">
+        <dt>Especialista</dt><dd id="sel-specialist">—</dd>
+        </div>
+        <div class="row row-full">
+        <dt>Actividad / Objetivo</dt><dd id="sel-activity">—</dd>
+        </div>
+    </dl>
+
+    <div class="actions">
+        <a id="sel-edit" class="btn btn-secondary" href="#">Editar</a>
+        <a id="sel-open" class="btn btn-primary" href="#">Ver detalle</a>
+    </div>
+    </div>
+
+  </aside>
+</div>
 {% endblock %}
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js"></script>
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        var calendarEl = document.getElementById('calendar');
-    
-        var calendar = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'dayGridMonth',
-            locale: 'es',
-            headerToolbar: {
-                left: 'prev,next today',
-                center: 'title',
-                right: 'dayGridMonth,timeGridWeek,timeGridDay'
-            },
-            buttonText: {
-                today: 'Hoy',
-                month: 'Mes',
-                week: 'Semana',
-                day: 'Día',
-                list: 'Lista'
-            },
-            slotMinTime: '07:00:00',
-            slotMaxTime: '22:00:00',
-            nowIndicator: true,
-            events: {
-                url: "{% url 'get_sessions' %}",
-                method: 'GET',
-                failure: function(error) {
-                    console.error('Error al cargar las reservas:', error);
-                    alert('Error al cargar las reservas');
-                }
-            },
-            eventDidMount: function(info) {
-                info.el.title = `
-                    Paciente: ${info.event.extendedProps.patient || 'No especificado'}
-                    Especialista: ${info.event.extendedProps.specialist || 'No especificado'}
-                    Sala: ${info.event.extendedProps.room || 'No especificada'}
-                    Objetivo: ${info.event.extendedProps.objective || 'No especificado'}
-                    Actividad: ${info.event.extendedProps.activity || 'No especificada'}
-                `.trim();
-            },
-            eventContent: function(arg) {
-                return {
-                    html: `
-                        <div class="fc-content">
-                            <div class="fc-title">
-                                <strong>${arg.timeText}</strong> - ${arg.event.extendedProps.patient || 'Sin paciente'}
-                            </div>
-                            <div class="fc-description small">
-                                ${arg.event.extendedProps.activity || arg.event.extendedProps.objective || 'Sin actividad'}
-                            </div>
-                        </div>
-                    `
-                };
-            },
-            displayEventEnd: true,
-            eventTimeFormat: {
-                hour: '2-digit',
-                minute: '2-digit',
-                hour12: false
-            },
-            dayMaxEvents: true,
-            eventClick: function(info) {
-                info.jsEvent.preventDefault();
-                window.location.href = `/pacientes/sessions/${info.event.extendedProps.session_id}/`;
-            }
-        });
-    
-        calendar.render();
+(function(){
+  const fmtTime = d => d ? new Intl.DateTimeFormat('es-PE',{hour:'2-digit',minute:'2-digit',hour12:false}).format(d) : '';
+  const fmtDayLong = d => new Intl.DateTimeFormat('es-PE',{weekday:'long', day:'2-digit', month:'long', year:'numeric'}).format(d);
+
+  let selectedDate = null;
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const calendarEl = document.getElementById('calendar');
+    const dayListEl  = document.getElementById('day-events');
+    const dayLabelEl = document.getElementById('current-day-label');
+    const btnToday   = document.getElementById('btn-today');
+
+    const selBox   = document.getElementById('selected-event');
+    const selStatus= document.getElementById('selected-status');
+    const selTime  = document.getElementById('sel-time');
+    const selRoom  = document.getElementById('sel-room');
+    const selPatient=document.getElementById('sel-patient');
+    const selSpec  = document.getElementById('sel-specialist');
+    const selAct   = document.getElementById('sel-activity');
+    const selOpen  = document.getElementById('sel-open');
+    const selEdit  = document.getElementById('sel-edit');
+    const selClose = document.getElementById('sel-close');
+
+    function setDayLabel(date){ dayLabelEl.textContent = fmtDayLong(date); }
+
+    function alignPanelHeader(){
+      const tb = calendarEl.querySelector('.fc-toolbar, .fc-header-toolbar');
+      const h = tb ? tb.getBoundingClientRect().height : 0;
+      const sh = document.querySelector('.side-header');
+      if (sh) sh.style.marginTop = (h ? (h - 4) : 0) + 'px';
+    }
+
+    function eventMatchesDay(ev, date){
+      const dayStart = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 0,0,0,0);
+      const dayEnd   = new Date(date.getFullYear(), date.getMonth(), date.getDate(), 23,59,59,999);
+      const evStart = ev.start, evEnd = ev.end || ev.start;
+      return evStart <= dayEnd && evEnd >= dayStart;
+    }
+
+    function badge(text){ return `<span class="badge">${text}</span>`; }
+
+    function renderDayEvents(date){
+      setDayLabel(date);
+      dayListEl.innerHTML = '';
+      const items = calendar.getEvents()
+        .filter(e => eventMatchesDay(e, date))
+        .sort((a,b)=> (a.start||0) - (b.start||0));
+
+      if(items.length === 0){
+        dayListEl.innerHTML = '<p style="opacity:.7">No hay eventos para esta fecha.</p>';
+        return;
+      }
+
+      for (const ev of items){
+        const row = document.createElement('div');
+        row.className = 'event-row';
+        const patient = ev.extendedProps.patient || 'Sin paciente';
+        const activity = ev.extendedProps.activity || ev.extendedProps.objective || '';
+        const room = ev.extendedProps.room || '';
+        const status = ev.extendedProps.status || '';
+        const timeStr = ev.allDay ? 'Todo el día' : `${fmtTime(ev.start)}${ev.end ? '–'+fmtTime(ev.end): ''}`;
+        row.innerHTML = `
+          <div><span class="time">${timeStr}</span> <span class="patient">${patient}</span></div>
+          <div style="display:flex; align-items:center; gap:8px; margin-top:4px;">
+            <small>${activity}</small>
+            ${status ? badge(status): ''}
+            ${room ? badge(room): ''}
+          </div>`;
+        row.addEventListener('click', ()=> showSelected(ev));
+        dayListEl.appendChild(row);
+      }
+    }
+
+    function showSelected(ev){
+      selBox.hidden = false;
+      selStatus.textContent = ev.extendedProps.status || '';
+      selTime.textContent = ev.allDay ? 'Todo el día' : `${fmtTime(ev.start)}${ev.end ? ' – '+fmtTime(ev.end): ''}`;
+      selRoom.textContent = ev.extendedProps.room || '—';
+      selPatient.textContent = ev.extendedProps.patient || '—';
+      selSpec.textContent = ev.extendedProps.specialist || '—';
+      selAct.textContent = ev.extendedProps.activity || ev.extendedProps.objective || '—';
+      const sid = ev.extendedProps.session_id;
+      selOpen.href = sid ? `/pacientes/sessions/${sid}/` : '#';
+      selEdit.href = sid ? `/pacientes/sessions/${sid}/edit/` : '#';
+    }
+    function hideSelected(){ selBox.hidden = true; }
+
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+      initialView: 'dayGridMonth',
+      locale: 'es',
+      buttonText: { today: 'Hoy', month: 'Mes' },
+
+      /* Alto fluido: sin doble scroll */
+      height: 'auto',
+      expandRows: true,
+      handleWindowResize: true,
+
+      /* ✅ Solo vista Mes */
+      headerToolbar: { left: 'prev,next today', center: 'title', right: 'dayGridMonth' },
+
+      nowIndicator: true,
+
+      events: {
+        url: "{% url 'get_sessions' %}",
+        method: 'GET',
+        failure(error){
+          console.error('Error al cargar las reservas:', error);
+          alert('Error al cargar las reservas');
+        }
+      },
+
+      /* Refrescos mínimos y seguros */
+      eventsSet(){
+        renderDayEvents(selectedDate || calendar.getDate());
+        alignPanelHeader();
+      },
+      datesSet(){
+        renderDayEvents(selectedDate || calendar.getDate());
+        alignPanelHeader();
+      },
+
+      dateClick(info){
+        selectedDate = info.date;
+        renderDayEvents(selectedDate);
+      },
+
+      eventDidMount(info){
+        info.el.title = `Paciente: ${info.event.extendedProps.patient || 'No especificado'}
+Especialista: ${info.event.extendedProps.specialist || 'No especificado'}
+Sala: ${info.event.extendedProps.room || 'No especificada'}
+Objetivo: ${info.event.extendedProps.objective || 'No especificado'}
+Actividad: ${info.event.extendedProps.activity || 'No especificada'}`.trim();
+        info.el.style.backgroundColor = '#0d6efd';
+        info.el.style.borderColor = '#0d6efd';
+        info.el.style.color = '#fff';
+      },
+
+      eventContent(arg){
+        const patient = arg.event.extendedProps.patient || 'Sin paciente';
+        const activity = arg.event.extendedProps.activity || arg.event.extendedProps.objective || 'Sin actividad';
+        return { html: `<div><div class="fc-title"><strong>${arg.timeText}</strong> - ${patient}</div><div class="fc-description" style="font-size:.82rem;opacity:.9">${activity}</div></div>` };
+      },
+
+      displayEventEnd: true,
+      eventTimeFormat: { hour:'2-digit', minute:'2-digit', hour12:false },
+      dayMaxEvents: true,
+
+      eventClick(info){
+        info.jsEvent.preventDefault();
+        showSelected(info.event);
+      }
     });
+
+    /* Controles */
+    btnToday.addEventListener('click', ()=>{
+      calendar.today();
+      selectedDate = calendar.getDate();
+      renderDayEvents(selectedDate);
+      alignPanelHeader();
+    });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideSelected(); });
+    selClose.addEventListener('click', hideSelected);
+
+    /* Render inicial */
+    calendar.render();
+    selectedDate = calendar.getDate();
+    renderDayEvents(selectedDate);
+    alignPanelHeader();
+
+    /* === AUTO-ESCALA SUAVE AL COLAPSAR/EXPANDIR SIDEBAR (base.html) === */
+    let rafPending = false;
+    function refreshCalendarSize() {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+        rafPending = false;
+        calendar.updateSize();
+        alignPanelHeader();
+    });
+    }
+
+    /* Bloquea altura mientras dura la animación para evitar “hueco” blanco */
+    let unlockTimer;
+    function lockHeight() {
+    const h = calendarEl.offsetHeight;
+    calendarEl.style.minHeight = h + 'px';
+    clearTimeout(unlockTimer);
+    }
+    function unlockHeight() {
+    clearTimeout(unlockTimer);
+    unlockTimer = setTimeout(() => {
+        calendarEl.style.minHeight = '';
+        refreshCalendarSize();
+    }, 40);
+    }
+
+    /* Targets a observar */
+    const sidebar   = document.getElementById('sidebar');
+    const content   = document.getElementById('content');           // contenedor principal
+    const layout    = document.getElementById('agenda-layout');     // nuestro layout
+    const calWrap   = calendarEl.parentElement;                     // .col-calendar
+    const toggleBtn = document.querySelector('.toggle-sidebar');    // ícono hamburguesa
+
+    /* ResizeObserver: re-mide durante la animación */
+    if (window.ResizeObserver) {
+    const ro = new ResizeObserver(() => { lockHeight(); refreshCalendarSize(); });
+    [sidebar, content, layout, calWrap].forEach(el => el && ro.observe(el));
+    }
+
+    /* Coordinamos inicio/fin de la transición de sidebar/content */
+    [sidebar, content].forEach(el => {
+    if (!el) return;
+    el.addEventListener('transitionstart', (e) => {
+        if (/width|left|right|margin|transform/.test(e.propertyName || '')) {
+        lockHeight();
+        }
+    });
+    el.addEventListener('transitionend', (e) => {
+        if (/width|left|right|margin|transform/.test(e.propertyName || '')) {
+        unlockHeight();
+        }
+    });
+    });
+
+    /* Refuerzo: cuando se hace click en el botón, empezamos el lock inmediatamente */
+    toggleBtn?.addEventListener('click', () => {
+    lockHeight();
+    refreshCalendarSize();
+    });
+
+    /* Fallback: resize de ventana */
+    window.addEventListener('resize', () => { lockHeight(); refreshCalendarSize(); unlockHeight(); });
+
+    /* === FIN AUTO-ESCALA === */
+
+    selectedDate = calendar.getDate();
+    renderDayEvents(selectedDate);
+    alignPanelHeader();
+  });
+})();   
 </script>
 {% endblock %}
+

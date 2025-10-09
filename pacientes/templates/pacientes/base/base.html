@@ -18,10 +18,9 @@
 				<li><a href="#" class="active"><i class='bx bxs-dashboard icon' ></i> Dashboard</a></li>
 				<li class="divider" data-text="Consultorio"></li>
 				<li>
-					<a href="{% url 'calendar' %}"><i class="fa-regular fa-calendar icon"></i>Agenda <i class='bx bx-chevron-right icon-right' ></i></a>
-					<ul class="side-dropdown">
-						<li><a href="{% url 'calendar' %}">Ver Calendario</a></li>
-					</ul>
+					<a href="{% url 'calendar' %}" class="{% if request.resolver_match.url_name == 'calendar' %}active{% endif %}">
+						<i class="fa-regular fa-calendar icon"></i> Agenda
+					</a>
 				</li>
 
 				<li>
