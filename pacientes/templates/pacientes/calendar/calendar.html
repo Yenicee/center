@@ -274,10 +274,24 @@ Actividad: ${info.event.extendedProps.activity || 'No especificada'}`.trim();
       },
 
       eventContent(arg){
-        const patient = arg.event.extendedProps.patient || 'Sin paciente';
-        const activity = arg.event.extendedProps.activity || arg.event.extendedProps.objective || 'Sin actividad';
-        return { html: `<div><div class="fc-title"><strong>${arg.timeText}</strong> - ${patient}</div><div class="fc-description" style="font-size:.82rem;opacity:.9">${activity}</div></div>` };
-      },
+  const fmt = (d)=> new Intl.DateTimeFormat('es-PE',{hour:'2-digit',minute:'2-digit',hour12:false}).format(d);
+  const start = arg.event.start ? fmt(arg.event.start) : '';
+  const patient  = arg.event.extendedProps.patient || 'Sin paciente';
+  const room     = arg.event.extendedProps.room || '';
+  const status   = (arg.event.extendedProps.status || '').toLowerCase(); // planificada/abierta/cerrada/cancelada
+
+  return {
+    html: `
+      <div class="ev">
+        <span class="ev-time">${start}</span>
+        <span class="ev-title">${patient}</span>
+        ${room ? `<span class="ev-chip">${room}</span>` : ''}
+        ${status ? `<i class="ev-dot ev-${status}"></i>` : ''}
+      </div>
+    `
+  };
+},
+
 
       displayEventEnd: true,
       eventTimeFormat: { hour:'2-digit', minute:'2-digit', hour12:false },
