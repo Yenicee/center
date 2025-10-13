@@ -152,6 +152,37 @@ Cada consultorio puede gestionar:
 - **Salas**: Espacios físicos del consultorio
 - **Pagos**: Facturación de pacientes
 
+
+## Sistema de Notificaciones por Email
+### Configuración de Email Corporativo
+
+El sistema envía automáticamente emails de bienvenida cuando se crea un nuevo cliente.
+
+Email de Bienvenida Automático
+Cuando se crea un nuevo cliente desde el panel administrativo (/panel/clients/add/), el sistema automáticamente:
+✅ Genera una contraseña segura aleatoria
+✅ Crea el tenant y usuario
+✅ Envía un email profesional con:
+
+Credenciales de acceso (usuario y contraseña)
+URL del dominio del cliente
+Instrucciones de primer ingreso
+
+#### 1. Crear Email Corporativo
+
+Crea una cuenta de Gmail para el sistema:
+- Email recomendado: `noreply.tucentro@gmail.com`
+- Activar verificación en 2 pasos
+- Generar contraseña de aplicación en: https://myaccount.google.com/apppasswords
+
+#### 2. Configurar Variables de Entorno
+
+Agregar al archivo `.env`:
+```env
+EMAIL_HOST_USER=noreply.tucentro@gmail.com
+EMAIL_HOST_PASSWORD=xxxx xxxx xxxx xxxx
+SECRET_KEY=your-secret-key-here
+
 ## Desarrollo
 
 ### Estructura de URLs

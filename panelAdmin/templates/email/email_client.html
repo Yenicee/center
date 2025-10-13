@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background-color: #f4f4f4;
+            margin: 0;
+            padding: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .header {
+            background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+            color: white;
+            padding: 40px 20px;
+            text-align: center;
+        }
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 600;
+        }
+        .content {
+            padding: 40px 30px;
+        }
+        .content h2 {
+            color: #007bff;
+            font-size: 22px;
+            margin-top: 0;
+        }
+        .credentials-box {
+            background: #f8f9fa;
+            border-left: 4px solid #007bff;
+            padding: 20px;
+            margin: 25px 0;
+            border-radius: 5px;
+        }
+        .credentials-box p {
+            margin: 10px 0;
+            font-size: 15px;
+        }
+        .credentials-box strong {
+            color: #007bff;
+            display: inline-block;
+            min-width: 120px;
+        }
+        .credentials-box .value {
+            background: #fff;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-family: 'Courier New', monospace;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .button {
+            display: inline-block;
+            padding: 14px 30px;
+            background: #007bff;
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: 600;
+            margin: 20px 0;
+        }
+        .info-box {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        .info-box p {
+            margin: 5px 0;
+            color: #856404;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px;
+            text-align: center;
+            font-size: 13px;
+            color: #6c757d;
+            border-top: 1px solid #e9ecef;
+        }
+        .divider {
+            height: 1px;
+            background: #e9ecef;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎉 ¡Bienvenido a nuestro Sistema!</h1>
+        </div>
+        
+        <div class="content">
+            <h2>Hola {{ client.admin_name }},</h2>
+            
+            <p>Nos complace informarte que tu cuenta ha sido creada exitosamente en nuestro sistema de gestión.</p>
+            
+            <div class="credentials-box">
+                <p><strong>📋 Datos de tu cuenta:</strong></p>
+                <div class="divider"></div>
+                <p><strong>Centro:</strong> <span class="value">{{ client.name }}</span></p>
+                <p><strong>Email:</strong> <span class="value">{{ client.admin_email }}</span></p>
+                <p><strong>Usuario:</strong> <span class="value">{{ username }}</span></p>
+                <p><strong>Contraseña:</strong> <span class="value">{{ password }}</span></p>
+                <p><strong>Dominio:</strong> <span class="value">{{ domain_url }}</span></p>
+            </div>
+            
+            <div style="text-align: center;">
+                <a href="{{ domain_url }}" class="button">🚀 Acceder a mi Panel</a>
+            </div>
+            
+            <div class="info-box">
+                <p><strong>⚠️ Importante:</strong></p>
+                <p>• Por seguridad, te recomendamos cambiar tu contraseña al primer ingreso.</p>
+                <p>• Guarda estas credenciales en un lugar seguro.</p>
+                <p>• Tu plan actual permite hasta <strong>{{ client.specialists_limit }} especialistas</strong>.</p>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <p>Si tienes alguna consulta o necesitas ayuda, no dudes en contactarnos.</p>
+            
+            <p style="margin-top: 30px;">
+                <strong>¡Éxitos en tu gestión!</strong><br>
+                El equipo de Soporte
+            </p>
+        </div>
+        
+        <div class="footer">
+            <p>&copy; 2025 Sistema de Gestión. Todos los derechos reservados.</p>
+            <p>Este es un correo automático, por favor no responder.</p>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,10 +1,39 @@
+# Variables de entorno
+.env
+
 # Entorno virtual
 venv/
 
 # Caché de Python
 __pycache__/
 *.pyc
+*.pyo
+*.pyd
 
 # Archivos del sistema
 .DS_Store
+Thumbs.db
 
+# Logs
+*.log
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Backups de base de datos
+*.sql
+*.backup
+BD_backup.sql
+
+# Media files (archivos subidos por usuarios)
+media/
+
+# Static files collected
+staticfiles/
+
+# Archivos de Django
+*.pot
+local_settings.py

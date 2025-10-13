@@ -1,59 +1,137 @@
 {% load static %}
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/dash.css' %}">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <link rel="stylesheet" href="{% static 'css/dash.css' %}" />
     <title>Lista de Clientes</title>
-</head>
-<body>
+  </head>
+  <body>
     <div class="dashboard-container">
-        <header class="dashboard-header">
-            <div style="display: flex; justify-content: space-between; align-items: center;">
-                <h1>Lista de Clientes</h1>
-                <a href="{% url 'dashboard' %}" class="action-button" style="margin: 0;">← Volver al Dashboard</a>
-            </div>
-        </header>
-
-        <!-- Mostrar mensajes de éxito -->
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li style="color: green; font-weight: bold;">{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-
-        <!-- Tabla de clientes -->
-        <div class="table">
-            <table border="1">
-                <thead>
-                    <tr>
-                        <th>Nombre</th>
-                        <th>Administrador</th>
-                        <th>Correo</th>
-                        <th>Estado</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for client in clients %}
-                        <tr>
-                            <td>{{ client.name }}</td>
-                            <td>{{ client.admin_name }}</td>
-                            <td>{{ client.admin_email }}</td>
-                            <td>{{ client.get_status_display }}</td>
-                            <td>
-                                <a href="{% url 'client_detail' client.id %}">Detalles</a>
-                                <span>|</span>
-                                <a href="{% url 'client_edit' client.id %}">Editar</a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+      <header class="dashboard-header">
+        <div
+          style="
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+          "
+        >
+          <h1>Lista de Clientes</h1>
+          <a
+            href="{% url 'dashboard' %}"
+            class="action-button"
+            style="margin: 0"
+            >← Volver al Dashboard</a
+          >
         </div>
+      </header>
+
+      <!-- Mostrar mensajes -->
+      {% if messages %}
+      <ul class="messages">
+        {% for message in messages %}
+        <li class="{% if message.tags %}{{ message.tags }}{% endif %}">
+          {{ message }}
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+
+      <!-- Tabla de clientes -->
+      <div class="table">
+        <table border="1">
+          <thead>
+            <tr>
+              <th>Nombre</th>
+              <th>Administrador</th>
+              <th>Correo</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for client in clients %}
+            <tr>
+              <td>{{ client.name }}</td>
+              <td>{{ client.admin_name }}</td>
+              <td>{{ client.admin_email }}</td>
+              <td>{{ client.get_status_display }}</td>
+              <td style="text-align: center">
+                <a
+                  href="{% url 'client_detail' client.id %}"
+                  style="
+                    color: #007bff;
+                    text-decoration: none;
+                    margin: 0 10px;
+                    font-size: 18px;
+                  "
+                  title="Ver detalles"
+                >
+                  <i class="fas fa-eye"></i>
+                </a>
+                <a
+                  href="{% url 'client_edit' client.id %}"
+                  style="
+                    color: #ffc107;
+                    text-decoration: none;
+                    margin: 0 10px;
+                    font-size: 18px;
+                  "
+                  title="Editar"
+                >
+                  <i class="fas fa-edit"></i>
+                </a>
+                <form
+                  id="delete-form-{{ client.id }}"
+                  method="POST"
+                  action="{% url 'client_delete' client.id %}"
+                  style="display: inline; margin: 0"
+                >
+                  {% csrf_token %}
+                  <button
+                    type="button"
+                    onclick="confirmDelete(event, '{{ client.name }}', {{ client.id }})"
+                    style="
+                      background: none;
+                      border: none;
+                      color: #dc3545;
+                      cursor: pointer;
+                      padding: 0;
+                      margin: 0 10px;
+                      font-size: 18px;
+                    "
+                    title="Eliminar"
+                  >
+                    <i class="fas fa-trash-alt"></i>
+                  </button>
+                </form>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
     </div>
-</body>
+
+    <script>
+      function confirmDelete(event, clientName, clientId) {
+        event.preventDefault();
+
+        if (
+          confirm(
+            '¿Estás seguro de que deseas eliminar el cliente "' +
+              clientName +
+              '"?\n\n⚠️ Esta acción eliminará:\n• El cliente y su información\n• El usuario asociado\n• El dominio\n• El schema de base de datos\n\nEsta acción NO se puede deshacer.'
+          )
+        ) {
+          document.getElementById("delete-form-" + clientId).submit();
+        }
+      }
+    </script>
+  </body>
 </html>
