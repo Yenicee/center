@@ -1,0 +1,24 @@
+{% extends "pacientes/base/base.html" %}
+{% block content %}
+<h1 class="title">Equipos</h1>
+<a href="{% url 'equipment_create' %}" class="btn btn-primary btn-md"><i class="fas fa-plus"></i> Nuevo</a>
+<table class="table" style="margin-top:10px;">
+  <thead><tr><th>Nombre</th><th>Código</th><th>Acciones</th></tr></thead>
+  <tbody>
+  {% for e in items %}
+    <tr>
+      <td>{{ e.name }}</td>
+      <td>{{ e.code }}</td>
+      <td>
+        <a href="{% url 'equipment_update' e.id %}" class="btn btn-secondary btn-md">Editar</a>
+        <form action="{% url 'equipment_delete' e.id %}" method="post" style="display:inline;">
+          {% csrf_token %}<button class="btn btn-danger btn-md" onclick="return confirm('¿Eliminar?')">Eliminar</button>
+        </form>
+      </td>
+    </tr>
+  {% empty %}
+    <tr><td colspan="3">Sin equipos.</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

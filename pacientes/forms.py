@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from .models import Patient, Session, Specialist, Room, Payment
+from .models import Patient, Session, Specialist, Room, Payment, Equipment
 from panelAdmin.models import Client
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
@@ -195,18 +195,26 @@ class SpecialistForm(forms.ModelForm):
        specialist.save() if commit else None
 
        return specialist
-  
+
+class EquipmentForm(forms.ModelForm):
+    class Meta:
+        model = Equipment
+        fields = ['name', 'code']
+
 class RoomForm(forms.ModelForm):
+    equipment = forms.ModelMultipleChoiceField(
+        queryset=Equipment.objects.order_by('name'),
+        required=False,
+        widget=forms.CheckboxSelectMultiple(attrs={'class': 'checkgrid'})
+    )
     class Meta:
         model = Room
-        fields = ['name', 'capacity', 'location', 'specialists']
-        labels = {
-            'name': 'Nombre',
-            'capacity': 'Capacidad',
-            'location': 'Ubicación',
-            'specialists': 'Especialistas'
+        fields = ['name', 'capacity', 'location', 'specialists', 'equipment']
+        widgets = {
+            'specialists': forms.CheckboxSelectMultiple(attrs={'class': 'checkgrid'}),
         }
-        
+
+
 class ReservationFilterForm(forms.Form):
     start_date = forms.DateField(
         label='Fecha inicial',

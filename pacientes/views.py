@@ -5,11 +5,12 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.views.decorators.http import require_POST
-from .models import Patient, Session, Specialist, Room, Payment
+from django.db.models import Prefetch
+from .models import Patient, Session, Specialist, Room, Payment, Equipment
 from .forms import (
     PatientForm, SessionForm,
     SpecialistForm, RoomForm,
-    PaymentForm,EmailLoginForm
+    PaymentForm, EmailLoginForm, EquipmentForm
 )
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -393,8 +394,14 @@ def delete_specialist(request, specialist_id):
 #views encargadas de room
 @login_required
 def room_list(request):
-    rooms = Room.objects.all()
-    return render(request, 'pacientes/room/room_list.html', {'rooms': rooms})
+    rooms = (
+        Room.objects
+            .prefetch_related(Prefetch('equipment',
+                                       queryset=Equipment.objects.only('id', 'name')))
+            .all()
+    )
+    # usa el path real de tu archivo
+    return render(request, "pacientes/room/room_list.html", {"rooms": rooms})
 
 @login_required
 def create_room(request):
@@ -426,6 +433,56 @@ def delete_room(request, room_id):
         room.delete()
         return redirect('room_list')
     return render(request, 'pacientes/room/delete_room.html', {'room': room})
+
+# --- Gestión de Equipos (página aparte, CRUD simple) ---
+def equipment_list(request):
+    items = Equipment.objects.order_by('name')
+    return render(request, 'pacientes/equipment/list.html', {'items': items})
+
+def equipment_create(request):
+    if request.method == 'POST':
+        form = EquipmentForm(request.POST)
+        if form.is_valid():
+            form.save()
+            messages.success(request, "Equipo creado.")
+            return redirect('equipment_list')
+    else:
+        form = EquipmentForm()
+    return render(request, 'pacientes/equipment/form.html', {'form': form, 'title': 'Nuevo Equipo'})
+
+def equipment_update(request, pk):
+    eq = get_object_or_404(Equipment, pk=pk)
+    if request.method == 'POST':
+        form = EquipmentForm(request.POST, instance=eq)
+        if form.is_valid():
+             form.save()
+             messages.success(request, "Equipo actualizado.")
+             return redirect('equipment_list')
+    else:
+        form = EquipmentForm(instance=eq)
+    return render(request, 'pacientes/equipment/form.html', {'form': form, 'title': 'Editar Equipo'})
+
+def equipment_delete(request, pk):
+    eq = get_object_or_404(Equipment, pk=pk)
+    if request.method == 'POST':
+        eq.delete()
+        messages.success(request, "Equipo eliminado.")
+        return redirect('equipment_list')
+    return render(request, 'pacientes/equipment/confirm_delete.html', {'item': eq})
+
+# --- APIs para el modal (+) en el formulario de Sala ---
+def equipment_api_list(request):
+    data = list(Equipment.objects.order_by('name').values('id', 'name'))
+    return JsonResponse({'results': data})
+
+@require_POST
+def equipment_api_create(request):
+    name = (request.POST.get('name') or '').strip()
+    code = (request.POST.get('code') or '').strip() or None
+    if not name:
+        return JsonResponse({'ok': False, 'error': 'Nombre requerido'}, status=400)
+    eq, created = Equipment.objects.get_or_create(name=name, defaults={'code': code})
+    return JsonResponse({'ok': True, 'id': eq.id, 'name': eq.name})
 
 #views encargado de la parte de reservation_list
 @login_required

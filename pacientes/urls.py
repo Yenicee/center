@@ -26,6 +26,15 @@ urlpatterns = [
     path('specialists/<int:specialist_id>/delete/', views.delete_specialist, name='delete_specialist'),
     path('check-username/', views.check_username_availability, name='check_username'),
 
+    # Equipos (catálogo)
+    path('equipment/', views.equipment_list, name='equipment_list'),
+    path('equipment/new/', views.equipment_create, name='equipment_create'),
+    path('equipment/<int:pk>/edit/', views.equipment_update, name='equipment_update'),
+    path('equipment/<int:pk>/delete/', views.equipment_delete, name='equipment_delete'),
+
+    # APIs mínimas para el modal
+    path('api/equipment/', views.equipment_api_list, name='equipment_api_list'),
+    path('api/equipment/create/', views.equipment_api_create, name='equipment_api_create'),
     # Salas URLs
     path('rooms/', views.room_list, name='room_list'),
     path('rooms/new/', views.create_room, name='new_room'),

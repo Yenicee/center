@@ -25,7 +25,11 @@ class Specialist(models.Model):
 
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.role}"
-    
+
+class Equipment(models.Model):
+    name = models.CharField(max_length=80, unique=True)
+    code = models.SlugField(max_length=80, unique=True, blank=True, null=True)
+    def __str__(self): return self.name    
     
 class Room(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='rooms',null=True, blank=True  )
@@ -33,6 +37,7 @@ class Room(models.Model):
     capacity = models.IntegerField()
     location = models.CharField(max_length=100)
     specialists = models.ManyToManyField(Specialist, related_name='rooms')
+    equipment = models.ManyToManyField(Equipment, related_name='rooms', blank=True)
 
     def __str__(self):
         return self.name

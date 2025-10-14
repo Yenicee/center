@@ -1,60 +1,161 @@
 {% extends "pacientes/base/base.html" %}
+
 {% block content %}
-<h1 class="title">Lista de Especialistas</h1>
-<div class="list-header">
-    <a href="{% url 'new_specialist' %}" class="btn-add">Agregar Especialista</a>
+<h1 class="title">Especialistas</h1>
+
+<div class="list-header" style="justify-content: space-between; gap: 12px;">
+  <div class="filters">
+    <input id="searchInput" type="text" placeholder="Buscar por nombre, usuario, email…" class="input search-input">
+    <select id="specialtyFilter" class="input select">
+      <option value="">Todas las especialidades</option>
+      {# únicas con ifchanged sobre lista ordenada #}
+      {% for s in specialists|dictsort:"specialty" %}
+        {% if s.specialty %}
+          {% ifchanged s.specialty %}
+            <option value="{{ s.specialty|lower }}">{{ s.specialty }}</option>
+          {% endifchanged %}
+        {% endif %}
+      {% endfor %}
+    </select>
+    <select id="statusFilter" class="input select">
+      <option value="">Todos los estados</option>
+      <option value="disponible">Disponible</option>
+      <option value="en consulta">En Consulta</option>
+      <option value="inactivo">Inactivo</option>
+    </select>
+  </div>
+  <a href="{% url 'new_specialist' %}" class="btn-add">
+    <i class="fas fa-plus"></i> Nuevo Especialista
+  </a>
 </div>
-<div class="specialist-list-container">
-    <table id="specialistTable" class="display table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Usuario</th>
-                <th>Especialidad</th>
-                <th>Correo Electrónico</th>
-                <th>Teléfono</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for specialist in specialists %}
-            <tr>
-                <!-- Muestra el nombre y apellido del usuario relacionado  -->
-                <td>{{ specialist.user.first_name }} {{ specialist.user.last_name }}</td>
-                <td>{{ specialist.user.username }}</td>
-                <td>{{ specialist.specialty }}</td>
-                <!-- Muestra el correo electrónico del usuario relacionado -->
-                <td>{{ specialist.user.email }}</td>
-                <td>{{ specialist.phone }}</td>
-                <td class="actions-tab"> 
-                    <a href="{% url 'view_specialist' specialist.id %}" class="btn btn-icon view">
-                        <i class="fas fa-eye"></i>
-                    </a>
-                    <a href="{% url 'delete_specialist' specialist.id %}" class="btn-icon delete btn-danger btn-sm admin-only">
-                        <i class="fas fa-trash"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+<div id="cardsGrid" class="cards-grid">
+  {% for s in specialists %}
+  <article
+    class="spec-card"
+    data-name="{{ s.user.first_name|default:'' }} {{ s.user.last_name|default:'' }}"
+    data-username="{{ s.user.username }}"
+    data-email="{{ s.user.email }}"
+    data-specialty="{{ s.specialty|default:'ninguna'|lower }}"
+    data-status="{{ s.status|default:'Disponible'|lower }}"
+  >
+    <header class="spec-card__head">
+      <div class="avatar">
+        {% if s.photo %}
+          <img src="{{ s.photo.url }}" alt="{{ s.user.first_name }} {{ s.user.last_name }}">
+        {% else %}
+          <span class="avatar__initials">
+            {{ s.user.first_name|default:''|slice:":1"|upper }}{{ s.user.last_name|default:''|slice:":1"|upper }}
+          </span>
+        {% endif %}
+      </div>
+      <div class="spec-card__title">
+        <h3>
+          {% if s.gender == 'F' %}Dra.{% else %}Dr.{% endif %}
+          {{ s.user.first_name }} {{ s.user.last_name }}
+        </h3>
+        <div class="spec-card__subtitle">
+          <i class="fas fa-stethoscope"></i>
+          {{ s.specialty|default:"Ninguna" }}
+        </div>
+      </div>
+      {% with st=s.status|default:"Disponible"|lower %}
+      <span class="badge {% if st == 'disponible' %}badge--ok{% elif st == 'en consulta' %}badge--warn{% else %}badge--muted{% endif %}">
+        {{ s.status|default:"Disponible" }}
+      </span>
+      {% endwith %}
+    </header>
+
+    <div class="spec-card__body">
+      <div class="row"><i class="far fa-envelope"></i><a href="mailto:{{ s.user.email }}">{{ s.user.email }}</a></div>
+      <div class="row"><i class="fas fa-user"></i><span>{{ s.user.username }}</span></div>
+      <div class="row"><i class="fas fa-phone"></i><span>{{ s.phone|default:"—" }}</span></div>
+
+      <div class="kpis">
+        <div class="kpi">
+          <span class="kpi__value">{{ s.active_patients|default:"—" }}</span>
+          <span class="kpi__label">Pacientes activos</span>
+        </div>
+      </div>
+    </div>
+
+    <footer class="spec-card__actions">
+    <div class="actions-left">
+        <a href="{% url 'view_specialist' s.id %}" class="btn btn-secondary btn-md">
+        <i class="fas fa-eye"></i> Ver ficha
+        </a>
+        <a href="{% url 'calendar' %}?specialist={{ s.id }}" class="btn btn-primary btn-md">
+        <i class="far fa-calendar-alt"></i> Ver Agenda
+        </a>
+    </div>
+    <div class="actions-right">
+        <a href="{% url 'delete_specialist' s.id %}" class="icon-btn btn-danger admin-only" title="Eliminar">
+        <i class="fas fa-trash"></i>
+        </a>
+    </div>
+    </footer>
+  </article>
+  {% empty %}
+    <p>No hay especialistas registrados.</p>
+  {% endfor %}
 </div>
+
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('#specialistTable').DataTable({
-            language: {
-                url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
-            },
-            responsive: true,
-            pageLength: 10,
-            pagingType: 'full_numbers',
-            dom: '<"top-container"lf>rt<"bottom"ip><"clear">',
-        });
+(function(){
+  const $q = s => document.querySelector(s);
+  const $qa = s => Array.from(document.querySelectorAll(s));
+
+  const search = $q('#searchInput');
+  const fSpec  = $q('#specialtyFilter');
+  const fStat  = $q('#statusFilter');
+  const cards  = $qa('.spec-card');
+
+  function normalize(t){ return (t||'').toString().trim().toLowerCase(); }
+
+  function applyFilters(){
+    const term = normalize(search.value);
+    const spec = normalize(fSpec.value);
+    const stat = normalize(fStat.value);
+
+    let visible = 0;
+    cards.forEach(card=>{
+      const haystack = [
+        card.dataset.name,
+        card.dataset.username,
+        card.dataset.email
+      ].map(normalize).join(' ');
+      const okTerm = !term || haystack.includes(term);
+      const okSpec = !spec || normalize(card.dataset.specialty) === spec;
+      const okStat = !stat || normalize(card.dataset.status) === stat;
+
+      const show = okTerm && okSpec && okStat;
+      card.style.display = show ? '' : 'none';
+      if(show) visible++;
     });
+
+    // Grid vacío: mostramos un mensaje suave
+    const grid = document.getElementById('cardsGrid');
+    let emptyEl = document.getElementById('emptyState');
+    if(!emptyEl){
+      emptyEl = document.createElement('div');
+      emptyEl.id = 'emptyState';
+      emptyEl.className = 'empty-state';
+      emptyEl.innerHTML = '<i class="far fa-frown"></i> No se encontraron especialistas con esos filtros.';
+      grid.parentElement.appendChild(emptyEl);
+    }
+    emptyEl.style.display = visible ? 'none' : '';
+  }
+
+  ['input','change'].forEach(evt=>{
+    search.addEventListener(evt, applyFilters);
+    fSpec.addEventListener(evt, applyFilters);
+    fStat.addEventListener(evt, applyFilters);
+  });
+
+  applyFilters();
+})();
 </script>
 {% endblock %}

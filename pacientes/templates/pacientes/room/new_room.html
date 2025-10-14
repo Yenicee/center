@@ -1,56 +1,213 @@
 {% extends "pacientes/base/base.html" %}
+
 {% block content %}
 <h1 class="title">Nueva Sala</h1>
 <ul class="breadcrumbs">
-    <li><a href="{% url 'patient_list' %}">Home</a></li>
-    <li class="divider">/</li>
-    <li><a href="{% url 'room_list' %}">Salas</a></li>
-    <li class="divider">/</li>
-    <li><a href="#" class="active">Nueva Sala</a></li>
+  <li><a href="{% url 'patient_list' %}">Home</a></li>
+  <li class="divider">/</li>
+  <li><a href="{% url 'room_list' %}">Salas</a></li>
+  <li class="divider">/</li>
+  <li><a href="#" class="active">Nueva Sala</a></li>
 </ul>
 
 <div class="form-container">
-    <div class="row section">
-        <div class="col-title">
-            <i class="fa-solid fa-door-open"></i> <!-- Puedes cambiar el ícono si lo deseas -->
-            <h3>Registro de Sala</h3>
-            <p>Completa la información de la nueva sala</p>
-        </div>
-        <div class="col-fields">
-            <form method="POST" class="add-form">
-                {% csrf_token %}
-                {{ form.non_field_errors }}
-
-                <div class="form-group">
-                    <label for="{{ form.name.id_for_label }}">Nombre</label>
-                    {{ form.name }}
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.capacity.id_for_label }}">Capacidad</label>
-                    {{ form.capacity }}
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.location.id_for_label }}">Ubicación</label>
-                    {{ form.location }}
-                </div>
-
-                <div class="form-group">
-                    <label for="{{ form.specialists.id_for_label }}">Especialistas</label>
-                    {{ form.specialists }}
-                </div>
-
-                <div class="form-actions">
-                    <button type="submit" class="btn btn-primary">
-                        Guardar Sala
-                    </button>
-                    <a href="{% url 'room_list' %}" class="btn btn-secondary">
-                        Cancelar
-                    </a>
-                </div>
-            </form>
-        </div>
+  <div class="row section">
+    <div class="col-title">
+      <i class="fa-solid fa-door-open"></i>
+      <h3>Registro de Sala</h3>
+      <p>Completa la información de la nueva sala</p>
     </div>
+
+    <div class="col-fields">
+      <form method="POST" class="add-form">
+        {% csrf_token %}
+        {{ form.non_field_errors }}
+
+        <div class="form-group">
+          <label for="{{ form.name.id_for_label }}">Nombre</label>
+          {{ form.name }}
+          {{ form.name.errors }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.capacity.id_for_label }}">Capacidad</label>
+          {{ form.capacity }}
+          {{ form.capacity.errors }}
+        </div>
+
+        <div class="form-group">
+          <label for="{{ form.location.id_for_label }}">Ubicación</label>
+          {{ form.location }}
+          {{ form.location.errors }}
+        </div>
+
+        {# --- ESPECIALISTAS --- #}
+        <ul class="checkgrid">
+        {% for opt in form.specialists %}
+            <li>
+            <input
+                type="checkbox"
+                id="{{ opt.id_for_label }}"
+                name="{{ form.specialists.html_name }}"
+                value="{{ opt.data.value }}"
+                {% if opt.data.selected %}checked{% endif %}
+                class="checkinput"
+            >
+            <label class="checklabel" for="{{ opt.id_for_label }}">{{ opt.choice_label }}</label>
+            </li>
+        {% endfor %}
+        </ul>
+
+        {# --- EQUIPAMIENTO --- #}
+        <ul id="equipChecklist" class="checkgrid">
+        {% for opt in form.equipment %}
+            <li>
+            <input
+                type="checkbox"
+                id="{{ opt.id_for_label }}"
+                name="{{ form.equipment.html_name }}"
+                value="{{ opt.data.value }}"
+                {% if opt.data.selected %}checked{% endif %}
+                class="checkinput"
+            >
+            <label class="checklabel" for="{{ opt.id_for_label }}">{{ opt.choice_label }}</label>
+            </li>
+        {% endfor %}
+        </ul>
+
+        <div class="equip-actions" style="display:flex; gap:8px; align-items:center; margin-top:8px;">
+        <button type="button" id="btnAddEquip" class="btn btn-secondary">
+            <i class="fas fa-plus"></i> Agregar equipo
+        </button>
+        <a class="btn btn-danger" href="{% url 'equipment_list' %}" target="_blank">
+            Gestionar equipos (editar/borrar)
+        </a>
+        </div>
+        <div class="form-actions">
+          <button type="submit" class="btn btn-primary">Guardar Sala</button>
+          <a href="{% url 'room_list' %}" class="btn btn-secondary">Cancelar</a>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>
+
+{# --- Modal para crear equipo --- #}
+<div id="equipModal" class="modal" style="display:none;">
+  <div class="modal__backdrop"></div>
+  <div class="modal__card">
+    <h3 class="modal__title">Nuevo equipo</h3>
+    <div class="modal__body">
+      <label>Nombre *</label>
+      <input id="equipName" type="text" class="input" placeholder="p.ej. Pizarra">
+      <label style="margin-top:8px;">Código (opcional)</label>
+      <input id="equipCode" type="text" class="input" placeholder="p.ej. pizarra">
+      <p id="equipErr" class="muted" style="color:#b91c1c; display:none; margin-top:6px;"></p>
+    </div>
+    <div class="modal__actions">
+      <button type="button" id="equipCancel" class="btn btn-secondary">Cancelar</button>
+      <button type="button" id="equipSave" class="btn btn-primary">Guardar</button>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(function(){
+  // --- CSRF ---
+  function getCookie(name){
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if(parts.length === 2) return parts.pop().split(';').shift();
+  }
+  const csrftoken = getCookie('csrftoken');
+
+  // --- Refs ---
+  const modal     = document.getElementById('equipModal');
+  const btnOpen   = document.getElementById('btnAddEquip');   // puede NO existir
+  const btnCancel = document.getElementById('equipCancel');
+  const btnSave   = document.getElementById('equipSave');
+  const inpName   = document.getElementById('equipName');
+  const inpCode   = document.getElementById('equipCode');
+  const err       = document.getElementById('equipErr');
+  const checklist = document.getElementById('equipChecklist'); // <ul class="checkgrid">
+
+  function openModal(){
+    if(!modal) return;
+    modal.style.display = 'block';
+    if (inpName) inpName.value = '';
+    if (inpCode) inpCode.value = '';
+    if (err){ err.style.display='none'; err.textContent=''; }
+    setTimeout(()=>inpName && inpName.focus(), 50);
+  }
+  function closeModal(){ if(modal) modal.style.display = 'none'; }
+
+  // Enlazar solo si existen los elementos
+  if (btnOpen)   btnOpen.addEventListener('click', openModal);
+  if (btnCancel) btnCancel.addEventListener('click', closeModal);
+  if (modal) {
+    const backdrop = modal.querySelector('.modal__backdrop');
+    if (backdrop) backdrop.addEventListener('click', closeModal);
+  }
+
+  // Añade <li><input.checkinput ... id=..><label.checklabel for=id>Nombre</label></li>
+  function appendCheckItem(id, name){
+    if(!checklist) return;
+
+    // evita duplicados
+    const selector = `input[name="{{ form.equipment.html_name }}"][value="${id}"]`;
+    if (checklist.querySelector(selector)) return;
+
+    const li  = document.createElement('li');
+
+    const cb  = document.createElement('input');
+    cb.type   = 'checkbox';
+    cb.className = 'checkinput';
+    cb.name   = "{{ form.equipment.html_name }}";
+    cb.value  = id;
+    cb.id     = "id_equipment_new_" + id;
+    cb.checked = true;
+
+    const lbl = document.createElement('label');
+    lbl.className = 'checklabel';
+    lbl.setAttribute('for', cb.id);
+    lbl.textContent = name;
+
+    li.appendChild(cb);
+    li.appendChild(lbl);
+    checklist.appendChild(li);
+
+    try { li.scrollIntoView({block:'nearest', behavior:'smooth'}); } catch(_){}
+  }
+
+  // Crear equipo vía API (solo si hay modal/botón)
+  if (btnSave) {
+    btnSave.addEventListener('click', async ()=>{
+      const name = (inpName?.value || '').trim();
+      const code = (inpCode?.value || '').trim();
+      if(!name){
+        if (err){ err.textContent = 'El nombre es requerido.'; err.style.display = 'block'; }
+        return;
+      }
+      try{
+        const res = await fetch("{% url 'equipment_api_create' %}", {
+          method: 'POST',
+          headers: {'X-CSRFToken': csrftoken},
+          body: new URLSearchParams({ name, code })
+        });
+        const data = await res.json();
+        if(!res.ok || !data.ok) throw new Error(data.error || 'Error creando equipo');
+
+        appendCheckItem(data.id, data.name);
+        closeModal();
+      }catch(e){
+        if (err){ err.textContent = e.message || 'Error desconocido'; err.style.display = 'block'; }
+      }
+    });
+  }
+})();
+</script>
+
+
 {% endblock %}

@@ -1,59 +1,189 @@
 {% extends "pacientes/base/base.html" %}
+
 {% block content %}
-<h1 class="title">Lista de Salas</h1>
-<div class="list-header">
-    <a href="{% url 'new_room' %}" class="btn-add">Agregar Sala</a>
+<h1 class="title">Salas</h1>
+
+<div class="list-header" style="justify-content: space-between; gap: 12px;">
+  <div class="filters">
+    <input id="roomSearch" type="text" placeholder="Buscar por nombre, ubicación, equipamiento…" class="input search-input">
+
+    <select id="roomStatusFilter" class="input select">
+      <option value="">Todos los estados</option>
+      <option value="disponible">Disponible</option>
+      <option value="ocupado">Ocupado</option>
+      <option value="mantenimiento">Mantenimiento</option>
+    </select>
+
+    <select id="capacityFilter" class="input select">
+      <option value="">Cualquier capacidad</option>
+      <option value="1">1+</option>
+      <option value="2">2+</option>
+      <option value="3">3+</option>
+      <option value="4">4+</option>
+    </select>
+  </div>
+
+  <a href="{% url 'new_room' %}" class="btn-add">
+    <i class="fas fa-plus"></i> Nueva Sala
+  </a>
 </div>
-<div class="room-list-container">
-    <table id="roomTable" class="display table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Capacidad</th>
-                <th>Especialista</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for room in rooms %}
-            <tr>
-                <td>{{ room.name }}</td>
-                <td>{{ room.capacity }}</td>
-                <td>
-                    {% for specialist in room.specialists.all %}
-                        {{ specialist.name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                </td>
-                
-                <td class="actions-tab">
-                    <a href="{% url 'edit_room' room.id %}" class="btn btn-icon edit" title="Editar">
-                        <i class="fas fa-pencil-alt"></i>
-                    </a>
-                    <a href="{% url 'delete_room' room.id %}" class="btn-icon delete" title="Eliminar">
-                        <i class="fas fa-trash"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+
+<!-- Mini KPIs -->
+<div class="room-metrics">
+  <div class="metric"><div class="metric__label">Salas Totales</div><div id="mTotal" class="metric__value">0</div><i class="fas fa-building metric__icon"></i></div>
+  <div class="metric"><div class="metric__label">Disponibles</div><div id="mFree" class="metric__value">0</div><i class="fas fa-door-open metric__icon"></i></div>
+  <div class="metric"><div class="metric__label">Ocupadas</div><div id="mBusy" class="metric__value">0</div><i class="fas fa-door-closed metric__icon"></i></div>
+</div>
+
+<div id="roomsGrid" class="cards-grid">
+  {% for r in rooms %}
+  <article
+    class="room-card"
+    data-name="{{ r.name }}"
+    data-location="{{ r.location|default:'' }}"
+    data-status="{{ r.status|default:'Disponible'|lower }}"
+    data-capacity="{{ r.capacity|default:1 }}"
+    data-equipment="{% for e in r.equipment.all %}{{ e.name|lower }} {% endfor %}"
+  >
+    <header class="room-card__head">
+      <div class="room-card__title">
+        <h3>
+          <svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+					width="20" height="20" fill="none" stroke="currentColor"
+					stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18Z"></path>
+					<path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"></path>
+					<path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"></path>
+					<path d="M10 6h4"></path>
+					<path d="M10 10h4"></path>
+					<path d="M10 14h4"></path>
+					<path d="M10 18h4"></path>
+				  </svg> {{ r.name }}</h3>
+        <div class="room-card__subtitle">{{ r.location|default:"" }}</div>
+      </div>
+
+      {% with st=r.status|default:"Disponible"|lower %}
+      <span class="badge {% if st == 'disponible' %}badge--ok{% elif st == 'ocupado' %}badge--warn{% else %}badge--muted{% endif %}">
+        {{ r.status|default:"Disponible" }}
+      </span>
+      {% endwith %}
+    </header>
+
+    <div class="room-card__body">
+      <div class="row">
+        <i class="fas fa-user-friends"></i>
+        <span>Capacidad: {{ r.capacity|default:"—" }} personas</span>
+      </div>
+
+      {% if r.status and r.status|lower == 'ocupado' %}
+      <div class="inuse">
+        <div><i class="far fa-clock"></i> En uso por: {{ r.in_use_by|default:"—" }}</div>
+        {% if r.available_at %}<div class="muted">Disponible a las {{ r.available_at }}</div>{% endif %}
+      </div>
+      {% endif %}
+
+      <div class="equip">
+        <span class="equip__label">Equipamiento:</span>
+        <div class="equip__chips">
+          {% for e in r.equipment.all %}
+            <span class="chip">{{ e.name }}</span>
+          {% empty %}
+            <span class="muted">—</span>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+
+    <footer class="spec-card__actions">
+      <div class="actions-left">
+        <!-- Usamos tus rutas existentes -->
+        <a href="{% url 'edit_room' room_id=r.id %}" class="btn btn-secondary btn-md">
+          <i class="fas fa-pen"></i> Editar
+        </a>
+        <!-- Si quieres llamar “Ver Detalles” pero reutilizar editar: -->
+        <a href="{% url 'edit_room' room_id=r.id %}" class="btn btn-primary btn-md">
+          <i class="fas fa-eye"></i> Ver Detalles
+        </a>
+      </div>
+      <div class="actions-right">
+        <a href="{% url 'delete_room' room_id=r.id %}" class="icon-btn btn-danger admin-only" title="Eliminar">
+          <i class="fas fa-trash"></i>
+        </a>
+      </div>
+    </footer>
+  </article>
+  {% empty %}
+    <p>No hay salas registradas.</p>
+  {% endfor %}
 </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script>
-    $(document).ready(function() {
-        $('#roomTable').DataTable({
-            language: {
-                url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
-            },
-            responsive: true,
-            pageLength: 10,
-            pagingType: 'full_numbers',
-            dom: '<"top-container"lf>rt<"bottom"ip><"clear">',
-        });
+(function(){
+  const $q = s => document.querySelector(s);
+  const $qa = s => Array.from(document.querySelectorAll(s));
+  const norm = t => (t||'').toString().toLowerCase().trim();
+
+  const search = $q('#roomSearch');
+  const fStatus = $q('#roomStatusFilter');
+  const fCap = $q('#capacityFilter');
+  const cards = $qa('.room-card');
+
+  const mTotal = $q('#mTotal'), mFree = $q('#mFree'), mBusy = $q('#mBusy');
+
+  function applyFilters(){
+    const term = norm(search.value);
+    const st = norm(fStatus.value);
+    const cap = parseInt(fCap.value || '0', 10);
+
+    let total = 0, free = 0, busy = 0, visible = 0;
+
+    cards.forEach(c=>{
+      const name = norm(c.dataset.name);
+      const loc = norm(c.dataset.location);
+      const equip = norm(c.dataset.equipment);
+      const status = norm(c.dataset.status);
+      const capacity = parseInt(c.dataset.capacity || '0', 10);
+
+      const okTerm = !term || (name + ' ' + loc + ' ' + equip).includes(term);
+      const okStat = !st || status === st;
+      const okCap  = !cap || capacity >= cap;
+
+      const show = okTerm && okStat && okCap;
+      c.style.display = show ? '' : 'none';
+
+      // totales globales sin filtrar (como en tu mock)
+      total += 1;
+      if(status === 'disponible') free += 1;
+      if(status === 'ocupado')    busy += 1;
+
+      if(show) visible++;
     });
+
+    mTotal.textContent = total;
+    mFree.textContent = free;
+    mBusy.textContent = busy;
+
+    // Mensaje vacío
+    let empty = document.getElementById('roomsEmpty');
+    if(!empty){
+      empty = document.createElement('div');
+      empty.id = 'roomsEmpty';
+      empty.className = 'empty-state';
+      empty.innerHTML = '<i class="far fa-frown"></i> No se encontraron salas con esos filtros.';
+      document.getElementById('roomsGrid').parentElement.appendChild(empty);
+    }
+    empty.style.display = visible ? 'none' : '';
+  }
+
+  ['input','change'].forEach(e=>{
+    search.addEventListener(e, applyFilters);
+    fStatus.addEventListener(e, applyFilters);
+    fCap.addEventListener(e, applyFilters);
+  });
+
+  applyFilters();
+})();
 </script>
 {% endblock %}

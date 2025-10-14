@@ -1660,3 +1660,236 @@ th.sorting_desc::after {
 
 /* Evita desbordes durante la animación de layout */
 #agenda-layout .col-calendar { overflow: hidden; }
+
+/*Especialistas - Salas */
+/* ===== Specialists Cards ===== */
+.input {
+  background: var(--light);
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 10px 12px;
+  min-width: 220px;
+}
+.input:focus { outline: none; box-shadow: 0 0 0 3px rgba(35,157,205,.15); border-color: var(--blue); }
+.input.select { padding-right: 34px; }
+
+.filters { display: flex; gap: 10px; flex-wrap: wrap; }
+
+.cards-grid{
+  margin-top: 8px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(420px, 1fr));
+  gap: 16px;
+}
+
+.spec-card{
+  background: var(--light);
+  border: 1px solid #e6e9ef;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(20,20,20,.05);
+  display: flex;
+  flex-direction: column;
+  padding: 16px;
+  transition: box-shadow .15s ease, transform .05s ease;
+}
+.spec-card:hover{ box-shadow: 0 10px 24px rgba(20,20,20,.08); transform: translateY(-1px); }
+
+.spec-card__head{
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 12px;
+  align-items: center;
+}
+
+.avatar{
+  width: 64px; height: 64px; border-radius: 999px; overflow: hidden;
+  display: grid; place-items: center; background: #eef4ff; border: 1px solid #e6e9ef;
+}
+.avatar img{ width: 100%; height: 100%; object-fit: cover; }
+.avatar__initials{ font-weight: 700; color: var(--blue); }
+
+.spec-card__title h3{ font-size: 1.05rem; font-weight: 700; color: #111827; }
+.spec-card__subtitle{ color: #6b7280; display: flex; align-items: center; gap: 6px; margin-top: 2px; }
+
+.badge{
+  font-size: .78rem; font-weight: 700; padding: 6px 10px; border-radius: 999px;
+  border: 1px solid #e6e9ef; background: #f8fafc; color: #374151; white-space: nowrap;
+}
+.badge--ok{ background: var(--light-green); color: #58a55c;}
+.badge--warn{ background: #fff4db; color: #8a5b00; border-color: #ffe2a6; }
+.badge--muted{ background: #f1f5f9; color: #475569; }
+
+.spec-card__body{ margin-top: 10px; }
+.spec-card .row{ display: flex; align-items: center; gap: 8px; color: #374151; margin: 6px 0; }
+.spec-card .row i{ width: 18px; text-align: center; opacity: .7; }
+
+.kpis{ display:flex; gap:18px; margin-top: 12px; }
+.kpi__value{ font-size: 1.2rem; font-weight: 800; color: #111827; }
+.kpi__label{ font-size: .8rem; color: #6b7280; }
+
+.spec-card__actions{
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.spec-card__actions .actions-left{
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.spec-card__actions .actions-right{
+  margin-left: auto; /* empuja el borrar a la derecha */
+}
+.btn{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  font-weight: 700;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform .03s ease, box-shadow .15s ease, background .15s ease;
+}
+.btn-md{ height: 40px; padding: 0 14px; min-width: 136px; } /* mismo alto/anchura mínima */
+
+.icon-btn{
+  width: 40px; height: 40px; padding: 0;
+  display: grid; place-items: center;
+  border-radius: 10px; border: 1px solid transparent;
+}
+
+/* Colores (reutiliza los tuyos) */
+.btn-primary{ background: var(--blue); color: #fff; }
+.btn-primary:hover{ background: var(--dark-blue); }
+.btn-secondary{ background: #eef2f7; margin-top: 10px; color: #0f172a; border-color: #e6e9ef; }
+.btn-secondary:hover{ background: #e7ecf4; }
+.btn-danger{ background: #fee2e2; margin-top: 10px; color: #991b1b; border-color: #fecaca; }
+.btn-danger:hover{ background: #fecaca; }
+
+/* Responsive: en móvil se apilan y ocupan ancho completo */
+@media (max-width: 640px){
+  .spec-card__actions{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .spec-card__actions .actions-right{ margin-left: 0; }
+  .btn-md, .icon-btn{ width: 100%; }
+}
+
+/* Rooms */
+/* ===== Rooms (reusa cards-grid & btn styles) ===== */
+.room-metrics{
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+  gap: 14px;
+  margin: 10px 0 14px;
+}
+.metric{
+  position: relative;
+  background: var(--light);
+  border: 1px solid #e6e9ef;
+  border-radius: 14px;
+  padding: 14px 16px;
+  box-shadow: 0 6px 18px rgba(20,20,20,.05);
+}
+.metric__label{ color:#6b7280; font-weight:600; }
+.metric__value{ font-size:1.6rem; font-weight:800; color:#111827; margin-top:6px; }
+.metric__icon{
+  position: absolute; right: 14px; top: 14px; opacity:.25; font-size:22px; color: var(--blue);
+}
+
+.room-card{ /* misma base que spec-card */
+  background: var(--light);
+  border: 1px solid #e6e9ef;
+  border-radius: 14px;
+  box-shadow: 0 6px 18px rgba(20,20,20,.05);
+  display: flex; flex-direction: column;
+  padding: 16px; transition: box-shadow .15s ease, transform .05s ease;
+}
+.room-card:hover{ box-shadow: 0 10px 24px rgba(20,20,20,.08); transform: translateY(-1px); }
+
+.room-card__head{
+  display:flex; align-items:center; gap:12px;
+}
+.room-card__title h3{
+  font-size:1.05rem; font-weight:700; color:#111827; display:flex; gap:8px; align-items:center;
+}
+.room-card__subtitle{ color:#6b7280; margin-top:2px; }
+.room-card__body{ margin-top:10px; }
+.room-card .row{ display:flex; align-items:center; gap:8px; color:#374151; margin:6px 0; }
+.room-card .row i{ width:18px; text-align:center; opacity:.7; }
+
+.inuse{
+  margin:10px 0;
+  border:1px solid #eef2f7; background:#f7fafc;
+  border-radius:10px; padding:10px 12px; color:#374151;
+}
+.inuse .muted{ color:#6b7280; margin-top:4px; }
+
+.equip{ margin-top:6px; }
+.equip__label{ font-weight:700; color:#374151; margin-right:8px; }
+.equip__chips{ display:flex; gap:8px; flex-wrap:wrap; margin-top:6px; }
+.chip{
+  padding:6px 10px; border:1px solid #e6e9ef; border-radius:999px;
+  background:#f8fafc; color:#374151; font-size:.82rem; font-weight:600;
+}
+.muted{ color:#6b7280; }
+
+/* Equipamiento */
+.modal{ position:fixed; inset:0; z-index:70; }
+.modal__backdrop{ position:absolute; inset:0; background:rgba(15,23,42,.45); }
+.modal__card{
+  position:relative; margin:10vh auto 0; width:min(520px, 92vw);
+  background:#fff; border:1px solid #e6e9ef; border-radius:14px;
+  box-shadow:0 20px 60px rgba(0,0,0,.25); padding:16px;
+}
+.modal__title{ font-size:1.1rem; font-weight:800; margin-bottom:8px; }
+.modal__body .input{ width:100%; }
+.modal__actions{ margin-top:12px; display:flex; justify-content:flex-end; gap:8px; }
+.equip-checklist .checkbox{ display:flex; align-items:center; gap:8px; margin:6px 0; }
+
+
+/* ===== Grid para checkboxes (especialistas y equipamiento) ===== */
+.checkgrid{
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); /* ajusta 220→200/240 si quieres */
+  gap: 10px 12px;
+  padding: 0;
+  margin: 0;
+  list-style: none !important; /* mata bullets globales */
+  max-height: 340px;
+  overflow: auto;
+}
+/* Mata cualquier bullet o pseudo-icono global en <li> */
+.checkgrid > li{
+  list-style: none !important;
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: #f8fafc;
+  border: 1px solid #e6e9ef;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(16,24,40,.04);
+  transition: background .15s ease, box-shadow .15s ease, transform .03s ease;
+}
+.checkgrid > li::marker { content: none; }         /* por si hay estilos globales */
+.checkgrid > li::before { content: none !important; } /* mata pseudo-iconos globales */
+
+.checkgrid > li:hover{
+  background: #f3f6fb;
+  box-shadow: 0 4px 12px rgba(16,24,40,.06);
+}
+.checkgrid input[type="checkbox"]{
+  width: 18px; height: 18px;
+  accent-color: var(--blue);
+}
+.checkgrid label{ margin: 0; font-weight: 600; color: #0f172a; display: inline-flex; gap: 10px; }
+
+@media (max-width: 640px){
+  .checkgrid{ grid-template-columns: 1fr; }
+}
