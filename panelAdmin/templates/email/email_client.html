@@ -117,11 +117,7 @@
                 <p><strong>Email:</strong> <span class="value">{{ client.admin_email }}</span></p>
                 <p><strong>Usuario:</strong> <span class="value">{{ username }}</span></p>
                 <p><strong>Contraseña:</strong> <span class="value">{{ password }}</span></p>
-                <p><strong>Dominio:</strong> <span class="value">{{ domain_url }}</span></p>
-            </div>
-            
-            <div style="text-align: center;">
-                <a href="{{ domain_url }}" class="button">🚀 Acceder a mi Panel</a>
+                <p><strong>Dominio:</strong> <span class="value"><a href="{{ domain_url }}" style="color: #007bff; text-decoration: none;">{{ domain_url }}</a></span></p>
             </div>
             
             <div class="info-box">

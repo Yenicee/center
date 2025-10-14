@@ -14,7 +14,6 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-import json
 
 
 def dashboard(request):
@@ -207,12 +206,13 @@ def client_create(request):
                     # ========== ENVIA EMAIL DE BIENVENIDA ==========
                     try:     
                         #URL del dominio
-                        domain_url = f"http://{domain.domain}:8000"
+                        # Construir URL del dominio con ruta al login
+                        domain_url = f"http://{domain.domain}:8000/pacientes/login/"
                         
                         # Contexto para el template
                         context = {
                             'client': client,
-                            'username': username,
+                            'username': client.admin_name,
                             'password': password,
                             'domain_url': domain_url,
                         }
@@ -228,7 +228,7 @@ Tu cuenta ha sido creada exitosamente en nuestro sistema.
 
 Datos de acceso:
 - Centro: {client.name}
-- Usuario: {username}
+-Usuario: {client.admin_name}
 - Contraseña: {password}
 - Dominio: {domain_url}
 
