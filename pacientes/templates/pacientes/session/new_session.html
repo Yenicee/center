@@ -3,236 +3,243 @@
 {% block content %}
 <h1>Crear Nueva Sesión</h1>
 <ul class="breadcrumbs">
-    <li><a href="{% url 'reservation_list' %}">Reservas</a></li>
-    <li class="divider">/</li>
-    <li><a href="#" class="active">Nueva Sesión</a></li>
+  <li><a href="{% url 'reservation_list' %}">Reservas</a></li>
+  <li class="divider">/</li>
+  <li><a href="#" class="active">Nueva Sesión</a></li>
 </ul>
 
 <div class="form-container">
-    <form method="POST" enctype="multipart/form-data" class="add-form">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        
-        <!-- Información Básica de la Sesión -->
-        <div class="row section">
-            <div class="col-title">
-                <i class="far fa-id-card"></i>
-                <h3>Información de la Sesión</h3>
-            </div>
-            <div class="col-fields">
-                <div class="form-group">
-                    <label for="{{ form.patient.id_for_label }}">Paciente</label>
-                    {{ form.patient }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.specialist.id_for_label }}">Especialista</label>
-                    {{ form.specialist }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.room.id_for_label }}">Sala</label>
-                    {{ form.room }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.date.id_for_label }}">Fecha</label>
-                    {{ form.date }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.time.id_for_label }}">Hora</label>
-                    {{ form.time }}
-                </div>
-               
-            </div>
+  <form method="POST" enctype="multipart/form-data" class="add-form">
+    {% csrf_token %}
+    {{ form.non_field_errors }}
+
+    <!-- Información Básica -->
+    <div class="row section">
+      <div class="col-title">
+        <i class="far fa-id-card"></i>
+        <h3>Información de la Sesión</h3>
+        <p class="help">Define paciente, profesional, sala, fecha y hora. Puedes planificar el contenido más tarde.</p>
+      </div>
+      <div class="col-fields">
+        <div class="form-group">
+          <label for="{{ form.patient.id_for_label }}">Paciente</label>
+          {{ form.patient }}
         </div>
-        
-        <!-- Objetivo y Actividad -->
-        <div class="row section">
-            <div class="col-title">
-                <i class="fa-solid fa-bullseye"></i>
-                <h3>Objetivo de la sesión</h3>
-            </div>
-            <div class="col-fields">
-                <div class="form-group">
-                    <label for="{{ form.objective.id_for_label }}">Objetivo</label>
-                    {{ form.objective }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.activity.id_for_label }}">Actividad</label>
-                    {{ form.activity }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.materials.id_for_label }}">Materiales</label>
-                    {{ form.materials }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.observation.id_for_label }}">Observación</label>
-                    {{ form.observation }}
-                </div>
-                <div class="form-group">
-                    <label for="{{ form.status.id_for_label }}">Estado</label>
-                    {{ form.status }}
-                </div>
-                
-                <div class="form-group form-check">
-                    <label class="form-check-label" for="{{ form.paid_in_advance.id_for_label }}">
-                        {{ form.paid_in_advance }}
-                        Pagada por adelantado
-                    </label>
-                </div>
-            </div>
+        <div class="form-group">
+          <label for="{{ form.specialist.id_for_label }}">Especialista</label>
+          {{ form.specialist }}
         </div>
-        
-        <!-- Archivo Adjunto -->
-        <div class="row section">
-            <div class="col-title">
-                <i class="fa-solid fa-paperclip"></i>
-                <h3>Archivo Adjunto</h3>
-            </div>
-            <div class="col-fields">
-                <div class="form-group">
-                    <label for="{{ form.attachment.id_for_label }}">Archivo Adjunto</label>
-                    {{ form.attachment }}
-                </div>
-            </div>
+        <div class="form-group">
+          <label for="{{ form.room.id_for_label }}">Sala</label>
+          {{ form.room }}
         </div>
-        
-        <!-- Sección para añadir múltiples fechas y horas -->
-        <div class="row section">
-            <div class="col-title">
-                <i class="fa-solid fa-calendar-plus"></i>
-                <h3>Agregar Fechas Adicionales</h3>
-                <p>Añade más fechas y horas para el mismo paciente, especialista y sala.</p>
-            </div>
-            <div class="col-fields">
-                <div id="additional-sessions">
-                    <!-- Aquí se añadirán campos adicionales de fecha y hora -->
-                </div>
-                <button type="button" class="btn btn-secondary" onclick="addSession()">+ Añadir Fecha</button>
-            </div>
+        <div class="form-group">
+          <label for="{{ form.date.id_for_label }}">Fecha</label>
+          {{ form.date }}
         </div>
-        {% if messages %}
-            <div class="messages">
-                {% for message in messages %}
-                    <div class="alert {{ message.tags }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            </div>
-        {% endif %}
-        <!-- Botones de Acción -->
-        <button type="submit" class="btn btn-primary">Guardar Sesión</button>
-        <a href="{% url 'reservation_list' %}" class="btn btn-secondary">Cancelar</a>
-    </form>
+        <div class="form-group">
+          <label for="{{ form.time.id_for_label }}">Hora</label>
+          {{ form.time }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Plan (opcional) -->
+    <div class="row section">
+      <div class="col-title">
+        <i class="fa-solid fa-bullseye"></i>
+        <h3>Plan de la sesión (opcional)</h3>
+        <p class="help">Si completas este bloque, la sesión quedará como <strong>Pendiente planificada</strong>. Si lo dejas vacío, será <strong>Pendiente sin planificar</strong>.</p>
+      </div>
+      <div class="col-fields">
+        <div class="form-group">
+          <label for="{{ form.objective.id_for_label }}">Objetivo</label>
+          {{ form.objective }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.activity.id_for_label }}">Actividad</label>
+          {{ form.activity }}
+        </div>
+        <div class="form-group">
+          <label for="{{ form.materials.id_for_label }}">Materiales</label>
+          {{ form.materials }}
+        </div>
+
+        <div class="form-group form-check" style="margin-top:.5rem">
+          <label class="form-check-label" for="{{ form.paid_in_advance.id_for_label }}">
+            {{ form.paid_in_advance }} Pagada por adelantado
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resultado (post-sesión) -->
+    <div class="row section">
+      <div class="col-title">
+        <i class="fa-regular fa-clipboard"></i>
+        <h3>Resultado de la sesión</h3>
+        <p class="help">Este campo se completa al <strong>cerrar</strong> la sesión (obligatorio para marcar como “Realizada”).</p>
+      </div>
+      <div class="col-fields">
+        <div class="form-group">
+          <label for="{{ form.observation.id_for_label }}">Observación</label>
+          {{ form.observation }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Archivo Adjunto -->
+    <div class="row section">
+      <div class="col-title">
+        <i class="fa-solid fa-paperclip"></i>
+        <h3>Archivo adjunto</h3>
+      </div>
+      <div class="col-fields">
+        <div class="form-group">
+          <label for="{{ form.attachment.id_for_label }}">Archivo</label>
+          {{ form.attachment }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Fechas adicionales -->
+    <div class="row section">
+      <div class="col-title">
+        <i class="fa-solid fa-calendar-plus"></i>
+        <h3>Agregar fechas adicionales</h3>
+        <p class="help">Crea más citas para el mismo paciente/especialista/sala. Se verificarán conflictos al elegir fecha/hora.</p>
+      </div>
+      <div class="col-fields">
+        <div id="additional-sessions"></div>
+        <button type="button" class="btn btn-secondary" onclick="addSession()">+ Añadir fecha</button>
+      </div>
+    </div>
+
+    {% if messages %}
+      <div class="messages">
+        {% for message in messages %}
+          <div class="alert {{ message.tags }}">{{ message }}</div>
+        {% endfor %}
+      </div>
+    {% endif %}
+
+    <button type="submit" class="btn btn-primary">Guardar Sesión</button>
+    <a href="{% url 'reservation_list' %}" class="btn btn-secondary">Cancelar</a>
+  </form>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
-   let sessionCount = 0;
+let sessionCount = 0;
 
-   function addSession() {
-    sessionCount++;
+function addSession() {
+  sessionCount++;
+  const container = document.getElementById("additional-sessions");
+  const div = document.createElement("div");
+  div.classList.add("form-group");
+  div.style.marginBottom = '12px';
+  div.innerHTML = `
+    <label>Fecha adicional ${sessionCount}</label>
+    <input type="date" name="additional_dates[]" class="form-control additional-date" required>
+    <label style="margin-top:.5rem">Hora adicional ${sessionCount}</label>
+    <input type="time" name="additional_times[]" class="form-control additional-time" required>
+    <label class="form-check-label" style="display:block; margin-top:.5rem">
+      <input type="checkbox" name="additional_paid_in_advance[]" value="${sessionCount}" class="form-check-input">
+      Pagada por adelantado
+    </label>
+  `;
+  container.appendChild(div);
 
-    const container = document.getElementById("additional-sessions");
-    const div = document.createElement("div");
-    div.classList.add("form-group");
-    div.innerHTML = `
-        <label>Fecha Adicional ${sessionCount}</label>
-        <input type="date" name="additional_dates[]" class="form-control additional-date" required>
-        <label>Hora Adicional ${sessionCount}</label>
-        <input type="time" name="additional_times[]" class="form-control additional-time" required>
-        <label class="form-check-label">
-            <input type="checkbox" name="additional_paid_in_advance[]" value="${sessionCount}" class="form-check-input">
-            Pagada por adelantado
-        </label>
-    `;
-    container.appendChild(div);
-
-    // Asignar eventos `change` a los nuevos campos
-    const newDateField = div.querySelector('input[name="additional_dates[]"]');
-    const newTimeField = div.querySelector('input[name="additional_times[]"]');
-
-    if (newDateField) newDateField.addEventListener('change', checkAvailability);
-    if (newTimeField) newTimeField.addEventListener('change', checkAvailability);
+  const newDateField = div.querySelector('input[name="additional_dates[]"]');
+  const newTimeField = div.querySelector('input[name="additional_times[]"]');
+  if (newDateField) newDateField.addEventListener('change', checkAvailability);
+  if (newTimeField) newTimeField.addEventListener('change', checkAvailability);
 }
 
 function checkAvailability() {
-    const dateField = document.querySelector('[name="date"]');
-    const timeField = document.querySelector('[name="time"]');
-    const specialistField = document.querySelector('[name="specialist"]');
-    const roomField = document.querySelector('[name="room"]');
+  const dateField = document.querySelector('[name="date"]');
+  const timeField = document.querySelector('[name="time"]');
+  const specialistField = document.querySelector('[name="specialist"]');
+  const roomField = document.querySelector('[name="room"]');
 
-    const date = dateField ? dateField.value : null;
-    const time = timeField ? timeField.value : null;
-    const specialist = specialistField ? specialistField.value : null;
-    const room = roomField ? roomField.value : null;
+  const date = dateField ? dateField.value : null;
+  const time = timeField ? timeField.value : null;
+  const specialist = specialistField ? specialistField.value : null;
+  const room = roomField ? roomField.value : null;
 
-    const additionalDates = Array.from(document.querySelectorAll('[name="additional_dates[]"]'))
-        .map(input => input.value)
-        .filter(value => value);
-    const additionalTimes = Array.from(document.querySelectorAll('[name="additional_times[]"]'))
-        .map(input => input.value)
-        .filter(value => value);
+  const additionalDates = Array.from(document.querySelectorAll('[name="additional_dates[]"]'))
+    .map(input => input.value).filter(Boolean);
+  const additionalTimes = Array.from(document.querySelectorAll('[name="additional_times[]"]'))
+    .map(input => input.value).filter(Boolean);
 
-    if (specialist && room && ((date && time) || (additionalDates.length > 0 && additionalTimes.length > 0))) {
-        const params = new URLSearchParams({
-            specialist: specialist,
-            room: room,
-        });
-
-        if (date && time) {
-            params.append('dates[]', date);
-            params.append('times[]', time);
-        }
-
-        additionalDates.forEach(d => params.append('dates[]', d));
-        additionalTimes.forEach(t => params.append('times[]', t));
-
-        fetch(`/check_availability?${params.toString()}`)
-            .then(response => {
-                if (!response.ok) {
-                    throw new Error("Error en la respuesta del servidor");
-                }
-                return response.json();
-            })
-            .then(data => {
-                const conflicts = [];
-
-                if (data.specialist_conflicts.length > 0) {
-                    const specialistDetails = data.specialist_conflicts
-                        .map(conflict => `Fecha: ${conflict.date}, Hora: ${conflict.time}`)
-                        .join('<br>');
-                    conflicts.push(`Conflicto con el especialista en los siguientes horarios:<br>${specialistDetails}`);
-                }
-
-                if (data.room_conflicts.length > 0) {
-                    const roomDetails = data.room_conflicts
-                        .map(conflict => `Fecha: ${conflict.date}, Hora: ${conflict.time}`)
-                        .join('<br>');
-                    conflicts.push(`Conflicto con la sala en los siguientes horarios:<br>${roomDetails}`);
-                }
-
-                if (conflicts.length > 0) {
-                    Swal.fire('Conflictos detectados', conflicts.join('<br><br>'), 'error');
-                }
-            })
-            .catch(error => {
-                console.error('Error al verificar disponibilidad:', error);
-            });
-    } else {
-        console.warn("No se han completado todos los campos necesarios para verificar la disponibilidad.");
+  if (specialist && room && ((date && time) || (additionalDates.length && additionalTimes.length))) {
+    const params = new URLSearchParams({ specialist, room });
+    if (date && time) {
+      params.append('dates[]', date);
+      params.append('times[]', time);
     }
+    additionalDates.forEach(d => params.append('dates[]', d));
+    additionalTimes.forEach(t => params.append('times[]', t));
+
+    fetch(`/check_availability?${params.toString()}`)
+      .then(r => { if (!r.ok) throw new Error("Error en la respuesta del servidor"); return r.json(); })
+      .then(data => {
+        const conflicts = [];
+        if (data.specialist_conflicts?.length) {
+          const txt = data.specialist_conflicts.map(c => `Fecha: ${c.date}, Hora: ${c.time}`).join('<br>');
+          conflicts.push(`Conflicto con el especialista:<br>${txt}`);
+        }
+        if (data.room_conflicts?.length) {
+          const txt = data.room_conflicts.map(c => `Fecha: ${c.date}, Hora: ${c.time}`).join('<br>');
+          conflicts.push(`Conflicto con la sala:<br>${txt}`);
+        }
+        if (conflicts.length) {
+          Swal.fire('Conflictos detectados', conflicts.join('<br><br>'), 'error');
+        }
+      })
+      .catch(err => console.error('Error al verificar disponibilidad:', err));
+  }
 }
 
-// Asociar la función a los eventos de cambio de los campos existentes
-document.addEventListener("DOMContentLoaded", function () {
-    const dateField = document.querySelector('[name="date"]');
-    const timeField = document.querySelector('[name="time"]');
-    const specialistField = document.querySelector('[name="specialist"]');
-    const roomField = document.querySelector('[name="room"]');
+/* Estilizar "Buscar" y "Mostrar" === */
+function enhanceDataTablesUI() {
+  // placeholder y clase visual al input de búsqueda
+  const $filterInput = $('#reservationsTable_filter input');
+  if ($filterInput.length) {
+    $filterInput.attr('placeholder', 'Buscar…').addClass('input');
+  }
+  // misma clase al select de "Mostrar"
+  const $lengthSelect = $('#reservationsTable_length select');
+  if ($lengthSelect.length) {
+    $lengthSelect.addClass('input');
+  }
+}
 
-    if (dateField) dateField.addEventListener('change', checkAvailability);
-    if (timeField) timeField.addEventListener('change', checkAvailability);
-    if (specialistField) specialistField.addEventListener('change', checkAvailability);
-    if (roomField) roomField.addEventListener('change', checkAvailability);
+// 1) Se ejecuta automáticamente cuando DataTables termina de inicializar
+$(document).on('init.dt', function (e, settings) {
+  if (settings.nTable && settings.nTable.id === 'reservationsTable') {
+    enhanceDataTablesUI();
+  }
 });
 
+// 2) Por si el DOM cambia (páginas, redibujos), re-aplico el estilo una vez
+$(document).ready(function () {
+  enhanceDataTablesUI();
+});
+
+/* === FIN tweak DataTables === */
+
+document.addEventListener("DOMContentLoaded", function () {
+  const dateField = document.querySelector('[name="date"]');
+  const timeField = document.querySelector('[name="time"]');
+  const specialistField = document.querySelector('[name="specialist"]');
+  const roomField = document.querySelector('[name="room"]');
+
+  if (dateField) dateField.addEventListener('change', checkAvailability);
+  if (timeField) timeField.addEventListener('change', checkAvailability);
+  if (specialistField) specialistField.addEventListener('change', checkAvailability);
+  if (roomField) roomField.addEventListener('change', checkAvailability);
+});
 </script>
+
 {% endblock %}

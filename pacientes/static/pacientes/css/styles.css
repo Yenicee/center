@@ -649,7 +649,7 @@ th {
 }
 
 tr:nth-child(even) {
-	background-color: #f9f9f9;
+	background-color: #fdfdfd;
 }
 
 tr:hover {
@@ -1393,6 +1393,65 @@ button:hover {
     align-items: center;
     justify-content: center;
 }
+
+/* Etiquetas “Mostrar … registros” y “Buscar:” */
+.dataTables_length label,
+.dataTables_filter label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #5f7d8c;
+  margin: 0;
+}
+
+/* Estilo unificado de controles (coincide con tus date inputs) */
+.dataTables_length select,
+.dataTables_filter input,
+.date-range input {
+  height: 30px;
+  padding: 6px 10px;
+  border: 1px solid #cfe5ef;
+  border-radius: 10px;
+  background: #fff;
+  color: #333;
+  outline: none;
+  box-shadow: 0 0 0 2px transparent;
+  transition: box-shadow .15s ease, border-color .15s ease;
+  font-size: 14px;
+}
+
+/* Hover/Focus */
+.dataTables_length select:hover,
+.dataTables_filter input:hover,
+.date-range input:hover {
+  border-color: #9fd0e6;
+}
+.dataTables_length select:focus,
+.dataTables_filter input:focus,
+.date-range input:focus {
+  box-shadow: 0 0 0 3px rgba(0,159,214,.15);
+  border-color: #66b9d8;
+}
+
+/* Select con flecha consistente */
+.dataTables_length select {
+  -webkit-appearance: none;
+  appearance: none;
+  padding-right: 28px;
+  background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1.5l5 5 5-5' stroke='%2366b9d8' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+}
+
+/* Ajustes responsivos */
+@media (max-width: 768px) {
+  .top-container { gap: 10px; }
+  .dataTables_filter { margin-left: 0 !important; }
+  .dataTables_length label, .dataTables_filter label { width: 100%; }
+  .dataTables_filter input, .dataTables_length select, .date-range input { width: 100%; }
+}
+
 .top-container{
 	display: flex;
     gap: 20px;
@@ -1414,6 +1473,110 @@ th.sorting_desc::after {
 	padding-top: 10px;
 }
 
+.table-card, .table-wrap{
+    overflow:hidden;
+}
+
+/* el resto igual, apuntando a #reservationsTable */
+#reservationsTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:15px;
+}
+#reservationsTable th, #reservationsTable td{
+  padding:12px 14px;
+  border-bottom:1px solid #edf4f8;
+  vertical-align:middle;
+}
+#reservationsTable thead th{
+  background:#0ea5c6;
+  color:#fff;
+  font-weight:600;
+  letter-spacing:.2px;
+  border-bottom:0;
+  white-space:nowrap;
+}
+#reservationsTable tbody tr:nth-child(even){ background:#f8fbfd; }
+#reservationsTable tbody tr:hover{
+  background:#eef8fc;
+  box-shadow:inset 4px 0 0 #66b9d8;
+}
+/* Tabla base */
+#reservationsTable{
+  width:100%;
+  border-collapse:separate;
+  border-spacing:0;
+  font-size:15px;
+}
+#reservationsTable th,
+#reservationsTable td{
+  padding:12px 14px;
+  border-bottom:1px solid #edf4f8;
+  vertical-align:middle;
+}
+#reservationsTable thead th{
+  background:#0ea5c6; /* tu turquesa */
+  color:#fff;
+  font-weight:600;
+  letter-spacing:.2px;
+  border-bottom:0;
+  white-space:nowrap;
+}
+
+/* Zebra + hover con acento lateral */
+#reservationsTable tbody tr:nth-child(even){ background:#f8fbfd; }
+#reservationsTable tbody tr:hover{
+  background:#eef8fc;
+  box-shadow:inset 4px 0 0 #66b9d8; /* acento izquierdo */
+}
+
+/* Alineaciones útiles por columna (según tu orden actual) */
+#reservationsTable tbody td:nth-child(1), /* Fecha */
+#reservationsTable tbody td:nth-child(2), /* Hora */
+#reservationsTable tbody td:nth-child(5), /* Sala */
+#reservationsTable tbody td:nth-child(7), /* Pago */
+#reservationsTable tbody td:nth-child(9)  /* Acciones */
+{ text-align:center; }
+#reservationsTable tbody td:nth-child(1),
+#reservationsTable tbody td:nth-child(2){
+  font-variant-numeric: tabular-nums; /* números alineados */
+}
+
+/* Iconos de acciones más “clickeables” */
+#reservationsTable .action-icon{
+  display:inline-flex; align-items:center; justify-content:center;
+  width:32px; height:32px; border-radius:8px; margin:0 2px;
+  transition:background .15s ease, transform .05s ease;
+}
+#reservationsTable .action-icon:hover{ background:#e6f4fa; }
+#reservationsTable .action-icon:active{ transform:scale(.96); }
+
+/* Badges para columnas de Estado y Pago (si los usas como texto) */
+.badge{
+  display:inline-block;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+  font-weight:600;
+  line-height:1;
+  white-space:nowrap;
+}
+.badge--pending{ background:#fff4e5; color:#a86417; border:1px solid #ffe5bf; }
+.badge--planned{ background:#eef4ff; color:#3657b5; border:1px solid #d9e4ff; }
+.badge--done{ background:#e9f9f1; color:#1b7a46; border:1px solid #c6f0d9; }
+.badge--unpaid{ background:#ffe9e9; color:#ae2d2d; border:1px solid #ffd0d0; }
+.badge--paid{ background:#e5f6ff; color:#0b6a88; border:1px solid #c9eefe; }
+
+/* Paginación un poco más sólida (ya la tienes bien, esto la refina) */
+.dataTables_wrapper .dataTables_paginate .paginate_button.current{
+  background:#0ea5c6 !important; color:#fff !important; border:0 !important;
+  box-shadow:0 2px 8px rgba(14,165,198,.25);
+}
+.dataTables_wrapper .dataTables_paginate .paginate_button{
+  border-radius:8px !important; padding:6px 10px !important;
+}
+/* Specialist Details */
 .specialist-details {
     display: flex;
     justify-content: space-between;

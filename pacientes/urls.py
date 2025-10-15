@@ -52,9 +52,12 @@ urlpatterns = [
     path('payments/<int:payment_id>/delete/', views.delete_payment, name='delete_payment'),
     path('payments/<int:payment_id>/', views.payment_detail, name='payment_detail'),
     path('toggle_payment_status/', views.toggle_payment_status, name='toggle_payment_status'),
+    path('sessions/<int:session_id>/toggle-payment/', views.toggle_payment, name='toggle_payment'),
     
     #Reservaciones URLs
     path('reservations/', views.reservation_list, name='reservation_list'),
+    path('sessions/<int:session_id>/cancel-or-reschedule/', views.cancel_or_reschedule_session, name='cancel_or_reschedule_session'),
+    path('sessions/<int:session_id>/complete/', views.complete_session, name='complete_session'),
     
     #Login Cliente URLs
     path('login/', views.login_view, name='login'),  

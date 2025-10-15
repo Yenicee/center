@@ -84,13 +84,14 @@ class PatientForm(forms.ModelForm):
                 attrs={'required': False})
         }
 
+
 class SessionForm(forms.ModelForm):
     class Meta:
         model = Session
         fields = [
-            'patient', 'specialist', 'room', 'date', 'time', 
-            'objective', 'activity', 'materials', 'observation', 
-            'attachment', 'status', 'paid_in_advance'
+            'patient', 'specialist', 'room', 'date', 'time',
+            'objective', 'activity', 'materials', 'observation',
+            'attachment', 'paid_in_advance'   # <- quitamos 'status'
         ]
         labels = {
             'date': 'Fecha',
@@ -98,21 +99,20 @@ class SessionForm(forms.ModelForm):
             'patient': 'Paciente',
             'specialist': 'Especialista',
             'room': 'Sala',
-            'objective': 'Objetivo',
-            'activity': 'Actividad',
-            'materials': 'Materiales',
-            'observation': 'Observación',
+            'objective': 'Objetivo (opcional)',
+            'activity': 'Actividad (opcional)',
+            'materials': 'Materiales (opcional)',
+            'observation': 'Observación (post-sesión)',
             'attachment': 'Archivo Adjunto',
-            'status': 'Estado de la sesión',
-            'paid_in_advance': 'Pagada'
+            'paid_in_advance': 'Pagada',
         }
         widgets = {
             'date': forms.DateInput(attrs={'type': 'date'}),
             'time': forms.TimeInput(attrs={'type': 'time'}),
-            'objective': forms.TextInput(attrs={'class': 'form-control'}),
-            'activity': forms.Textarea(attrs={'rows': 4}),
-            'materials': forms.Textarea(attrs={'rows': 4}),
-            'observation': forms.Textarea(attrs={'rows': 4}),
+            'objective': forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Puedes completarlo después'}),
+            'activity': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Puedes completarlo después'}),
+            'materials': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Opcional'}),
+            'observation': forms.Textarea(attrs={'rows': 4, 'placeholder': 'Se completa al cerrar'}),
             'paid_in_advance': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
@@ -126,15 +126,16 @@ class SessionForm(forms.ModelForm):
         if not specialist or not room or not date or not time:
             return cleaned_data
 
-        # Validar que el especialista no esté ocupado en el mismo horario
-        if Session.objects.filter(specialist=specialist, date=date, time=time).exists():
+        # Conflicto especialista
+        if Session.objects.filter(specialist=specialist, date=date, time=time).exclude(pk=self.instance.pk if self.instance else None).exists():
             self.add_error('specialist', 'El especialista ya tiene una sesión en este horario.')
 
-        # Validar que la sala no esté ocupada en el mismo horario
-        if Session.objects.filter(room=room, date=date, time=time).exists():
+        # Conflicto sala
+        if Session.objects.filter(room=room, date=date, time=time).exclude(pk=self.instance.pk if self.instance else None).exists():
             self.add_error('room', 'La sala ya está reservada en este horario.')
 
         return cleaned_data
+
 
 class SpecialistForm(forms.ModelForm):
    username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')

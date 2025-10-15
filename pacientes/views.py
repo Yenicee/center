@@ -1,3 +1,4 @@
+from decimal import Decimal
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
@@ -19,7 +20,7 @@ from django.contrib.auth import login, logout
 from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
-
+from django.utils import timezone
 
 #views para login
 @sensitive_post_parameters()
@@ -202,6 +203,97 @@ def new_session(request):
         form = SessionForm()
 
     return render(request, 'pacientes/session/new_session.html', {'form': form})
+
+
+@require_POST
+@login_required
+def cancel_or_reschedule_session(request, session_id):
+    """
+    mode = 'cancel' | 'reschedule'
+    cancel: necesita canceled_reason (y optional canceled_detail)
+    reschedule: date, time, room_id, copy_plan (bool), canceled_reason='Reprogramada'
+    """
+    session = get_object_or_404(Session, pk=session_id)
+
+    mode = request.POST.get('mode')
+    if mode not in ('cancel', 'reschedule'):
+        return JsonResponse({'success': False, 'error': 'Modo inválido'}, status=400)
+
+    if mode == 'cancel':
+        reason = (request.POST.get('canceled_reason') or '').strip()
+        detail = (request.POST.get('canceled_detail') or '').strip()
+        if not reason:
+            return JsonResponse({'success': False, 'error': 'Motivo requerido'}, status=400)
+
+        session.status = Session.STATUS_CANCELED
+        session.canceled_reason = reason
+        session.canceled_detail = detail
+        session.save()
+        return JsonResponse({'success': True, 'status': session.status})
+
+    # reschedule
+    new_date = request.POST.get('date')
+    new_time = request.POST.get('time')
+    room_id  = request.POST.get('room_id')
+    copy_plan = request.POST.get('copy_plan') in ('1', 'true', 'True', True)
+
+    if not (new_date and new_time and room_id):
+        return JsonResponse({'success': False, 'error': 'Fecha, hora y sala son requeridos'}, status=400)
+
+    # Validaciones básicas de conflicto
+    room = get_object_or_404(Room, pk=room_id)
+    if Session.objects.filter(specialist=session.specialist, date=new_date, time=new_time).exists():
+        return JsonResponse({'success': False, 'error': 'Conflicto con el especialista en la nueva fecha/hora'}, status=409)
+    if Session.objects.filter(room=room, date=new_date, time=new_time).exists():
+        return JsonResponse({'success': False, 'error': 'Conflicto con la sala en la nueva fecha/hora'}, status=409)
+
+    # Crear nueva sesión
+    new_session = Session.objects.create(
+        client=session.client,
+        patient=session.patient,
+        specialist=session.specialist,
+        room=room,
+        date=new_date,
+        time=new_time,
+        objective=session.objective if copy_plan else '',
+        activity=session.activity if copy_plan else '',
+        materials=session.materials if copy_plan else '',
+        observation='',
+        status=Session.STATUS_PENDING_PLANNED if copy_plan else Session.STATUS_PENDING_UNPLANNED,
+        paid_in_advance=session.paid_in_advance
+    )
+
+    # Marcar la actual como cancelada por reprogramación
+    session.status = Session.STATUS_CANCELED
+    session.canceled_reason = 'Reprogramada'
+    session.rescheduled_to = new_session
+    session.save()
+
+    return JsonResponse({'success': True, 'new_session_id': new_session.id, 'old_status': session.status})
+
+@require_POST
+@login_required
+def complete_session(request, session_id):
+    """
+    Cierra la sesión marcándola como 'Realizada'.
+    Requiere 'observation' en el POST.
+    """
+    session = get_object_or_404(Session, pk=session_id)
+
+    notes = (request.POST.get('observation') or '').strip()
+    if not notes:
+        return JsonResponse({'success': False, 'error': 'La observación es obligatoria para cerrar.'}, status=400)
+
+    # Sólo permite cerrar si está pendiente
+    if session.status not in (Session.STATUS_PENDING_UNPLANNED, Session.STATUS_PENDING_PLANNED):
+        return JsonResponse({'success': False, 'error': 'Solo se pueden cerrar sesiones pendientes.'}, status=400)
+
+    session.observation = notes
+    session.status = Session.STATUS_COMPLETED
+    session.completed_at = timezone.now()
+    session.save()
+
+    return JsonResponse({'success': True, 'status': session.status})
 
 @login_required
 def check_availability(request):
@@ -559,6 +651,86 @@ def toggle_payment_status(request):
     payment.save()
     return JsonResponse({'success': True, 'is_paid': payment.is_paid})
 
+@login_required
+@require_POST
+def toggle_payment(request, session_id):
+    """
+    Marca/desmarca pago de una sesión.
+    Si viene 'mark' == 'paid', actualiza/crea Payment con is_paid=True y guarda amount/method/reference/payment_date.
+    Si 'mark' == 'unpaid', pone is_paid=False (mantiene amount y payment_date si quieres rastrear el intento previo).
+    Registra PaymentLog.
+    """
+    from .models import Session, Payment, PaymentLog
+
+    session = get_object_or_404(Session, pk=session_id)
+
+    mark = (request.POST.get('mark') or '').strip()  # 'paid' | 'unpaid'
+    if mark not in ('paid', 'unpaid'):
+        return JsonResponse({'success': False, 'error': 'Parámetro inválido.'}, status=400)
+
+    # Asegura Payment
+    payment, _created = Payment.objects.get_or_create(
+        session=session,
+        defaults={
+            'client': session.client,
+            'amount': session.patient.cost_session,
+            'payment_date': session.date,
+            'is_paid': False,
+        }
+    )
+
+    if mark == 'paid':
+        # Datos del modal
+        amount_str = request.POST.get('amount') or ''
+        method     = (request.POST.get('method') or '').strip()
+        reference  = (request.POST.get('reference') or '').strip()
+        date_str   = (request.POST.get('payment_date') or '').strip()
+
+        try:
+            amount = Decimal(amount_str) if amount_str else payment.amount or session.patient.cost_session
+        except Exception:
+            return JsonResponse({'success': False, 'error': 'Monto inválido.'}, status=400)
+
+        # Fecha de pago
+        try:
+            pay_date = timezone.datetime.fromisoformat(date_str).date() if date_str else timezone.now().date()
+        except Exception:
+            pay_date = timezone.now().date()
+
+        # Actualiza Payment
+        payment.is_paid = True
+        payment.amount = amount
+        payment.payment_date = pay_date
+        if reference:
+            payment.payment_observation = (payment.payment_observation or '') + f"\nRef: {reference}"
+        payment.save()
+
+        # Log
+        PaymentLog.objects.create(
+            session=session,
+            action='mark_paid',
+            amount=amount,
+            method=method,
+            reference=reference,
+            by_user=request.user,
+        )
+
+        return JsonResponse({'success': True, 'paid': True})
+
+    # mark == 'unpaid'
+    payment.is_paid = False
+    payment.save()
+
+    PaymentLog.objects.create(
+        session=session,
+        action='mark_unpaid',
+        amount=payment.amount,
+        method='',
+        reference='',
+        by_user=request.user,
+    )
+
+    return JsonResponse({'success': True, 'paid': False})
 
 
 
