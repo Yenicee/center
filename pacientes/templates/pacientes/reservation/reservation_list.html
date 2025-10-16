@@ -38,7 +38,9 @@
           <tr data-session-id="{{ session.id }}"
               data-room-id="{{ session.room.id }}"
               data-session-url-complete="{% url 'complete_session' session.id %}"
-              data-session-url-cancel-resched="{% url 'cancel_or_reschedule_session' session.id %}">
+              data-session-url-cancel-resched="{% url 'cancel_or_reschedule_session' session.id %}"
+              data-session-cost="{{ session.patient.cost_session|default:'0' }}">
+              
             {# Orden correcto: usar ISO en data-order #}
             <td data-order="{{ date|date:'Y-m-d' }}T{{ session.time|time:'H:i' }}">{{ date|date:"d/m/Y" }}</td>
             <td data-order="{{ session.time|time:'H:i' }}">{{ session.time|time:"H:i" }}</td>
@@ -368,68 +370,87 @@ $(function() {
     const isPaid = $btn.data('paid') === 1;
 
     if (!isPaid) {
-      // Marcar como pagado: abrir modal para datos
-      Swal.fire({
-        title: 'Marcar como pagado',
-        html: `
-          <div style="text-align:left">
-            <label>Monto</label>
-            <input type="number" step="0.01" id="payAmount" class="swal2-input" placeholder="Monto" />
-            <label>Método</label>
-            <select id="payMethod" class="swal2-input" style="height:auto">
-              <option value="">Selecciona...</option>
-              <option value="Efectivo">Efectivo</option>
-              <option value="Tarjeta">Tarjeta</option>
-              <option value="Transferencia">Transferencia</option>
-              <option value="Otro">Otro</option>
-            </select>
-            <label>Referencia (opcional)</label>
-            <input type="text" id="payRef" class="swal2-input" placeholder="N° operación / detalle" />
-            <label>Fecha de pago</label>
-            <input type="date" id="payDate" class="swal2-input" />
-          </div>
-        `,
-        focusConfirm: false,
-        showCancelButton: true,
-        confirmButtonText: 'Guardar',
-        cancelButtonText: 'Cancelar',
-        preConfirm: () => {
-          const amount = document.getElementById('payAmount').value;
-          const method = document.getElementById('payMethod').value;
-          const reference = document.getElementById('payRef').value;
-          const payDate = document.getElementById('payDate').value;
-          if (amount && Number(amount) <= 0) {
-            Swal.showValidationMessage('El monto debe ser mayor a 0.');
-          }
-          return { amount, method, reference, payment_date: payDate };
-        }
-      }).then(res => {
-        if (!res.isConfirmed) return;
+  const row = $btn.closest('tr')[0];
+  const defaultAmount = parseFloat(row.dataset.sessionCost || '0') || 0;
+  const todayISO = new Date().toISOString().slice(0,10); // YYYY-MM-DD
 
-        $.post(url, {
-          mark: 'paid',
-          amount: res.value.amount,
-          method: res.value.method,
-          reference: res.value.reference,
-          payment_date: res.value.payment_date,
-          csrfmiddlewaretoken: '{{ csrf_token }}'
-        }).done(resp => {
-          if (resp && resp.success) {
-            // Cambiar icono a "pagado"
-            $btn.data('paid', 1)
-                .attr('title', 'Marcar como NO pagado')
-                .html('<i class="bx bx-check-circle" style="font-size:18px; color:#16a34a;"></i>');
-            $cell.attr('title', 'Pagado');
-            Swal.fire('OK', 'Pago registrado.', 'success');
-          } else {
-            Swal.fire('Error', (resp && resp.error) ? resp.error : 'No se pudo guardar el pago.', 'error');
-          }
-        }).fail(() => {
-          Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
-        });
-      });
+  Swal.fire({
+    title: 'Marcar como pagado',
+    html: `
+      <div class="swal-grid">
+        <label>Monto</label>
+        <input type="number" step="0.01" min="0" id="payAmount" class="swal2-input" placeholder="Monto" />
 
-    } else {
+        <label>Método</label>
+        <select id="payMethod" class="swal2-input sel">
+          <option value="">Selecciona...</option>
+          <option value="Efectivo">Efectivo</option>
+          <option value="Tarjeta">Tarjeta</option>
+          <option value="Transferencia">Transferencia</option>
+          <option value="Otro">Otro</option>
+        </select>
+
+        <label>Referencia (opcional)</label>
+        <input type="text" id="payRef" class="swal2-input" placeholder="N° operación / detalle" />
+
+        <label>Fecha de pago</label>
+        <input type="date" id="payDate" class="swal2-input" />
+      </div>
+    `,
+    focusConfirm: false,
+    showCancelButton: true,
+    confirmButtonText: 'Guardar',
+    cancelButtonText: 'Cancelar',
+    customClass: {
+      popup: 'swal-compact',
+      confirmButton: 'swal-confirm',
+      cancelButton: 'swal-cancel'
+    },
+    didOpen: () => {
+      // Prefills
+      const $amount = document.getElementById('payAmount');
+      const $date   = document.getElementById('payDate');
+      if ($amount) $amount.value = defaultAmount ? defaultAmount.toFixed(2) : '';
+      if ($date) $date.value = todayISO;
+    },
+    preConfirm: () => {
+      const amount = document.getElementById('payAmount').value;
+      const method = document.getElementById('payMethod').value;
+      const reference = document.getElementById('payRef').value;
+      const payDate = document.getElementById('payDate').value;
+
+      if (amount && Number(amount) <= 0) {
+        Swal.showValidationMessage('El monto debe ser mayor a 0.');
+        return false;
+      }
+      return { amount, method, reference, payment_date: payDate };
+    }
+  }).then(res => {
+    if (!res.isConfirmed) return;
+
+    $.post(url, {
+      mark: 'paid',
+      amount: res.value.amount,         // si viene vacío, el view usa el default
+      method: res.value.method,
+      reference: res.value.reference,
+      payment_date: res.value.payment_date,
+      csrfmiddlewaretoken: '{{ csrf_token }}'
+    }).done(resp => {
+      if (resp && resp.success) {
+        // Cambiar icono a "pagado"
+        $btn.data('paid', 1)
+            .attr('title', 'Marcar como NO pagado')
+            .html('<i class="bx bx-check-circle" style="font-size:18px; color:#16a34a;"></i>');
+        $cell.attr('title', 'Pagado');
+        Swal.fire('OK', 'Pago registrado.', 'success');
+      } else {
+        Swal.fire('Error', (resp && resp.error) ? resp.error : 'No se pudo guardar el pago.', 'error');
+      }
+    }).fail(() => {
+      Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+    });
+  });
+} else {
       // Marcar como no pagado (confirmación rápida)
       Swal.fire({
         title: '¿Marcar como NO pagado?',

@@ -22,7 +22,12 @@ class Specialist(models.Model):
     dni = models.CharField(max_length=20, unique=True)
     profile_image = models.ImageField(upload_to='specialist_images/', null=True, blank=True)
     role = models.CharField(max_length=20, choices=ROLES, default='especialista')
+    COMP_FIXED = 'fixed'
+    COMP_PERCENT = 'percent'
+    COMP_CHOICES = [(COMP_FIXED, 'Fijo mensual'), (COMP_PERCENT, '% por sesión')]
 
+    comp_type = models.CharField(max_length=10, choices=COMP_CHOICES, default=COMP_FIXED)
+    comp_value = models.DecimalField(max_digits=7, decimal_places=2, default=0)  
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.role}"
     
@@ -80,7 +85,6 @@ class Patient(models.Model):
     def __str__(self):
         return f'{self.name} {self.surname}'
 
-# models.py (reemplaza COMPLETA la clase Session por esta)
 class Session(models.Model):
     # ── Estados del flujo
     STATUS_PENDING_UNPLANNED = 'Pendiente sin planificar'
@@ -169,28 +173,23 @@ class Session(models.Model):
     def __str__(self):
         return f"{self.date} {self.time} · {self.patient} · {self.get_status_display()}"
 
-@property
-def is_paid_status(self) -> bool:
-    """
-    True si la sesión está pagada.
-    Considera prepago o Payment.is_paid. Evita errores si no existe el OneToOne.
-    """
-    try:
-        return bool(self.paid_in_advance or (self.payment and self.payment.is_paid))
-    except Exception:
-        # Si no existe self.payment aún, nos quedamos con el prepago
-        return bool(self.paid_in_advance)
+    @property
+    def is_paid_status(self):
+        p = getattr(self, 'payment', None)
+        return bool(p and p.is_paid)
     
 class Payment(models.Model):
     
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='payments',null=True, blank=True )
-    session = models.OneToOneField(Session, on_delete=models.CASCADE, related_name='payment')
+    session = models.OneToOneField('Session', on_delete=models.CASCADE, related_name='payment')
     is_paid = models.BooleanField(default=False)
     payment_date = models.DateField(null=True, blank=True)
     amount = models.DecimalField(max_digits=10, decimal_places=2)
+    method = models.CharField(max_length=50, blank=True, default='')
     payment_observation = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    reference = models.CharField(max_length=120, blank=True, default='')
 
     def save(self, *args, **kwargs):
         if not self.amount and self.session:
@@ -223,3 +222,25 @@ class PaymentLog(models.Model):
 
     def __str__(self):
         return f"{self.get_action_display()} · {self.session.id} · {self.at:%Y-%m-%d %H:%M}"
+
+#Expense
+# ---- Gastos simples (MVP) ----
+class Expense(models.Model):
+   
+
+    name = models.CharField(max_length=120)                     # Luz, Alquiler, Internet, etc.
+    amount = models.DecimalField(max_digits=10, decimal_places=2)
+    is_fixed = models.BooleanField(default=False)               # fijo vs variable
+    is_recurring = models.BooleanField(default=False)           # recurrente (manual en MVP)
+    due_date = models.DateField(null=True, blank=True)         # fecha de pago/vence
+    paid = models.BooleanField(default=False)
+    paid_at = models.DateField(null=True, blank=True)
+    notes = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-due_date', '-created_at']
+
+    def __str__(self):
+        return f"{self.name} · {self.amount}"
+

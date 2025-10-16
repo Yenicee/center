@@ -122,12 +122,41 @@
 	       </li>
 				
 			<li class="divider" data-text="Administración"></li>
-			<li><a href="{% url 'payment_list' %}"><svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
-       width="20" height="20" fill="none" stroke="currentColor"
-       stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-    <rect width="20" height="14" x="2" y="5" rx="2"></rect>
-    <line x1="2" x2="22" y1="10" y2="10"></line>
-  </svg> Pagos</a></li>
+
+			<li>
+			<a href="#">
+				<!-- Icono cartera/finanzas -->
+				<svg class="icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"
+					width="20" height="20" fill="none" stroke="currentColor"
+					stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<rect width="20" height="14" x="2" y="5" rx="2"></rect>
+				<line x1="2" x2="22" y1="10" y2="10"></line>
+				</svg> Finanzas
+				<i class='bx bx-chevron-right icon-right'></i>
+			</a>
+
+			<ul class="side-dropdown">
+				<li>
+				<a href="{% url 'finance_dashboard' %}"
+					class="{% if request.resolver_match.url_name == 'finance_dashboard' %}active{% endif %}">
+					<i class="fas fa-chart-line icon-sub"></i> Dashboard
+				</a>
+				</li>
+				<li>
+				<a href="{% url 'expense_list' %}"
+					class="{% if request.resolver_match.url_name in 'expense_list expense_create expense_edit expense_delete' %}active{% endif %}">
+					<i class="fas fa-file-invoice-dollar icon-sub"></i> Gastos
+				</a>
+				</li>
+				<li>
+				<a href="{% url 'payment_list' %}"
+					class="{% if request.resolver_match.url_name in 'payment_list create_payment edit_payment payment_detail delete_payment' %}active{% endif %}">
+					<i class="fas fa-credit-card icon-sub"></i> Cobros
+				</a>
+				</li>
+			</ul>
+			</li>
+
 		</ul>
 			<div class="ads">
 				<div class="wrapper">

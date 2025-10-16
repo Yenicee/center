@@ -1,0 +1,10 @@
+{% extends "pacientes/base/base.html" %}
+{% block content %}
+<h1>Eliminar gasto</h1>
+<p>¿Seguro que deseas eliminar <strong>{{ item.name }}</strong> por S/. {{ item.amount }}?</p>
+<form method="post">
+  {% csrf_token %}
+  <button class="btn btn-danger">Eliminar</button>
+  <a class="btn btn-secondary" href="{% url 'expense_list' %}">Cancelar</a>
+</form>
+{% endblock %}

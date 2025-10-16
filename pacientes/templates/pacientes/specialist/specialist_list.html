@@ -80,20 +80,24 @@
     </div>
 
     <footer class="spec-card__actions">
-    <div class="actions-left">
+      <div class="actions-left">
         <a href="{% url 'view_specialist' s.id %}" class="btn btn-secondary btn-md">
-        <i class="fas fa-eye"></i> Ver ficha
+          <i class="fas fa-eye"></i> Ver ficha
         </a>
         <a href="{% url 'calendar' %}?specialist={{ s.id }}" class="btn btn-primary btn-md">
-        <i class="far fa-calendar-alt"></i> Ver Agenda
+          <i class="far fa-calendar-alt"></i> Ver Agenda
         </a>
-    </div>
-    <div class="actions-right">
+      </div>
+      <div class="actions-right">
+        <a href="{% url 'edit_specialist' s.id %}" class="icon-btn btn-edit admin-only" title="Editar">
+          <i class="fas fa-pencil-alt"></i>
+        </a>
         <a href="{% url 'delete_specialist' s.id %}" class="icon-btn btn-danger admin-only" title="Eliminar">
-        <i class="fas fa-trash"></i>
+          <i class="fas fa-trash"></i>
         </a>
-    </div>
+      </div>
     </footer>
+
   </article>
   {% empty %}
     <p>No hay especialistas registrados.</p>

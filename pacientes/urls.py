@@ -23,6 +23,7 @@ urlpatterns = [
     path('specialists/', views.specialist_list, name='specialist_list'),
     path('specialists/new/', views.create_specialist, name='new_specialist'),
     path('specialists/<int:specialist_id>/', views.view_specialist, name='view_specialist'),
+    path('specialists/<int:specialist_id>/edit/', views.edit_specialist, name='edit_specialist'),  # ← NUEVA
     path('specialists/<int:specialist_id>/delete/', views.delete_specialist, name='delete_specialist'),
     path('check-username/', views.check_username_availability, name='check_username'),
 
@@ -62,6 +63,15 @@ urlpatterns = [
     #Login Cliente URLs
     path('login/', views.login_view, name='login'),  
     path('logout/', views.logout_view, name='logout'),  
+
+    #Pagos
+    path('finance/', views.finance_dashboard, name='finance_dashboard'),
+
+    #Gastos
+    path('finance/expenses/', views.expense_list, name='expense_list'),
+    path('finance/expenses/new/', views.expense_create, name='expense_create'),
+    path('finance/expenses/<int:pk>/edit/', views.expense_edit, name='expense_edit'),
+    path('finance/expenses/<int:pk>/delete/', views.expense_delete, name='expense_delete'),
 
 ] 
 if settings.DEBUG:

@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.models import User
 from django.utils.translation import gettext_lazy as _
-from .models import Patient, Session, Specialist, Room, Payment, Equipment
+from .models import Patient, Session, Specialist, Room, Payment, Equipment, Expense
 from panelAdmin.models import Client
 from django.core.exceptions import ValidationError
 from django.contrib.auth import authenticate
@@ -138,64 +138,166 @@ class SessionForm(forms.ModelForm):
 
 
 class SpecialistForm(forms.ModelForm):
-   username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')
-   email = forms.EmailField(required=True, label='Correo Electrónico')
-   first_name = forms.CharField(max_length=30, required=True, label='Nombre')
-   last_name = forms.CharField(max_length=30, required=True, label='Apellido')
-   password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña')
-   confirm_password = forms.CharField(widget=forms.PasswordInput(), label='Confirmar Contraseña')
+    # Campos de User para creación
+    username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')
+    email = forms.EmailField(required=True, label='Correo Electrónico')
+    first_name = forms.CharField(max_length=30, required=True, label='Nombre')
+    last_name = forms.CharField(max_length=30, required=True, label='Apellido')
+    password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña', required=True)
+    confirm_password = forms.CharField(widget=forms.PasswordInput(), label='Confirmar Contraseña', required=True)
 
-   class Meta:
-       model = Specialist
-       fields = ['client', 'specialty', 'phone', 'dni', 'profile_image', 'role']
-       labels = {'specialty': 'Especialidad', 'phone': 'Teléfono', 'dni': 'DNI', 'profile_image': 'Imagen de Perfil', 'role': 'Rol'}
-       widgets = {'role': forms.Select(choices=Specialist.ROLES)}
+    class Meta:
+        model = Specialist
+        fields = [
+            'client', 'specialty', 'phone', 'dni', 'profile_image', 'role',
+            'comp_type', 'comp_value',   # pago del especialista
+        ]
+        labels = {
+            'specialty': 'Especialidad',
+            'phone': 'Teléfono',
+            'dni': 'DNI',
+            'profile_image': 'Imagen de Perfil',
+            'role': 'Rol',
+            'comp_type': 'Tipo de pago',
+            'comp_value': 'Valor',
+        }
+        widgets = {
+            'role': forms.Select(choices=Specialist.ROLES),
+            'comp_type': forms.Select(choices=Specialist.COMP_CHOICES),
+            'comp_value': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+        }
 
-   def __init__(self, *args, **kwargs):
-       self.request = kwargs.pop('request', None)
-       super().__init__(*args, **kwargs)
-       
-       if self.request and self.request.tenant:
-           client = self.request.tenant
-           self.fields['client'].queryset = Client.objects.filter(id=client.id)
-           self.fields['client'].initial = self.fields['client'].widget.attrs['readonly'] = client
-           self.fields['client'].disabled = True
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+        # Si usas tenant en request
+        if self.request and getattr(self.request, "tenant", None):
+            client = self.request.tenant
+            self.fields['client'].queryset = Client.objects.filter(id=client.id)
+            self.fields['client'].initial = client
+            self.fields['client'].disabled = True
 
-           current_count = Specialist.objects.filter(client=client).count()
-           if current_count >= client.specialists_limit:
-               self.fields['client'].help_text = f"Límite: {client.specialists_limit}, Actuales: {current_count}"
+    def clean(self):
+        cleaned = super().clean()
+        pwd = cleaned.get('password') or ''
+        cpw = cleaned.get('confirm_password') or ''
+        if pwd != cpw:
+            raise ValidationError({'confirm_password': 'Las contraseñas no coinciden.'})
+        if len(pwd) < 6:
+            raise ValidationError({'password': 'La contraseña debe tener al menos 6 caracteres.'})
+        return cleaned
 
-   def clean(self):
-       cleaned_data = super().clean()
-       
-       if cleaned_data.get('password') != cleaned_data.get('confirm_password'):
-           raise ValidationError("Las contraseñas no coinciden.")
+    def save(self, commit=True):
+        specialist = super().save(commit=False)
+        # Tenant
+        if self.request and getattr(self.request, "tenant", None):
+            specialist.client = self.request.tenant
 
-       if self.request and self.request.tenant:
-           client = self.request.tenant
-           current_count = Specialist.objects.filter(client=client).count()
-           
-           if current_count >= client.specialists_limit:
-               raise ValidationError({'client': f"Límite alcanzado: {current_count}/{client.specialists_limit}"})
+        # Crear user
+        user = User(
+            username=self.cleaned_data['username'],
+            email=self.cleaned_data['email'],
+            first_name=self.cleaned_data['first_name'],
+            last_name=self.cleaned_data['last_name'],
+        )
+        user.set_password(self.cleaned_data['password'])
 
-       return cleaned_data
+        if commit:
+            user.save()
+            specialist.user = user
+            specialist.save()
+        else:
+            specialist.user = user
 
-   def save(self, commit=True):
-       if self.request and self.request.tenant:
-           client = self.request.tenant
-           if Specialist.objects.filter(client=client).count() >= client.specialists_limit:
-               raise ValidationError(f"Límite de especialistas alcanzado: {client.specialists_limit}")
+        return specialist
 
-       user = User(**{k: self.cleaned_data[k] for k in ['username', 'email', 'first_name', 'last_name']})
-       user.set_password(self.cleaned_data['password'])
-       user.save() if commit else None
 
-       specialist = super().save(commit=False)
-       specialist.user = user
-       specialist.client = self.request.tenant if self.request and self.request.tenant else None
-       specialist.save() if commit else None
+# ---------- EDITAR ----------
+class SpecialistEditForm(forms.ModelForm):
+    # Campos de User precargados
+    username = forms.CharField(max_length=150, required=True, label='Nombre de Usuario')
+    email = forms.EmailField(required=True, label='Correo Electrónico')
+    first_name = forms.CharField(max_length=30, required=True, label='Nombre')
+    last_name = forms.CharField(max_length=30, required=True, label='Apellido')
+    # Contraseña opcional
+    password = forms.CharField(widget=forms.PasswordInput(), label='Contraseña (opcional)', required=False)
+    confirm_password = forms.CharField(widget=forms.PasswordInput(), label='Confirmar Contraseña', required=False)
 
-       return specialist
+    class Meta:
+        model = Specialist
+        fields = [
+            'client', 'specialty', 'phone', 'dni', 'profile_image', 'role',
+            'comp_type', 'comp_value',
+        ]
+        labels = {
+            'specialty': 'Especialidad',
+            'phone': 'Teléfono',
+            'dni': 'DNI',
+            'profile_image': 'Imagen de Perfil',
+            'role': 'Rol',
+            'comp_type': 'Tipo de pago',
+            'comp_value': 'Valor',
+        }
+        widgets = {
+            'role': forms.Select(choices=Specialist.ROLES),
+            'comp_type': forms.Select(choices=Specialist.COMP_CHOICES),
+            'comp_value': forms.NumberInput(attrs={'step': '0.01', 'min': '0'}),
+        }
+
+    def __init__(self, *args, **kwargs):
+        self.request = kwargs.pop('request', None)
+        super().__init__(*args, **kwargs)
+        # Tenant
+        if self.request and getattr(self.request, "tenant", None):
+            client = self.request.tenant
+            self.fields['client'].queryset = Client.objects.filter(id=client.id)
+            self.fields['client'].initial = client
+            self.fields['client'].disabled = True
+
+        # Precargar user
+        instance = getattr(self, 'instance', None)
+        if instance and instance.pk and instance.user_id:
+            u = instance.user
+            self.fields['username'].initial = u.username
+            self.fields['email'].initial = u.email
+            self.fields['first_name'].initial = u.first_name
+            self.fields['last_name'].initial = u.last_name
+
+    def clean(self):
+        cleaned = super().clean()
+        pwd = cleaned.get('password') or ''
+        cpw = cleaned.get('confirm_password') or ''
+        if pwd or cpw:
+            if pwd != cpw:
+                raise ValidationError({'confirm_password': 'Las contraseñas no coinciden.'})
+            if len(pwd) < 6:
+                raise ValidationError({'password': 'La contraseña debe tener al menos 6 caracteres.'})
+        return cleaned
+
+    def save(self, commit=True):
+        specialist = super().save(commit=False)
+        # Tenant
+        if self.request and getattr(self.request, "tenant", None):
+            specialist.client = self.request.tenant
+
+        # Actualizar user existente (o crear si faltara)
+        user = specialist.user if specialist.user_id else User()
+        user.username = self.cleaned_data['username']
+        user.email = self.cleaned_data['email']
+        user.first_name = self.cleaned_data['first_name']
+        user.last_name = self.cleaned_data['last_name']
+        pwd = self.cleaned_data.get('password')
+        if pwd:
+            user.set_password(pwd)
+
+        if commit:
+            user.save()
+            specialist.user = user
+            specialist.save()
+        else:
+            specialist.user = user
+
+        return specialist
 
 class EquipmentForm(forms.ModelForm):
     class Meta:
@@ -242,4 +344,24 @@ class PaymentForm(forms.ModelForm):
             'payment_date': 'Fecha de pago',
             'amount': 'Monto',
             'payment_observation': 'Observación del pago'
+        }
+
+class ExpenseForm(forms.ModelForm):
+    class Meta:
+        model = Expense
+        fields = ['name','amount','is_fixed','is_recurring','due_date','paid','paid_at','notes']
+        widgets = {
+            'due_date': forms.DateInput(attrs={'type':'date'}),
+            'paid_at': forms.DateInput(attrs={'type':'date'}),
+            'notes': forms.Textarea(attrs={'rows':3}),
+        }
+        labels = {
+            'name': 'Nombre del ítem',
+            'amount': 'Monto (S/.)',
+            'is_fixed': '¿Fijo?',
+            'is_recurring': '¿Recurrente?',
+            'due_date': 'Fecha de pago/venc.',
+            'paid': '¿Pagado?',
+            'paid_at': 'Fecha de pago',
+            'notes': 'Notas',
         }

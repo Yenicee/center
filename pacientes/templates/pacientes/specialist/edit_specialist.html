@@ -1,21 +1,21 @@
 {% extends "pacientes/base/base.html" %}
 {% block content %}
 
-<h1>Nuevo Especialista</h1>
+<h1 class="title">Editar Especialista</h1>
 <ul class="breadcrumbs">
     <li><a href="{% url 'patient_list' %}">Home</a></li>
     <li class="divider">/</li>
     <li><a href="{% url 'specialist_list' %}">Especialistas</a></li>
     <li class="divider">/</li>
-    <li><a href="#" class="active">Nuevo Especialista</a></li>
+    <li><a href="#" class="active">Editar</a></li>
 </ul>
 
 <div class="form-container">
   <div class="row section">
     <div class="col-title">
-      <i class="fa-solid fa-user-md"></i>
-      <h3>Registro de Especialista</h3>
-      <p>Completa la información del especialista</p>
+      <i class="fa-solid fa-user-pen"></i>
+      <h3>Actualizar Información</h3>
+      <p>Modifica los datos del especialista</p>
     </div>
 
     <div class="col-fields">
@@ -23,7 +23,7 @@
         {% csrf_token %}
         {{ form.non_field_errors }}
 
-        <!-- Client -->
+        <!-- Client (si lo manejas auto, puede ir deshabilitado a nivel form) -->
         <div class="form-group">
           <label for="{{ form.client.id_for_label }}">Cliente</label>
           {{ form.client }}
@@ -47,7 +47,6 @@
         <div class="form-group">
           <label for="{{ form.username.id_for_label }}">Nombre de Usuario</label>
           {{ form.username }}
-          <small class="error-message" id="username-feedback"></small>
           <div class="text-danger">{{ form.username.errors }}</div>
         </div>
 
@@ -88,26 +87,26 @@
           <div class="text-danger">{{ form.role.errors }}</div>
         </div>
 
-        <!-- PAGO DEL ESPECIALISTA -->
+        <!-- Pago del especialista -->
         <div class="row section">
           <div class="col-title">
             <i class="fa-solid fa-wallet"></i>
             <h3>Pago del Especialista</h3>
-            <p>Define si cobra un monto fijo mensual o un % por sesión cobrada.</p>
+            <p>Fijo mensual o % por sesión cobrada.</p>
           </div>
 
           <div class="col-fields">
             <div class="form-group">
               <label for="{{ form.comp_type.id_for_label }}">Tipo de pago</label>
               {{ form.comp_type }}
-              <small class="help">“Fijo mensual” suma como egreso; “% por sesión” se calcula sobre sesiones cobradas (Finance).</small>
+              <small class="help">Afecta la nómina del Dashboard de Finanzas.</small>
               <div class="text-danger">{{ form.comp_type.errors }}</div>
             </div>
 
             <div class="form-group">
-              <label for="{{ form.comp_value.id_for_label }}" id="label_comp_value">Valor</label>
+              <label for="{{ form.comp_value.id_for_label }}" id="label_comp_value_edit">Valor</label>
               {{ form.comp_value }}
-              <small class="help" id="hint_comp_value">
+              <small class="help" id="hint_comp_value_edit">
                 Si es fijo: monto mensual S/. — Si es %: porcentaje (ej. 40.00 = 40%)
               </small>
               <div class="text-danger">{{ form.comp_value.errors }}</div>
@@ -115,21 +114,9 @@
           </div>
         </div>
 
-        <!-- Contraseña -->
-        <div class="form-group">
-          <label for="{{ form.password.id_for_label }}">Contraseña</label>
-          {{ form.password }}
-          <div class="text-danger">{{ form.password.errors }}</div>
-        </div>
-
-        <div class="form-group">
-          <label for="{{ form.confirm_password.id_for_label }}">Confirmar Contraseña</label>
-          {{ form.confirm_password }}
-          <div class="text-danger">{{ form.confirm_password.errors }}</div>
-        </div>
-
+        <!-- Sin contraseñas en editar -->
         <div class="form-actions">
-          <button type="submit" class="btn btn-primary">Guardar Especialista</button>
+          <button type="submit" class="btn btn-primary">Actualizar</button>
           <a href="{% url 'specialist_list' %}" class="btn btn-secondary">Cancelar</a>
         </div>
       </form>
@@ -139,45 +126,18 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // Validación de username (mantiene tu comportamiento)
-  const usernameInput = document.getElementById('id_username');
-  if (usernameInput) {
-    const feedback = document.createElement('small');
-    feedback.style.display = 'block';
-    usernameInput.parentNode.appendChild(feedback);
-
-    usernameInput.addEventListener('input', function() {
-      const username = usernameInput.value;
-      if (username.length > 0) {
-        fetch("{% url 'check_username' %}?username=" + encodeURIComponent(username))
-          .then(r => r.json())
-          .then(data => {
-            feedback.textContent = data.message || (data.available ? 'Nombre de usuario disponible' : 'No disponible');
-            feedback.style.color = data.available ? 'green' : 'red';
-          })
-          .catch(() => {
-            feedback.textContent = 'No se pudo verificar la disponibilidad.';
-            feedback.style.color = 'red';
-          });
-      } else {
-        feedback.textContent = '';
-      }
-    });
-  }
-
-  // UX para tipo de pago / valor
-  const typeSel   = document.getElementById('id_comp_type');
-  const valueIn   = document.getElementById('id_comp_value');
-  const labelEl   = document.getElementById('label_comp_value');
-  const hintEl    = document.getElementById('hint_comp_value');
+  const typeSel = document.getElementById('id_comp_type');
+  const valueIn = document.getElementById('id_comp_value');
+  const labelEl = document.getElementById('label_comp_value_edit');
+  const hintEl  = document.getElementById('hint_comp_value_edit');
 
   function updateCompHints() {
     if (!typeSel) return;
     const isPercent = typeSel.value === 'percent';
     if (labelEl) labelEl.textContent = isPercent ? 'Porcentaje' : 'Monto mensual';
     if (hintEl)  hintEl.textContent  = isPercent
-        ? 'Ingrese el porcentaje (ej. 40.00 = 40%)'
-        : 'Ingrese el monto mensual en S/.';
+      ? 'Ingrese el porcentaje (ej. 40.00 = 40%)'
+      : 'Ingrese el monto mensual en S/.';
     if (valueIn) valueIn.placeholder = isPercent ? '40.00' : '1200.00';
   }
   if (typeSel) {

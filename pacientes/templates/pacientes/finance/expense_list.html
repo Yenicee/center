@@ -1,0 +1,32 @@
+{% extends "pacientes/base/base.html" %}
+{% block content %}
+<h1>Gastos</h1>
+<div class="list-header">
+  <a href="{% url 'expense_create' %}" class="btn-add">+ Nuevo gasto</a>
+</div>
+<table class="table">
+  <thead>
+    <tr>
+      <th>Ítem</th><th>Monto</th><th>Fijo</th><th>Recurrente</th><th>Vence</th><th>Pagado</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for i in items %}
+      <tr>
+        <td>{{ i.name }}</td>
+        <td>S/. {{ i.amount }}</td>
+        <td>{{ i.is_fixed|yesno:"Sí,No" }}</td>
+        <td>{{ i.is_recurring|yesno:"Sí,No" }}</td>
+        <td>{{ i.due_date|date:"d/m/Y" }}</td>
+        <td>{{ i.paid|yesno:"Sí,No" }}</td>
+        <td class="actions-tab">
+          <a href="{% url 'expense_edit' i.id %}" class="btn-icon edit"><i class="fas fa-pencil-alt"></i></a>
+          <a href="{% url 'expense_delete' i.id %}" class="btn-icon delete"><i class="fas fa-trash"></i></a>
+        </td>
+      </tr>
+    {% empty %}
+      <tr><td colspan="7">Sin gastos registrados.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

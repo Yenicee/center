@@ -7,11 +7,11 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.db.models import Prefetch
-from .models import Patient, Session, Specialist, Room, Payment, Equipment
+from .models import Patient, Session, Specialist, Room, Payment, Equipment, Expense
 from .forms import (
     PatientForm, SessionForm,
     SpecialistForm, RoomForm,
-    PaymentForm, EmailLoginForm, EquipmentForm
+    PaymentForm, EmailLoginForm, EquipmentForm, ExpenseForm, SpecialistEditForm
 )
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse
@@ -21,6 +21,8 @@ from django.views.decorators.cache import never_cache
 from django.views.decorators.csrf import csrf_protect
 from django.views.decorators.debug import sensitive_post_parameters
 from django.utils import timezone
+from django.db.models import Sum, Q
+from calendar import monthrange
 
 #views para login
 @sensitive_post_parameters()
@@ -472,6 +474,25 @@ def view_specialist(request, specialist_id):
     return render(request, 'pacientes/specialist/view_specialist.html', {
         'specialist': specialist
     })
+@login_required
+def edit_specialist(request, specialist_id):
+    specialist = get_object_or_404(Specialist, id=specialist_id)
+
+    if request.method == 'POST':
+        form = SpecialistEditForm(request.POST, request.FILES, instance=specialist, request=request)
+        if form.is_valid():
+            form.save()
+            messages.success(request, 'Especialista actualizado exitosamente.')
+            return redirect('specialist_list')
+        else:
+            messages.error(request, 'Revisa los datos del formulario.')
+    else:
+        form = SpecialistEditForm(instance=specialist, request=request)
+
+    return render(request, 'pacientes/specialist/edit_specialist.html', {
+        'form': form,
+        'specialist': specialist,
+    })
 
 @login_required
 def delete_specialist(request, specialist_id):
@@ -581,10 +602,13 @@ def equipment_api_create(request):
 def reservation_list(request):
    
     today = datetime.now().date()
-
     thirty_days_ago = today - timedelta(days=30)
-    recent_sessions = Session.objects.filter(date__gte=thirty_days_ago).order_by('date', 'time')
-
+    recent_sessions = (
+        Session.objects
+        .filter(date__gte=thirty_days_ago)
+        .select_related('payment', 'specialist__user', 'room', 'patient')  # ← importante
+        .order_by('date', 'time')
+    )   
     reservations_by_date = {}
     for session in recent_sessions:
         date_key = session.date
@@ -733,5 +757,136 @@ def toggle_payment(request, session_id):
     return JsonResponse({'success': True, 'paid': False})
 
 
+#Pagos
+@login_required
+def finance_dashboard(request):
+    # Mes y año por querystring (?year=2025&month=10) o actuales
+    try:
+        year = int(request.GET.get('year', timezone.now().year))
+        month = int(request.GET.get('month', timezone.now().month))
+    except Exception:
+        year, month = timezone.now().year, timezone.now().month
+
+    first_day = timezone.datetime(year, month, 1).date()
+    last_day = timezone.datetime(year, month, monthrange(year, month)[1]).date()
+
+    # --- INGRESOS LIQUIDADOS (basado en Payment cobrado en el rango) ---
+    paid_qs = Payment.objects.filter(
+        is_paid=True,
+        payment_date__range=(first_day, last_day)
+    )
+    ingresos_liquidados = paid_qs.aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # --- INGRESOS PROYECTADOS (pendientes) ---
+    # 1) Payments existentes no pagados del mes (por fecha de la sesión)
+    projected_from_payments = Payment.objects.filter(
+        is_paid=False,
+        session__date__range=(first_day, last_day)
+    ).aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # 2) Sesiones del mes sin Payment (usamos patient.cost_session)
+    sessions_without_payment = Session.objects.filter(
+        date__range=(first_day, last_day)
+    ).filter(payment__isnull=True).exclude(status=Session.STATUS_CANCELED)
+
+    projected_from_sessions = sessions_without_payment.aggregate(
+        total=Sum('patient__cost_session')
+    )['total'] or Decimal('0')
+
+    ingresos_proyectados = projected_from_payments + projected_from_sessions
+
+    # --- EGRESOS (simples) ---
+    # Por defecto mostramos egreso del mes (devengado por due_date)
+    expenses_month = Expense.objects.filter(
+        Q(due_date__range=(first_day, last_day)) | (Q(due_date__isnull=True) & Q(created_at__date__range=(first_day, last_day)))
+    )
+    egresos_total = expenses_month.aggregate(total=Sum('amount'))['total'] or Decimal('0')
+
+    # --- NÓMINA (basada en cobrado) ---
+    # Fijos (monto mensual)
+    fixed_sum = Specialist.objects.filter(comp_type='fixed').aggregate(
+        total=Sum('comp_value')
+    )['total'] or Decimal('0')
+
+    # Percent: sumamos por sesiones COBRADAS del mes
+    percent_specialists = Specialist.objects.filter(comp_type='percent')
+    # Map id -> percent Decimal
+    perc_map = {s.id: (s.comp_value or Decimal('0')) for s in percent_specialists}
+
+    paid_sessions = Session.objects.filter(
+        payment__is_paid=True,
+        payment__payment_date__range=(first_day, last_day),
+        specialist__in=percent_specialists
+    ).select_related('payment','specialist')
+
+    percent_sum = Decimal('0')
+    for s in paid_sessions:
+        pct = perc_map.get(s.specialist_id, Decimal('0')) / Decimal('100')
+        percent_sum += (s.payment.amount or Decimal('0')) * pct
+
+    nomina_total = fixed_sum + percent_sum
+
+    balance = ingresos_liquidados - (egresos_total + nomina_total)
+
+    # Próximos pagos (egresos no pagados)
+    proximos_pagos = Expense.objects.filter(paid=False).order_by('due_date')[:10]
+
+    context = {
+        'year': year, 'month': month,
+        'first_day': first_day, 'last_day': last_day,
+        'ingresos_proyectados': ingresos_proyectados,
+        'ingresos_liquidados': ingresos_liquidados,
+        'egresos_total': egresos_total,
+        'nomina_total': nomina_total,
+        'balance': balance,
+        'proximos_pagos': proximos_pagos,
+    }
+    return render(request, 'pacientes/finance/dashboard.html', context)
+
+@login_required
+def expense_list(request):
+    qs = Expense.objects.all().order_by('-due_date','-created_at')
+    return render(request, 'pacientes/finance/expense_list.html', {'items': qs})
+
+@login_required
+def expense_create(request):
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST)
+        if form.is_valid():
+            exp = form.save(commit=False)
+            # Si marcas pagado y no pones fecha, setea hoy
+            if exp.paid and not exp.paid_at:
+                exp.paid_at = timezone.now().date()
+            exp.save()
+            messages.success(request, 'Gasto creado.')
+            return redirect('expense_list')
+    else:
+        form = ExpenseForm()
+    return render(request, 'pacientes/finance/expense_form.html', {'form': form, 'title': 'Nuevo gasto'})
+
+@login_required
+def expense_edit(request, pk):
+    exp = get_object_or_404(Expense, pk=pk)
+    if request.method == 'POST':
+        form = ExpenseForm(request.POST, instance=exp)
+        if form.is_valid():
+            exp = form.save(commit=False)
+            if exp.paid and not exp.paid_at:
+                exp.paid_at = timezone.now().date()
+            exp.save()
+            messages.success(request, 'Gasto actualizado.')
+            return redirect('expense_list')
+    else:
+        form = ExpenseForm(instance=exp)
+    return render(request, 'pacientes/finance/expense_form.html', {'form': form, 'title': 'Editar gasto'})
+
+@login_required
+def expense_delete(request, pk):
+    exp = get_object_or_404(Expense, pk=pk)
+    if request.method == 'POST':
+        exp.delete()
+        messages.success(request, 'Gasto eliminado.')
+        return redirect('expense_list')
+    return render(request, 'pacientes/finance/expense_delete.html', {'item': exp})
 
 

@@ -2048,6 +2048,8 @@ th.sorting_desc::after {
 
 .spec-card__actions .actions-right {
 	margin-left: auto;
+	display: flex;
+	gap: 10px;
 }
 
 .btn {
@@ -2098,7 +2100,16 @@ th.sorting_desc::after {
 .btn-secondary:hover {
 	background: #e7ecf4;
 }
+.btn-edit {
+	background: #ffc107;
+	margin-top: 10px;
+	color: #6d5305;
+	border-color: #e4ad07;
+}
 
+.btn-edit:hover {
+	background: #e4ad07;
+}
 .btn-danger {
 	background: #fee2e2;
 	margin-top: 10px;
@@ -2240,6 +2251,23 @@ th.sorting_desc::after {
 	gap: 8px;
 	margin: 6px 0;
 }
+
+.swal-grid{
+  display:grid;
+  grid-template-columns: 1fr 2fr;
+  gap:10px 12px;
+  align-items:center;
+}
+.swal-grid .swal2-input{ margin:0; }
+.swal-grid .swal2-input.sel{ height:auto; }
+
+/* botones */
+.swal-compact .swal2-actions{ gap:10px; }
+.swal-confirm{ padding:8px 16px; font-weight:600; }
+.swal-cancel{ padding:8px 16px; }
+
+/* popup algo más compacto */
+.swal-compact{ padding: 1.25rem 1.25rem 1rem; }
 
 /* ===== CHECKBOX GRID ===== */
 .checkgrid {
