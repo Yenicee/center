@@ -112,11 +112,7 @@
 }
 .auth-card{
   width: min(460px, 92vw);
-  border-radius: 14px;
-  border: 1px solid #eef2f7;
-  background: #fff;
   padding: 28px;
-  box-shadow: 0 8px 24px rgba(15,24,36,.08);
 }
 .auth-welcome{ font-size:28px; font-weight:800; margin-bottom:4px; color:#0f172a; }
 .auth-helper{ color:#6b7280; margin-bottom:18px; }
