@@ -9,9 +9,6 @@ from django.core.exceptions import ValidationError
 from django.contrib import messages
 from django.db.models import Sum
 from django_tenants.utils import schema_context 
-import plotly.graph_objects as go
-import plotly.express as px
-from plotly.subplots import make_subplots
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 
@@ -37,108 +34,19 @@ def dashboard(request):
         'pending_payments': pending_payments,
     }
     
-    # GRÁFICO 1: Estado de Clientes (Donut)
-    fig_status = go.Figure(data=[go.Pie(
-        labels=['Activos', 'Morosos', 'Suspendidos'],
-        values=[metrics['active_clients'], metrics['morose_clients'], metrics['suspended_clients']],
-        marker=dict(colors=['#28a745', '#dc3545', '#ffc107']),
-        hole=0.5,
-        textinfo='label+percent',
-        textposition='outside',
-        hovertemplate='<b>%{label}</b><br>Cantidad: %{value}<br>Porcentaje: %{percent}<extra></extra>'
-    )])
-    
-    fig_status.update_layout(
-        title={'text': 'Distribución de Clientes por Estado', 'x': 0.5, 'xanchor': 'center'},
-        height=350,
-        margin=dict(t=50, b=20, l=20, r=20),
-        showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=-0.2, xanchor="center", x=0.5),
-        paper_bgcolor='white',
-        font=dict(family="Arial, sans-serif", size=12)
-    )
-    
-    # GRÁFICO 2: Análisis Financiero (Barras)
-    fig_revenue = go.Figure()
-    
-    fig_revenue.add_trace(go.Bar(
-        x=['Ingresos'],
-        y=[float(metrics['projected_monthly_income'])],
-        name='Ingresos Proyectados',
-        marker_color='#28a745',
-        text=['$' + f"{metrics['projected_monthly_income']:,.2f}"],
-        textposition='outside',
-        hovertemplate='<b>Ingresos Proyectados</b><br>$%{y:,.2f}<extra></extra>'
-    ))
-    
-    fig_revenue.add_trace(go.Bar(
-        x=['Deudas'],
-        y=[float(metrics['pending_payments'])],
-        name='Pagos Pendientes',
-        marker_color='#dc3545',
-        text=['$' + f"{metrics['pending_payments']:,.2f}"],
-        textposition='outside',
-        hovertemplate='<b>Pagos Pendientes</b><br>$%{y:,.2f}<extra></extra>'
-    ))
-    
-    fig_revenue.update_layout(
-        title={'text': 'Análisis Financiero Mensual', 'x': 0.5, 'xanchor': 'center'},
-        height=350,
-        margin=dict(t=50, b=60, l=60, r=20),
-        yaxis_title='Monto ($)',
-        showlegend=True,
-        legend=dict(orientation="h", yanchor="bottom", y=-0.25, xanchor="center", x=0.5),
-        paper_bgcolor='white',
-        plot_bgcolor='white',
-        font=dict(family="Arial, sans-serif", size=12),
-        xaxis=dict(showticklabels=False)
-    )
-    
-    # GRÁFICO 3: Top Clientes
+    # Datos para el gráfico de Top 5 clientes (tu compañero los usará en CSS)
     top_clients = active_clients.order_by('-monthly_payment')[:5]
-    
-    if top_clients.exists():
-        fig_top_clients = go.Figure(data=[
-            go.Bar(
-                y=[client.name[:20] + '...' if len(client.name) > 20 else client.name for client in top_clients],
-                x=[float(client.monthly_payment) for client in top_clients],
-                orientation='h',
-                marker=dict(color='#007bff', line=dict(color='#0056b3', width=1)),
-                text=['$' + f"{float(client.monthly_payment):,.2f}" for client in top_clients],
-                textposition='outside',
-                hovertemplate='<b>%{y}</b><br>Facturación: $%{x:,.2f}<extra></extra>'
-            )
-        ])
-        
-        fig_top_clients.update_layout(
-            title={'text': 'Top 5 Clientes por Facturación', 'x': 0.5, 'xanchor': 'center'},
-            xaxis_title='Facturación Mensual ($)',
-            height=350,
-            margin=dict(t=50, b=60, l=150, r=60),
-            showlegend=False,
-            paper_bgcolor='white',
-            plot_bgcolor='white',
-            font=dict(family="Arial, sans-serif", size=12)
-        )
-    else:
-        fig_top_clients = go.Figure()
-        fig_top_clients.update_layout(
-            title='Top 5 Clientes por Facturación',
-            annotations=[dict(text="No hay datos disponibles", xref="paper", yref="paper", 
-                             x=0.5, y=0.5, showarrow=False, font=dict(size=16))]
-        )
-    
-    #gráficos a HTML
-    config = {'displayModeBar': False, 'responsive': True}
-    chart_status = fig_status.to_html(full_html=False, include_plotlyjs='cdn', config=config)
-    chart_revenue = fig_revenue.to_html(full_html=False, include_plotlyjs=False, config=config)
-    chart_top_clients = fig_top_clients.to_html(full_html=False, include_plotlyjs=False, config=config)
+    top_clients_data = [
+        {
+            'name': client.name[:20] + '...' if len(client.name) > 20 else client.name,
+            'payment': float(client.monthly_payment)
+        } 
+        for client in top_clients
+    ]
     
     context = {
         'metrics': metrics,
-        'chart_status': chart_status,
-        'chart_revenue': chart_revenue,
-        'chart_top_clients': chart_top_clients,
+        'top_clients': top_clients_data,
     }
     
     return render(request, 'base/dashboard.html', context)
