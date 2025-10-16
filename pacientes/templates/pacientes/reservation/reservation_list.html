@@ -3,87 +3,96 @@
 
 {% block extra_css %}
 <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
-<style>
-  /* Badges como en la otra tabla */
-  .badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.75rem;line-height:1}
-  .badge-success{background:#e6f7e9;color:#1b7f3a}
-  .badge-warning{background:#fff4e5;color:#8a5a00}
-  .badge-secondary{background:#eceef2;color:#3b4455}
-  .avatar{width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:8px;object-fit:cover}
-</style>
 {% endblock %}
 
 {% block content %}
-  <h1>Pacientes</h1>
+  <h1 class="title">Reservas de sesiones</h1>
   <ul class="breadcrumbs">
     <li><a href="{% url 'patient_list' %}">Dashboard</a></li>
     <li class="divider">/</li>
-    <li><a href="#" class="active">Pacientes</a></li>
+    <li><a href="#" class="active">Sesiones</a></li>
   </ul>
 
   <div class="list-header">
-    <a href="{% url 'new_patient' %}" class="btn-add">+ Nuevo Paciente</a>
+    <a href="{% url 'new_session' %}" class="btn-add">+ Nueva Sesión</a>
   </div>
-
+  
   <div class="table-card">
-    <table id="patientTable" class="display">
+    <table id="reservationsTable" class="display">
       <thead>
         <tr>
-          <th>Nombre</th>
-          <th>Apellido</th>
-          <th>Edad</th>
-          <th>Teléfono</th>
-          <th>Correo</th>
-          <th>Estado</th>
-          <th>Terapeuta</th>
-          <th>Fecha de registro</th>
-          <th>Acciones</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Paciente</th>
+            <th>Especialista</th>
+            <th>Sala</th>
+            <th>Actividad</th>
+            <th>Pago</th>          {# <-- NUEVO #}
+            <th>Estado</th>
+            <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        {% for p in patients %}
-        <tr>
-          <td data-priority="1">
-            {% if p.photo %}
-              <img src="{{ p.photo.url }}" alt="" class="avatar">
-            {% endif %}
-            {{ p.name }}
-          </td>
-          <td>{{ p.surname }}</td>
-          <td>
-            <span class="calc-age" data-dob="{{ p.date_of_birth|date:'Y-m-d' }}"></span>
-          </td>
-          <td>{{ p.phone_number }}</td>
-          <td>{{ p.email }}</td>
-          <td data-order="{{ p.status }}">
-            {% if p.status == "Active" %}
-              <span class="badge badge-success">Activo</span>
-            {% elif p.status == "Discharged" %}
-              <span class="badge badge-secondary">Alta</span>
-            {% elif p.status == "Suspended" %}
-              <span class="badge badge-warning">Suspendido</span>
-            {% else %}
-              <span class="badge">-</span>
-            {% endif %}
-          </td>
-          <td>{{ p.therapist }}</td>
-          <td data-order="{{ p.created_date|date:'Y-m-d' }}">{{ p.created_date|date:"d/m/Y" }}</td>
+        {% for date, sessions in reservations_by_date.items %}
+          {% for session in sessions %}
+          <tr data-session-id="{{ session.id }}"
+              data-room-id="{{ session.room.id }}"
+              data-session-url-complete="{% url 'complete_session' session.id %}"
+              data-session-url-cancel-resched="{% url 'cancel_or_reschedule_session' session.id %}">
+            {# Orden correcto: usar ISO en data-order #}
+            <td data-order="{{ date|date:'Y-m-d' }}T{{ session.time|time:'H:i' }}">{{ date|date:"d/m/Y" }}</td>
+            <td data-order="{{ session.time|time:'H:i' }}">{{ session.time|time:"H:i" }}</td>
 
-          <td class="actions-tab">
-            <div class="action-buttons">
-              <!-- Mismo estilo de botones que en reservation_list -->
-              <a href="{% url 'patient_schedule' p.id %}" class="btn-icon view" title="Ver (Agenda)">
-                <i class='bx bx-show'></i>
-              </a>
-              <a href="{% url 'edit_patient' p.id %}" class="btn-icon edit" title="Editar">
-                <i class='bx bx-edit'></i>
-              </a>
-              <a href="{% url 'delete_patient' p.id %}" class="btn-icon delete" title="Eliminar" onclick="return confirm('¿Eliminar paciente?');">
-                <i class='bx bx-trash'></i>
-              </a>
-            </div>
-          </td>
-        </tr>
+            <td title="{{ session.patient.name }} {{ session.patient.surname }}">
+              {{ session.patient.name }} {{ session.patient.surname }}
+            </td>
+
+            <td title="{{ session.specialist.user.first_name }} {{ session.specialist.user.last_name }}">
+              {{ session.specialist.user.first_name }} {{ session.specialist.user.last_name }}
+            </td>
+
+            <td>{{ session.room.name }}</td>
+
+            <td title="{{ session.activity }}">{{ session.activity|truncatechars:30 }}</td>
+            <td class="paid-col"
+                data-toggle-payment-url="{% url 'toggle_payment' session.id %}"
+                title="{{ session.is_paid_status|yesno:'Pagado,No pagado' }}">
+            {% if session.is_paid_status %}
+                <button class="btn-icon toggle-paid" aria-label="Pagado" data-paid="1" style="border:none;background:transparent" title="Marcar como NO pagado">
+                <i class="bx bx-check-circle" style="font-size:18px; color:#16a34a;"></i>
+                </button>
+            {% else %}
+                <button class="btn-icon toggle-paid" aria-label="No pagado" data-paid="0" style="border:none;background:transparent" title="Marcar como pagado">
+                <i class="bx bx-x-circle" style="font-size:18px; color:#dc2626;"></i>
+                </button>
+            {% endif %}
+            </td>
+            <td class="status-cell">
+            <select class="status-dropdown"
+                    data-session-id="{{ session.id }}"
+                    data-original-status="{{ session.status }}"
+                    title="{{ session.status }}">
+                <option value="Pendiente sin planificar" {% if session.status == "Pendiente sin planificar" %}selected{% endif %}>Pendiente S/P</option>
+                <option value="Pendiente planificada"   {% if session.status == "Pendiente planificada" %}selected{% endif %}>Pendiente Planif.</option>
+                <option value="Realizada"               {% if session.status == "Realizada" %}selected{% endif %}>Realizada</option>
+                <option value="Cancelada"               {% if session.status == "Cancelada" %}selected{% endif %}>Cancelada</option>
+            </select>
+            <span class="dropdown-arrow">▼</span>
+            </td>
+
+
+            <td class="actions-tab">
+              <div class="action-buttons">
+                <a href="{% url 'session_detail' session.id %}" class="btn-icon view" title="Ver">
+                  <i class='bx bx-show'></i>
+                </a>
+                <a href="{% url 'edit_session' session.id %}" class="btn-icon edit" title="Editar">
+                  <i class='bx bx-edit'></i>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% endfor %}
         {% endfor %}
       </tbody>
     </table>
@@ -93,33 +102,382 @@
 {% block extra_js %}
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 <script>
-  function calcAgeFromDOBStr(dobStr){
-    if(!dobStr) return '';
-    const dob = new Date(dobStr + 'T00:00:00');
-    if (isNaN(dob)) return '';
-    const today = new Date();
-    let age = today.getFullYear() - dob.getFullYear();
-    const m = today.getMonth() - dob.getMonth();
-    if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
-    return age;
+$(function () {
+  // ---------- DataTable ----------
+  var table = $('#reservationsTable').DataTable({
+    language: { url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json" },
+    responsive: true,
+    pageLength: 10,
+    pagingType: 'full_numbers',
+    // crea un contenedor custom "date-range" junto al buscador (f) y el selector de longitud (l)
+    dom: '<"top-container"l f <"date-range">>rt<"bottom"ip><"clear">',
+    columnDefs: [{ targets: [-1, -2], orderable: false }],
+    initComplete: function () {
+        const $wrap = $('div.date-range');
+        $wrap.html(`
+        <div class="filters" style="display:flex;gap:10px;align-items:center;">
+            <label for="minDate" style="font-size:12px;color:#666;">Desde</label>
+            <input type="date" id="minDate" class="input" />
+            <label for="maxDate" style="font-size:12px;color:#666;">Hasta</label>
+            <input type="date" id="maxDate" class="input" />
+        </div>
+        `);
+
+        // misma lógica de filtro por rango que ya usas
+        function toISODate(val){ return val ? new Date(val) : null; }
+        $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        var min = $('#minDate').val();
+        var max = $('#maxDate').val();
+
+        var cell = table.cell(dataIndex, 0).node(); // 1ª col Fecha
+        var iso = cell ? cell.getAttribute('data-order') : null; // YYYY-MM-DDTHH:MM
+        if (!iso) return true;
+
+        var dt = toISODate(iso);
+        if (!dt) return true;
+
+        var dayOnly = new Date(dt.getFullYear(), dt.getMonth(), dt.getDate());
+
+        if (min) { if (dayOnly < new Date(min + 'T00:00')) return false; }
+        if (max) { if (dayOnly > new Date(max + 'T23:59')) return false; }
+        return true;
+        });
+
+        // disparar redraw al cambiar fechas
+        $('#minDate, #maxDate').on('change', function(){ table.draw(); });
+    }
+    });
+
+  // ---------- Cambio de estado (con flujos) ----------
+  $('.status-dropdown').on('change', function() {
+    var $select = $(this);
+    var $row = $select.closest('tr');
+    var oldStatus = $select.data('original-status');
+    var newStatus = $select.val();
+
+    var sessionId = $select.data('session-id');
+    var urlComplete = $row.data('session-url-complete');
+    var urlCancelResched = $row.data('session-url-cancel-resched');
+    var roomId = $row.data('room-id');
+
+    // Helper para revertir
+    function rollback() { $select.val(oldStatus); }
+
+    // Deshabilitar select mientras se procesa
+    $select.prop('disabled', true);
+
+    // ---- Ramas por estado destino ----
+    if (newStatus === 'Realizada') {
+      // Pide observación y completa
+      Swal.fire({
+        title: 'Cerrar sesión como Realizada',
+        input: 'textarea',
+        inputLabel: 'Observación (obligatoria)',
+        inputPlaceholder: 'Escribe las observaciones de la sesión...',
+        inputAttributes: { 'aria-label': 'Observación' },
+        showCancelButton: true,
+        confirmButtonText: 'Cerrar sesión',
+        cancelButtonText: 'Cancelar',
+        preConfirm: (text) => {
+          if (!text || !text.trim()) {
+            Swal.showValidationMessage('La observación es obligatoria.');
+          }
+          return text;
+        }
+      }).then(function(res) {
+        if (!res.isConfirmed) { rollback(); $select.prop('disabled', false); return; }
+
+        $.post(urlComplete, {
+          observation: res.value,
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        }).done(function(resp) {
+          if (resp && resp.success) {
+            $select.data('original-status', 'Realizada');
+            Swal.fire('Listo', 'Sesión cerrada como Realizada.', 'success');
+          } else {
+            rollback();
+            Swal.fire('Error', (resp && resp.error) ? resp.error : 'No se pudo completar la sesión.', 'error');
+          }
+        }).fail(function() {
+          rollback();
+          Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+        }).always(function() { $select.prop('disabled', false); });
+      });
+      return; // importante
+    }
+
+    if (newStatus === 'Cancelada') {
+      // Elegir Cancelar o Reprogramar
+      Swal.fire({
+        title: '¿Qué deseas hacer?',
+        input: 'radio',
+        inputOptions: {
+          cancel: 'Cancelar',
+          reschedule: 'Reprogramar'
+        },
+        inputValidator: (v) => !v && 'Selecciona una opción',
+        showCancelButton: true,
+        confirmButtonText: 'Continuar',
+        cancelButtonText: 'Volver'
+      }).then(function(step1) {
+        if (!step1.isConfirmed) { rollback(); $select.prop('disabled', false); return; }
+
+        if (step1.value === 'cancel') {
+          // Pedir motivo y detalle
+          Swal.fire({
+            title: 'Cancelar sesión',
+            html: `
+              <div style="text-align:left">
+                <label>Motivo*</label>
+                <select id="cancelReason" class="swal2-input" style="height:auto">
+                  <option value="">Selecciona...</option>
+                  <option value="Paciente">Paciente</option>
+                  <option value="Terapeuta">Terapeuta</option>
+                  <option value="Clínica">Clínica</option>
+                  <option value="Inasistencia">Inasistencia</option>
+                  <option value="Otro">Otro</option>
+                </select>
+                <label style="margin-top:8px">Detalle (opcional)</label>
+                <textarea id="cancelDetail" class="swal2-textarea" placeholder="Detalle..."></textarea>
+              </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Cancelar sesión',
+            cancelButtonText: 'Atrás',
+            preConfirm: () => {
+              const reason = document.getElementById('cancelReason').value;
+              const detail = document.getElementById('cancelDetail').value;
+              if (!reason) { Swal.showValidationMessage('El motivo es obligatorio.'); }
+              return { reason, detail };
+            }
+          }).then(function(res2) {
+            if (!res2.isConfirmed) { rollback(); $select.prop('disabled', false); return; }
+
+            $.post(urlCancelResched, {
+              mode: 'cancel',
+              canceled_reason: res2.value.reason,
+              canceled_detail: res2.value.detail || '',
+              csrfmiddlewaretoken: '{{ csrf_token }}'
+            }).done(function(resp) {
+              if (resp && resp.success) {
+                $select.data('original-status', 'Cancelada');
+                Swal.fire('Cancelada', 'La sesión fue cancelada.', 'success');
+              } else {
+                rollback();
+                Swal.fire('Error', (resp && resp.error) ? resp.error : 'No se pudo cancelar.', 'error');
+              }
+            }).fail(function() {
+              rollback();
+              Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+            }).always(function() { $select.prop('disabled', false); });
+          });
+
+        } else {
+          // Reprogramar: pedir nueva fecha/hora (mantiene sala)
+          Swal.fire({
+            title: 'Reprogramar sesión',
+            html: `
+              <div style="text-align:left">
+                <label>Nueva fecha*</label>
+                <input type="date" id="newDate" class="swal2-input" />
+                <label>Nueva hora*</label>
+                <input type="time" id="newTime" class="swal2-input" />
+                <label style="display:flex;align-items:center;gap:8px;margin-top:8px">
+                  <input type="checkbox" id="copyPlan" checked />
+                  Copiar objetivo/actividad/materiales
+                </label>
+                <p style="font-size:12px;color:#666;margin-top:8px">La sala se mantiene igual. (Si necesitas cambiar sala, edita la sesión nueva luego.)</p>
+              </div>
+            `,
+            focusConfirm: false,
+            showCancelButton: true,
+            confirmButtonText: 'Reprogramar',
+            cancelButtonText: 'Atrás',
+            preConfirm: () => {
+              const date = document.getElementById('newDate').value;
+              const time = document.getElementById('newTime').value;
+              const copy = document.getElementById('copyPlan').checked;
+              if (!date || !time) { Swal.showValidationMessage('Fecha y hora son obligatorias.'); }
+              return { date, time, copy };
+            }
+          }).then(function(res2) {
+            if (!res2.isConfirmed) { rollback(); $select.prop('disabled', false); return; }
+
+            $.post(urlCancelResched, {
+              mode: 'reschedule',
+              date: res2.value.date,
+              time: res2.value.time,
+              room_id: roomId,
+              copy_plan: res2.value.copy ? '1' : '0',
+              csrfmiddlewaretoken: '{{ csrf_token }}'
+            }).done(function(resp) {
+              if (resp && resp.success) {
+                $select.data('original-status', 'Cancelada');
+                Swal.fire('Reprogramada', 'Se creó la nueva sesión y esta quedó cancelada.', 'success');
+              } else {
+                rollback();
+                Swal.fire('Error', (resp && resp.error) ? resp.error : 'No se pudo reprogramar.', 'error');
+              }
+            }).fail(function() {
+              rollback();
+              Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+            }).always(function() { $select.prop('disabled', false); });
+          });
+        }
+      });
+      return; // importante
+    }
+
+    if (newStatus === 'Pendiente sin planificar' || newStatus === 'Pendiente planificada') {
+      // Opción: intentar actualizar rápido por endpoint existente (si lo usas)
+      $.post("{% url 'update_session_status' %}", {
+        session_id: sessionId,
+        new_status: newStatus,
+        csrfmiddlewaretoken: '{{ csrf_token }}'
+      }).done(function(resp) {
+        if (resp && resp.success) {
+          $select.data('original-status', newStatus);
+          Swal.fire('Actualizado', 'Estado pendiente ajustado.', 'success');
+        } else {
+          rollback();
+          Swal.fire('Aviso', (resp && resp.error) ? resp.error : 'Este cambio se hace editando el plan (objetivo/actividad).', 'info');
+        }
+      }).fail(function() {
+        rollback();
+        Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+      }).always(function() { $select.prop('disabled', false); });
+      return;
+    }
+
+    // Cualquier otra cosa: rollback
+    rollback();
+    $select.prop('disabled', false);
+  });
+});
+$(function() {
+  // Click en icono de pago
+  $('#reservationsTable').on('click', '.toggle-paid', function(e) {
+    e.preventDefault();
+    const $btn = $(this);
+    const $cell = $btn.closest('.paid-col');
+    const url = $cell.data('toggle-payment-url');
+    const isPaid = $btn.data('paid') === 1;
+
+    if (!isPaid) {
+      // Marcar como pagado: abrir modal para datos
+      Swal.fire({
+        title: 'Marcar como pagado',
+        html: `
+          <div style="text-align:left">
+            <label>Monto</label>
+            <input type="number" step="0.01" id="payAmount" class="swal2-input" placeholder="Monto" />
+            <label>Método</label>
+            <select id="payMethod" class="swal2-input" style="height:auto">
+              <option value="">Selecciona...</option>
+              <option value="Efectivo">Efectivo</option>
+              <option value="Tarjeta">Tarjeta</option>
+              <option value="Transferencia">Transferencia</option>
+              <option value="Otro">Otro</option>
+            </select>
+            <label>Referencia (opcional)</label>
+            <input type="text" id="payRef" class="swal2-input" placeholder="N° operación / detalle" />
+            <label>Fecha de pago</label>
+            <input type="date" id="payDate" class="swal2-input" />
+          </div>
+        `,
+        focusConfirm: false,
+        showCancelButton: true,
+        confirmButtonText: 'Guardar',
+        cancelButtonText: 'Cancelar',
+        preConfirm: () => {
+          const amount = document.getElementById('payAmount').value;
+          const method = document.getElementById('payMethod').value;
+          const reference = document.getElementById('payRef').value;
+          const payDate = document.getElementById('payDate').value;
+          if (amount && Number(amount) <= 0) {
+            Swal.showValidationMessage('El monto debe ser mayor a 0.');
+          }
+          return { amount, method, reference, payment_date: payDate };
+        }
+      }).then(res => {
+        if (!res.isConfirmed) return;
+
+        $.post(url, {
+          mark: 'paid',
+          amount: res.value.amount,
+          method: res.value.method,
+          reference: res.value.reference,
+          payment_date: res.value.payment_date,
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        }).done(resp => {
+          if (resp && resp.success) {
+            // Cambiar icono a "pagado"
+            $btn.data('paid', 1)
+                .attr('title', 'Marcar como NO pagado')
+                .html('<i class="bx bx-check-circle" style="font-size:18px; color:#16a34a;"></i>');
+            $cell.attr('title', 'Pagado');
+            Swal.fire('OK', 'Pago registrado.', 'success');
+          } else {
+            Swal.fire('Error', (resp && resp.error) ? resp.error : 'No se pudo guardar el pago.', 'error');
+          }
+        }).fail(() => {
+          Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+        });
+      });
+
+    } else {
+      // Marcar como no pagado (confirmación rápida)
+      Swal.fire({
+        title: '¿Marcar como NO pagado?',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'Sí',
+        cancelButtonText: 'Cancelar'
+      }).then(res => {
+        if (!res.isConfirmed) return;
+
+        $.post(url, {
+          mark: 'unpaid',
+          csrfmiddlewaretoken: '{{ csrf_token }}'
+        }).done(resp => {
+          if (resp && resp.success) {
+            // Cambiar icono a "no pagado"
+            $btn.data('paid', 0)
+                .attr('title', 'Marcar como pagado')
+                .html('<i class="bx bx-x-circle" style="font-size:18px; color:#dc2626;"></i>');
+            $cell.attr('title', 'No pagado');
+            Swal.fire('OK', 'Marcado como no pagado.', 'success');
+          } else {
+            Swal.fire('Error', (resp && resp.error) ? resp.error : 'No se pudo actualizar.', 'error');
+          }
+        }).fail(() => {
+          Swal.fire('Error de red', 'No se pudo contactar al servidor.', 'error');
+        });
+      });
+    }
+  });
+});
+  function paintStatusPills(){
+    document.querySelectorAll('#reservationsTable tbody tr').forEach(tr=>{
+      tr.classList.remove('st-unplanned','st-planned','st-completed','st-canceled');
+      const select = tr.querySelector('.status-dropdown');
+      if(!select) return;
+      const v = select.value;
+      if(v === 'Pendiente sin planificar' || v === 'Sin plan'){ tr.classList.add('st-unplanned'); }
+      else if(v === 'Pendiente planificada' || v === 'Planif.'){ tr.classList.add('st-planned'); }
+      else if(v === 'Realizada'){ tr.classList.add('st-completed'); }
+      else if(v === 'Cancelada'){ tr.classList.add('st-canceled'); }
+    });
   }
 
-  $(function () {
-    // Pinta edades
-    document.querySelectorAll('.calc-age').forEach(span=>{
-      span.textContent = calcAgeFromDOBStr(span.dataset.dob);
-    });
-
-    // DataTable igual de simple que en reservations
-    $('#patientTable').DataTable({
-      language: { url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json" },
-      responsive: true,
-      pageLength: 10,
-      pagingType: 'full_numbers',
-      order: [[7, 'desc']], // fecha de registro
-      columnDefs: [{ targets: -1, orderable: false, searchable: false }]
-    });
+  // Llama después de inicializar DataTable y tras cada cambio de estado
+  $(document).ready(function(){
+    paintStatusPills();
+    $('#reservationsTable').on('change', '.status-dropdown', paintStatusPills);
   });
 </script>
 {% endblock %}
