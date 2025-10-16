@@ -6,6 +6,17 @@
 {% block extra_css %}
 <link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.css" rel="stylesheet">
 <style>
+.fc-scroller {
+	overflow: visible !important;
+}
+
+.fc-scroller-harness {
+	overflow: visible !important;
+}
+
+#calendar .fc-daygrid-body {
+	overflow: visible !important;
+}
 /* ======= Layout 70/30 limpio ======= */
 @media (min-width:1280px){
   #agenda-layout{ display:flex; flex-wrap:nowrap; gap:18px; align-items:flex-start; width:100%; }
@@ -79,7 +90,7 @@
 <div id="agenda-layout">
   <!-- 70% -->
   <div class="col-calendar">
-    <div id="calendar"></div>
+    <div id="calendar" style="overflow: visible !important;"></div>
   </div>
 
   <!-- 30% -->

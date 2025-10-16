@@ -2,71 +2,150 @@
 {% load static %}
 
 {% block extra_css %}
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <!-- DataTables base + Responsive + Buttons -->
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.dataTables.min.css">
+  <style>
+    .table-actions a{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:8px;margin-right:6px;text-decoration:none}
+    .table-actions .view{background:#eef2ff}
+    .table-actions .edit{background:#e6f7e9}
+    .table-actions .delete{background:#fff0f0}
+    .badge{display:inline-block;padding:.2rem .55rem;border-radius:999px;font-size:.75rem;line-height:1}
+    .badge-success{background:#e6f7e9;color:#1b7f3a}
+    .badge-warning{background:#fff4e5;color:#8a5a00}
+    .badge-secondary{background:#eceef2;color:#3b4455}
+    .avatar{width:28px;height:28px;border-radius:50%;vertical-align:middle;margin-right:8px;object-fit:cover}
+    .top-container{display:flex;gap:.75rem;align-items:center;justify-content:space-between;margin-bottom:.5rem}
+    .dt-buttons .dt-button{border-radius:10px!important}
+    @media (max-width: 768px){
+      .top-container{flex-direction:column;align-items:stretch}
+    }
+  </style>
 {% endblock %}
 
-{% block left_content %}
-<h1>Lista de Pacientes</h1>
-<ul class="breadcrumbs">
-    <li><a href="{% url 'patient_list' %}">Home</a></li>
+{% block content %}
+  <h1>Pacientes</h1>
+  <ul class="breadcrumbs">
+    <li><a href="{% url 'patient_list' %}">Dashboard</a></li>
     <li class="divider">/</li>
     <li><a href="#" class="active">Pacientes</a></li>
-</ul>
-<div class="list-header">
-    <a href="{% url 'new_patient' %}" class="btn-add">Agregar Paciente</a>
-</div>
-<div class="patient-list-container">
-    <table id="patientTable" class="display table">
-        <thead>
-            <tr>
-                <th>Nombre</th>
-                <th>Apellido</th>
-                <th>Teléfono</th>
-                <th>Correo Electrónico</th>
-                <th>Fecha de Registro</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for patient in patients %}
-            <tr>
-                <td>{{ patient.name }}</td>
-                <td>{{ patient.surname }}</td>
-                <td>{{ patient.phone_number }}</td>
-                <td>{{ patient.email }}</td>
-                <td>{{ patient.created_date|date:"d/m/Y" }}</td>
-                <td class="actions-tab">
-                    <a href="{% url 'patient_schedule' patient.id %}" class="btn btn-icon view" title="Ver detalles">
-                        <i class="fa-solid fa-eye"></i>
-                    </a>
-                    <a href="{% url 'edit_patient' patient.id %}" class="btn-icon edit" title="Editar">
-                        <i class="fas fa-pencil-alt"></i>
-                    </a>
-                    <a href="{% url 'delete_patient' patient.id %}" class="btn-icon delete btn-danger btn-sm admin-only" title="Eliminar">
-                        <i class="fas fa-trash"></i>
-                    </a>
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
+  </ul>
+
+  <div class="list-header" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;margin-bottom:1rem">
+    <div>
+      <p style="margin:0;color:#6b7280">Gestión de pacientes del centro</p>
+    </div>
+    <a href="{% url 'new_patient' %}" class="btn-add">
+      <i class="fa-solid fa-user-plus"></i> Nuevo paciente
+    </a>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="patientTable" class="display nowrap" style="width:100%">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Apellido</th>
+          <th>Edad</th>
+          <th>Teléfono</th>
+          <th>Correo</th>
+          <th>Estado</th>
+          <th>Terapeuta</th>
+          <th>Fecha de registro</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for p in patients %}
+        <tr>
+          <td data-priority="1">
+            {% if p.photo %}
+              <img src="{{ p.photo.url }}" alt="" class="avatar">
+            {% endif %}
+            {{ p.name }}
+          </td>
+          <td>{{ p.surname }}</td>
+          <td>
+            <span class="calc-age" data-dob="{{ p.date_of_birth|date:'Y-m-d' }}"></span>
+          </td>
+          <td>{{ p.phone_number }}</td>
+          <td>{{ p.email }}</td>
+          <td data-order="{{ p.status }}">
+            {% if p.status == "Active" %}
+              <span class="badge badge-success">Activo</span>
+            {% elif p.status == "Discharged" %}
+              <span class="badge badge-secondary">Alta</span>
+            {% elif p.status == "Suspended" %}
+              <span class="badge badge-warning">Suspendido</span>
+            {% else %}
+              <span class="badge">-</span>
+            {% endif %}
+          </td>
+          <td>{{ p.therapist }}</td>
+          <td data-order="{{ p.created_date|date:'Y-m-d' }}">{{ p.created_date|date:"d/m/Y" }}</td>
+          <td class="actions-tab">
+            <div class="action-buttons">
+                <a href="{% url 'patient_schedule' p.id %}" class="btn-icon view" title="Ver (Agenda)">
+                <i class='bx bx-show'></i>
+                </a>
+                <a href="{% url 'edit_patient' p.id %}" class="btn-icon edit" title="Editar">
+                <i class='bx bx-edit'></i>
+                </a>
+                <a href="{% url 'delete_patient' p.id %}" class="btn-icon delete" title="Eliminar" onclick="return confirm('¿Eliminar paciente?');">
+                <i class='bx bx-trash'></i>
+                </a>
+            </div>
+            </td>
+        </tr>
+      {% endfor %}
+      </tbody>
     </table>
-</div>
+  </div>
 {% endblock %}
 
 {% block extra_js %}
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script>
-    $(document).ready(function() {
-        $('#patientTable').DataTable({
-            language: {
-                url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json"
-            },
-            responsive: true,
-            pageLength: 10,
-            pagingType: 'full_numbers',
-            dom: '<"top-container"lf>rt<"bottom"ip><"clear">',
-        });
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
+  <script>
+    function calcAgeFromDOBStr(dobStr){
+      if(!dobStr) return '';
+      const dob = new Date(dobStr+'T00:00:00');
+      if (isNaN(dob)) return '';
+      const today = new Date();
+      let age = today.getFullYear() - dob.getFullYear();
+      const m = today.getMonth() - dob.getMonth();
+      if (m < 0 || (m === 0 && today.getDate() < dob.getDate())) age--;
+      return age;
+    }
+
+    $(document).ready(function(){
+      // Pintar edades
+      document.querySelectorAll('.calc-age').forEach(span=>{
+        span.textContent = calcAgeFromDOBStr(span.dataset.dob);
+      });
+
+      // DataTables
+      $('#patientTable').DataTable({
+        language: { url: "https://cdn.datatables.net/plug-ins/1.13.4/i18n/es-ES.json" },
+        responsive: true,
+        stateSave: true,
+        pageLength: 10,
+        order: [[7, 'desc']], // Fecha de registro
+        dom: '<"top-container"lfB>rt<"bottom"ip><"clear">',
+        buttons: [
+          { extend: 'csv', text: 'CSV' },
+          { extend: 'excel', text: 'Excel' },
+          { extend: 'print', text: 'Imprimir' }
+        ],
+        columnDefs: [
+          { targets: -1, orderable: false, searchable: false }
+        ]
+      });
     });
-</script>
+  </script>
 {% endblock %}

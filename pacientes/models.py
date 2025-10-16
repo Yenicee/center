@@ -34,6 +34,7 @@ class Room(models.Model):
     location = models.CharField(max_length=100)
     specialists = models.ManyToManyField(Specialist, related_name='rooms')
     
+    equipment = models.ManyToManyField('Equipment', related_name='rooms', blank=True)   
 
     def __str__(self):
         return self.name
