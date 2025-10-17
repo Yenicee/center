@@ -85,18 +85,25 @@ WSGI_APPLICATION = 'config.wsgi.application'
 #aca se configuro la base de datos en postgre
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django_tenants.postgresql_backend',
-        'NAME': 'BD', 
-        'USER': 'postgres',    
-        'PASSWORD': '1234', 
-        'HOST': 'localhost',  
-        'PORT': '5432',  
-        'OPTIONS': {
-            'options': '-c client_encoding=utf8'
+    "default": {
+        "ENGINE": "django_tenants.postgresql_backend",
+        "NAME": "postgres",
+        "USER": "postgres.pbkubiootokcrbrpeyhb",
+        "PASSWORD": "$20304050$",
+        "HOST": "aws-1-us-east-2.pooler.supabase.com",
+        "PORT": "5432",
+        "CONN_MAX_AGE": 0,
+        "OPTIONS": {
+            "sslmode": "require",
+            "connect_timeout": 10,
+            "keepalives": 1,
+            "keepalives_idle": 30,
+            "keepalives_interval": 10,
+            "keepalives_count": 3,
         },
     }
 }
+
 
 # App que maneja los tenants
 TENANT_MODEL = "panelAdmin.Client"  # app.Model
