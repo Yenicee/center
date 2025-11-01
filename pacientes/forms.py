@@ -179,12 +179,26 @@ class SpecialistForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+    
+        # Validación de contraseñas (lo que ya tenías)
         pwd = cleaned.get('password') or ''
         cpw = cleaned.get('confirm_password') or ''
         if pwd != cpw:
-            raise ValidationError({'confirm_password': 'Las contraseñas no coinciden.'})
+           raise ValidationError({'confirm_password': 'Las contraseñas no coinciden.'})
         if len(pwd) < 6:
-            raise ValidationError({'password': 'La contraseña debe tener al menos 6 caracteres.'})
+           raise ValidationError({'password': 'La contraseña debe tener al menos 6 caracteres.'})
+    
+        #  Verificar límite de especialistas
+        client = cleaned.get('client')
+        if not self.instance.pk and client:  # Solo al crear nuevo
+           current_count = client.specialists.count()
+           if current_count >= client.specialists_limit:
+              raise ValidationError(
+                f'El cliente "{client.name}" ya alcanzó su límite de {client.specialists_limit} especialistas. '
+                f'Actualmente tiene {current_count} especialistas. '
+                f'Por favor, contacte al administrador para aumentar el límite.'
+              )
+    
         return cleaned
 
     def save(self, commit=True):

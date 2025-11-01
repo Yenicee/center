@@ -84,12 +84,81 @@ pip install -r requirements.txt
 
 ### 4. Configurar Base de Datos PostgreSQL
 
+#### Opción A: Base de Datos Local (Desarrollo)
+
 ```sql
 -- Conectar a PostgreSQL y crear base de datos
 CREATE DATABASE BD;
 CREATE USER postgres WITH PASSWORD '1234';
 GRANT ALL PRIVILEGES ON DATABASE BD TO postgres;
 ```
+
+#### Opción B: Base de Datos en la Nube con Supabase
+
+El proyecto puede utilizar **Supabase** como base de datos PostgreSQL en la nube para desarrollo y pruebas.
+
+**Ventajas de Supabase:**
+- PostgreSQL completamente administrado
+- Sin necesidad de instalación local
+- Interfaz web para gestión
+- Plan gratuito disponible
+
+**⚠️ Limitaciones del Plan Gratuito:**
+- La base de datos se **suspende automáticamente** después de aproximadamente **1 semana de inactividad**
+- No permite agregar colaboradores adicionales
+- Para producción se recomienda migrar a un plan de pago o servicio dedicado
+
+##### Acceso a Supabase (Desarrollo)
+
+```
+URL: https://supabase.com/
+Usuario: joseyi38@hotmail.com
+Contraseña: $Quipu2025$
+```
+
+##### ⚠️ Reactivación de Base de Datos Suspendida
+
+**Síntomas de base de datos suspendida:**
+- Error de conexión al intentar acceder a la aplicación
+- Timeout en consultas a la base de datos
+- Mensaje: "No se puede conectar a la base de datos"
+
+**Pasos para reactivar:**
+
+1. Ingresar a https://supabase.com/
+2. Iniciar sesión con las credenciales proporcionadas arriba
+3. Seleccionar el proyecto del sistema
+4. Buscar el mensaje "Database paused" o "Base de datos pausada"
+5. Hacer clic en el botón **"Resume"** o **"Reactivar"**
+6. Esperar 10-30 segundos mientras se reactiva
+7. Verificar conexión desde la aplicación
+
+**Nota importante:** Solo el propietario de la cuenta puede reactivar la base de datos. Este proceso debe repetirse cada vez que la aplicación no se use por varios días.
+
+##### Configuración de Conexión a Supabase
+
+En `settings.py` o `.env`:
+
+```python
+DATABASES = {
+    'default': {
+        'ENGINE': 'django_tenants.postgresql_backend',
+        'NAME': 'postgres',
+        'USER': 'postgres.[proyecto-id]',
+        'PASSWORD': '[password-supabase]',
+        'HOST': '[proyecto-id].supabase.co',
+        'PORT': '5432',
+    }
+}
+```
+
+##### Migración a Producción
+
+Para uso comercial, se recomienda migrar a:
+- **AWS RDS** (PostgreSQL administrado)
+- **DigitalOcean Managed Databases**
+- **Google Cloud SQL**
+- **VPS dedicado** con PostgreSQL
 
 ### 5. Configurar Variables de Entorno
 
@@ -154,19 +223,21 @@ Cada consultorio puede gestionar:
 
 
 ## Sistema de Notificaciones por Email
+
 ### Configuración de Email Corporativo
 
 El sistema envía automáticamente emails de bienvenida cuando se crea un nuevo cliente.
 
-Email de Bienvenida Automático
-Cuando se crea un nuevo cliente desde el panel administrativo (/panel/clients/add/), el sistema automáticamente:
-✅ Genera una contraseña segura aleatoria
-✅ Crea el tenant y usuario
-✅ Envía un email profesional con:
+#### Email de Bienvenida Automático
 
-Credenciales de acceso (usuario y contraseña)
-URL del dominio del cliente
-Instrucciones de primer ingreso
+Cuando se crea un nuevo cliente desde el panel administrativo (`/panel/clients/add/`), el sistema automáticamente:
+
+✅ Genera una contraseña segura aleatoria  
+✅ Crea el tenant y usuario  
+✅ Envía un email profesional con:
+- Credenciales de acceso (usuario y contraseña)
+- URL del dominio del cliente
+- Instrucciones de primer ingreso
 
 #### 1. Crear Email Corporativo
 
@@ -178,10 +249,12 @@ Crea una cuenta de Gmail para el sistema:
 #### 2. Configurar Variables de Entorno
 
 Agregar al archivo `.env`:
+
 ```env
 EMAIL_HOST_USER=noreply.tucentro@gmail.com
 EMAIL_HOST_PASSWORD=xxxx xxxx xxxx xxxx
 SECRET_KEY=your-secret-key-here
+```
 
 ## Desarrollo
 
@@ -226,6 +299,29 @@ python manage.py migrate_schemas --shared  # Solo esquema público
 python manage.py migrate_schemas --tenant   # Solo tenants
 ```
 
+## Problemas Comunes y Soluciones
+
+### Base de Datos no Conecta
+
+**Problema:** Error de conexión a la base de datos  
+**Causa:** Si usas Supabase, la base de datos puede estar suspendida por inactividad  
+**Solución:** Ver sección "Reactivación de Base de Datos Suspendida" arriba
+
+### Error: "no existe la relación pacientes_patient"
+
+**Problema:** Tablas de tenant no existen  
+**Causa:** Las migraciones no se aplicaron al esquema del tenant  
+**Solución:**
+```bash
+python manage.py migrate_schemas --schema=nombre_consultorio
+```
+
+### No Puedo Acceder sin Login
+
+**Problema:** Todas las URLs redirigen al login  
+**Causa:** Funcionalidad de seguridad correcta - todas las vistas están protegidas  
+**Solución:** Acceder a través de `/pacientes/login/` con credenciales válidas
+
 ## Deployment
 
 ### Variables de Entorno de Producción
@@ -235,6 +331,8 @@ DEBUG=False
 ALLOWED_HOSTS=yourdomain.com,*.yourdomain.com
 DATABASE_URL=postgresql://user:password@host:port/database
 SECRET_KEY=your-production-secret-key
+EMAIL_HOST_USER=noreply@yourdomain.com
+EMAIL_HOST_PASSWORD=your-email-password
 ```
 
 ### Configuración de Servidor Web
@@ -243,6 +341,14 @@ SECRET_KEY=your-production-secret-key
 - SSL/TLS para todas las conexiones
 - Configurar variables de entorno
 - Migrar base de datos de producción
+
+### Consideraciones para Producción
+
+1. **Base de Datos:** Migrar de Supabase gratuito a un servicio de producción
+2. **Email:** Usar servicio profesional (SendGrid, AWS SES, Mailgun)
+3. **Monitoreo:** Implementar logging y alertas
+4. **Backups:** Configurar respaldos automáticos de base de datos
+5. **SSL:** Certificados para todos los subdominios
 
 ## Contribuir
 
@@ -262,4 +368,8 @@ Para reportar bugs o solicitar funcionalidades, crear un issue en GitHub.
 
 ## Contacto
 
-- Desarrollador: Yenice Vazquez, José Yañez.
+- Desarrolladores: Yenice Vazquez, José Yañez
+
+---
+
+**Última actualización:** Noviembre 2025

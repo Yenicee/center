@@ -1,6 +1,11 @@
 from django.db import models 
 from django.contrib.auth.models import User
 from panelAdmin.models import Client #importe app y traje modelo 
+from django.core.exceptions import ValidationError
+from django.utils import timezone
+from datetime import datetime, timedelta
+from django.utils import timezone
+      
 
 class Specialist(models.Model):
     ROLES = [
@@ -28,9 +33,21 @@ class Specialist(models.Model):
 
     comp_type = models.CharField(max_length=10, choices=COMP_CHOICES, default=COMP_FIXED)
     comp_value = models.DecimalField(max_digits=7, decimal_places=2, default=0)  
+    
+    def save(self, *args, **kwargs):
+       
+        if not self.pk and self.client:
+            current_count = self.client.specialists.count()
+            if current_count >= self.client.specialists_limit:
+                raise ValidationError(
+                    f'El cliente "{self.client.name}" ha alcanzado su límite de '
+                    f'{self.client.specialists_limit} especialistas. '
+                    f'Actualmente tiene {current_count} especialistas registrados.'
+                )
+        super().save(*args, **kwargs)
+    
     def __str__(self):
         return f"{self.user.first_name} {self.user.last_name} - {self.role}"
-    
     
 class Room(models.Model):
     client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='rooms',null=True, blank=True  )
@@ -226,8 +243,7 @@ class PaymentLog(models.Model):
 #Expense
 # ---- Gastos simples (MVP) ----
 class Expense(models.Model):
-   
-
+    client = models.ForeignKey(Client, on_delete=models.CASCADE, related_name='expenses', null=True, blank=True)
     name = models.CharField(max_length=120)                     # Luz, Alquiler, Internet, etc.
     amount = models.DecimalField(max_digits=10, decimal_places=2)
     is_fixed = models.BooleanField(default=False)               # fijo vs variable
@@ -243,4 +259,195 @@ class Expense(models.Model):
 
     def __str__(self):
         return f"{self.name} · {self.amount}"
-
+    
+    
+#--Nuevo modelo agregado para notificaciones 
+class Notification(models.Model):
+    NOTIFICATION_TYPES = [
+        ('session_reminder', 'Recordatorio de sesión'),
+        ('payment_overdue', 'Pago atrasado'),
+        ('session_tomorrow', 'Sesión mañana'),
+        ('expense_due', 'Gasto por vencer'),
+        ('expense_overdue', 'Gasto vencido'),
+    ]
+    
+    # Relaciones
+    client = models.ForeignKey(
+        Client, 
+        on_delete=models.CASCADE, 
+        related_name='notifications',
+        null=True, 
+        blank=True
+    )
+    
+    # Relaciones opcionales según el tipo de notificación
+    session = models.ForeignKey(
+        Session, 
+        on_delete=models.CASCADE, 
+        related_name='notifications',
+        null=True, 
+        blank=True
+    )
+    
+    payment = models.ForeignKey(
+        Payment, 
+        on_delete=models.CASCADE, 
+        related_name='notifications',
+        null=True, 
+        blank=True
+    )
+    
+    expense = models.ForeignKey(
+        Expense, 
+        on_delete=models.CASCADE, 
+        related_name='notifications',
+        null=True, 
+        blank=True
+    )
+    
+    patient = models.ForeignKey(
+        Patient, 
+        on_delete=models.CASCADE, 
+        related_name='notifications',
+        null=True, 
+        blank=True
+    )
+    
+    # Campos de la notificación
+    notification_type = models.CharField(
+        max_length=30, 
+        choices=NOTIFICATION_TYPES
+    )
+    
+    title = models.CharField(max_length=200)
+    message = models.TextField()
+    
+    # Estado
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    read_at = models.DateTimeField(null=True, blank=True)
+    
+    # Para evitar duplicados
+    reference_id = models.CharField(
+        max_length=100, 
+        blank=True,
+        help_text="Identificador único para evitar duplicados (ej: session_123_reminder)"
+    )
+    
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Notificación'
+        verbose_name_plural = 'Notificaciones'
+        indexes = [
+            models.Index(fields=['client', 'is_read', '-created_at']),
+            models.Index(fields=['reference_id']),
+        ]
+    
+    def __str__(self):
+        return f"{self.get_notification_type_display()} - {self.title}"
+    
+    def mark_as_read(self):
+        """Marca la notificación como leída"""
+        if not self.is_read:
+            self.is_read = True
+            self.read_at = timezone.now()
+            self.save(update_fields=['is_read', 'read_at'])
+    
+    @classmethod
+    def create_session_reminder(cls, session):
+        """Crea notificación de recordatorio de sesión (24h antes)"""
+        
+        # Verificar que la sesión sea mañana
+        tomorrow = (timezone.now() + timedelta(days=1)).date()
+        if session.date != tomorrow:
+            return None
+        
+        # Evitar duplicados
+        reference = f"session_{session.id}_reminder"
+        if cls.objects.filter(reference_id=reference).exists():
+            return None
+        
+        return cls.objects.create(
+            client=session.client,
+            session=session,
+            patient=session.patient,
+            notification_type='session_tomorrow',
+            title=f"Sesión mañana: {session.patient.name}",
+            message=f"Recordatorio: Sesión programada para mañana {session.date.strftime('%d/%m/%Y')} a las {session.time.strftime('%H:%M')} con {session.specialist.user.get_full_name()}",
+            reference_id=reference
+        )
+    
+    @classmethod
+    def create_payment_overdue(cls, payment):
+        """Crea notificación de pago atrasado"""
+        from django.utils import timezone
+        
+        # Solo si no está pagado y la fecha ya pasó
+        if payment.is_paid or payment.session.date >= timezone.now().date():
+            return None
+        
+        # Evitar duplicados
+        reference = f"payment_{payment.id}_overdue"
+        if cls.objects.filter(reference_id=reference).exists():
+            return None
+        
+        days_overdue = (timezone.now().date() - payment.session.date).days
+        
+        return cls.objects.create(
+            client=payment.client,
+            payment=payment,
+            session=payment.session,
+            patient=payment.session.patient,
+            notification_type='payment_overdue',
+            title=f"Pago atrasado: {payment.session.patient.name}",
+            message=f"Pago pendiente desde hace {days_overdue} días. Sesión del {payment.session.date.strftime('%d/%m/%Y')}. Monto: ${payment.amount}",
+            reference_id=reference
+        )
+    
+    @classmethod
+    def create_expense_due(cls, expense):
+        """Crea notificación de gasto próximo a vencer (3 días antes)"""    
+        if not expense.due_date or expense.paid:
+            return None
+        
+        # Verificar que vence en 3 días
+        days_until_due = (expense.due_date - timezone.now().date()).days
+        if days_until_due != 3:
+            return None
+        
+        # Evitar duplicados
+        reference = f"expense_{expense.id}_due"
+        if cls.objects.filter(reference_id=reference).exists():
+            return None
+        
+        return cls.objects.create(
+            client=expense.client,
+            expense=expense,
+            notification_type='expense_due',
+            title=f"Gasto por vencer: {expense.name}",
+            message=f"El gasto '{expense.name}' vence en 3 días ({expense.due_date.strftime('%d/%m/%Y')}). Monto: ${expense.amount}",
+            reference_id=reference
+        )
+    
+    @classmethod
+    def create_expense_overdue(cls, expense):
+        """Crea notificación de gasto vencido"""  
+        if not expense.due_date or expense.paid or expense.due_date >= timezone.now().date():
+            return None
+        
+        # Evitar duplicados
+        reference = f"expense_{expense.id}_overdue"
+        if cls.objects.filter(reference_id=reference).exists():
+            return None
+        
+        days_overdue = (timezone.now().date() - expense.due_date).days
+        
+        return cls.objects.create(
+            client=expense.client,
+            expense=expense,
+            notification_type='expense_overdue',
+            title=f"Gasto vencido: {expense.name}",
+            message=f"El gasto '{expense.name}' está vencido desde hace {days_overdue} días. Fecha de vencimiento: {expense.due_date.strftime('%d/%m/%Y')}. Monto: ${expense.amount}",
+            reference_id=reference
+        )
+    

@@ -7,7 +7,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.db import transaction
 from django.views.decorators.http import require_POST
 from django.db.models import Prefetch
-from .models import Patient, Session, Specialist, Room, Payment, Equipment, Expense
+from .models import Patient, Session, Specialist, Room, Payment, Equipment, Expense, Notification
 from .forms import (
     PatientForm, SessionForm,
     SpecialistForm, RoomForm,
@@ -365,19 +365,29 @@ def session_detail(request, session_id):
 
 @login_required
 def get_sessions(request):
-    try:
-        sessions = Session.objects.filter(status__in=["Pendiente", "Cancelada"])
+    try:  
+        # ESTADOS CORRECTOS DE LA BD
+        sessions = Session.objects.filter(
+            status__in=["Pendiente planificada", "Realizada", "Cancelada", "Abierta"]
+        )
+        
+        print(f"🔍 Total de sesiones en DB: {Session.objects.count()}")
+        print(f"📊 Sesiones filtradas: {sessions.count()}")
+        
         events = []
         
         for session in sessions:
             start_datetime = datetime.combine(session.date, session.time)
             end_datetime = start_datetime + timedelta(hours=1)
             
-            # Configura el color basado en el estado de la sesión
-            if session.status == "Pendiente":
-                color = '#0d6efd'  # Azul para "Pendiente"
-            elif session.status == "Cancelada":
-                color = '#dc3545'  # Rojo para "Cancelada"
+            # Mapeo de colores por estado
+            color_map = {
+                'Pendiente planificada': '#0d6efd',  
+                'Realizada': '#28a745',              
+                'Cancelada': '#dc3545',               
+                'Abierta': '#ffc107',                
+            }
+            color = color_map.get(session.status, '#6c757d')  
 
             event = {
                 'id': str(session.id),
@@ -391,6 +401,7 @@ def get_sessions(request):
                     'patient': f"{session.patient.name} {session.patient.surname}",
                     'activity': session.activity,
                     'objective': session.objective,
+                    'status': session.status, 
                     'eventType': 'session'
                 },
                 'backgroundColor': color,
@@ -399,13 +410,15 @@ def get_sessions(request):
             }
             events.append(event)
         
+        print(f"✅ Eventos enviados al calendario: {len(events)}")
         return JsonResponse(events, safe=False)
         
     except Exception as e:
-        print(f"Error en get_sessions: {str(e)}")
+        print(f"❌ Error en get_sessions: {str(e)}")
         import traceback
         print(traceback.format_exc())
         return JsonResponse({'error': str(e)}, status=500)
+
 
 @login_required
 def edit_session(request, session_id):
@@ -474,6 +487,7 @@ def view_specialist(request, specialist_id):
     return render(request, 'pacientes/specialist/view_specialist.html', {
         'specialist': specialist
     })
+
 @login_required
 def edit_specialist(request, specialist_id):
     specialist = get_object_or_404(Specialist, id=specialist_id)
@@ -867,18 +881,27 @@ def expense_create(request):
 @login_required
 def expense_edit(request, pk):
     exp = get_object_or_404(Expense, pk=pk)
-    if request.method == 'POST':
+    if request.method == 'POST': 
         form = ExpenseForm(request.POST, instance=exp)
+        
+        if not form.is_valid():
+            print(f"Errores del formulario: {form.errors}")
+        
         if form.is_valid():
             exp = form.save(commit=False)
+            
             if exp.paid and not exp.paid_at:
                 exp.paid_at = timezone.now().date()
+            
             exp.save()
+            
             messages.success(request, 'Gasto actualizado.')
             return redirect('expense_list')
     else:
         form = ExpenseForm(instance=exp)
+    
     return render(request, 'pacientes/finance/expense_form.html', {'form': form, 'title': 'Editar gasto'})
+
 
 @login_required
 def expense_delete(request, pk):
@@ -890,3 +913,157 @@ def expense_delete(request, pk):
     return render(request, 'pacientes/finance/expense_delete.html', {'item': exp})
 
 
+#Notificaciones
+@login_required
+def get_notifications(request):
+    """
+    Obtiene las notificaciones no leídas del tenant actual.
+    Retorna JSON para consumir desde JavaScript.
+    """
+    notifications = Notification.objects.filter(
+        is_read=False
+    ).select_related(
+        'session', 
+        'patient', 
+        'payment', 
+        'expense'
+    ).order_by('-created_at')[:20] 
+    
+    data = []
+    for notif in notifications:
+        data.append({
+            'id': notif.id,
+            'type': notif.notification_type,
+            'title': notif.title,
+            'message': notif.message,
+            'created_at': notif.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+            'url': _get_notification_url(notif),
+        })
+    
+    return JsonResponse({
+        'success': True,
+        'notifications': data,
+        'count': len(data)
+    })
+
+
+@login_required
+def get_notifications_count(request):
+    """
+    Retorna solo el contador de notificaciones no leídas.
+    Útil para actualizar el badge sin cargar todas las notificaciones.
+    """
+    count = Notification.objects.filter(is_read=False).count()
+    return JsonResponse({'count': count})
+
+
+@login_required
+@require_POST
+def mark_notification_read(request, notification_id):
+    """
+    Marca una notificación específica como leída.
+    """
+    try:
+        notification = Notification.objects.get(id=notification_id)
+        notification.mark_as_read()
+        return JsonResponse({'success': True})
+    except Notification.DoesNotExist:
+        return JsonResponse({
+            'success': False, 
+            'error': 'Notificación no encontrada'
+        }, status=404)
+
+
+@login_required
+@require_POST
+def mark_all_notifications_read(request):
+    """
+    Marca todas las notificaciones como leídas.
+    """
+    updated = Notification.objects.filter(is_read=False).update(
+        is_read=True,
+        read_at=timezone.now()
+    )
+    return JsonResponse({
+        'success': True,
+        'updated': updated
+    })
+
+
+@login_required
+def generate_notifications(request):
+    """
+    Vista manual para generar notificaciones.
+    util para testing y casos especiales en producción.
+    
+    Acceso: /pacientes/notifications/generate/
+    """ 
+    created_count = 0
+    today = timezone.now().date()
+    tomorrow = today + timedelta(days=1)
+    three_days = today + timedelta(days=3)
+    
+    # 1. SESIONES DE MAÑANA (recordatorio 24h antes)
+    tomorrow_sessions = Session.objects.filter(
+        date=tomorrow,
+        status__in=[Session.STATUS_PENDING_PLANNED, Session.STATUS_PENDING_UNPLANNED]
+    )
+    
+    for session in tomorrow_sessions:
+        notif = Notification.create_session_reminder(session)
+        if notif:
+            created_count += 1
+    
+    # 2. PAGOS ATRASADOS
+    overdue_payments = Payment.objects.filter(
+        is_paid=False,
+        session__date__lt=today
+    ).select_related('session', 'session__patient')
+    
+    for payment in overdue_payments:
+        notif = Notification.create_payment_overdue(payment)
+        if notif:
+            created_count += 1
+    
+    # 3. GASTOS POR VENCER (3 días antes)
+    upcoming_expenses = Expense.objects.filter(
+        paid=False,
+        due_date=three_days
+    )
+    
+    for expense in upcoming_expenses:
+        notif = Notification.create_expense_due(expense)
+        if notif:
+            created_count += 1
+    
+    # 4. GASTOS VENCIDOS
+    overdue_expenses = Expense.objects.filter(
+        paid=False,
+        due_date__lt=today
+    )
+    
+    for expense in overdue_expenses:
+        notif = Notification.create_expense_overdue(expense)
+        if notif:
+            created_count += 1
+    
+    return JsonResponse({
+        'success': True,
+        'created': created_count,
+        'message': f'Se generaron {created_count} nuevas notificaciones'
+    })
+
+
+def _get_notification_url(notification):
+    """
+    Helper: Retorna la URL apropiada según el tipo de notificación.
+    """
+    if notification.session:
+        return f'/pacientes/sessions/{notification.session.id}/'
+    elif notification.payment:
+        return f'/pacientes/payments/{notification.payment.id}/'
+    elif notification.expense:
+        return f'/pacientes/expenses/{notification.expense.id}/edit/'
+    elif notification.patient:
+        return f'/pacientes/patients/{notification.patient.id}/'
+    return '/pacientes/dashboard/'

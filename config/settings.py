@@ -163,9 +163,6 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-#imprime por consola, no lo necesitamos por ahora
-#EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
-
 # ==================== CONFIGURACIÓN DE EMAIL PARA ENVIOS====================
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'

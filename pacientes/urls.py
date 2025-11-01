@@ -72,6 +72,13 @@ urlpatterns = [
     path('finance/expenses/new/', views.expense_create, name='expense_create'),
     path('finance/expenses/<int:pk>/edit/', views.expense_edit, name='expense_edit'),
     path('finance/expenses/<int:pk>/delete/', views.expense_delete, name='expense_delete'),
+    
+    #Notificaciones
+    path('notifications/', views.get_notifications, name='get_notifications'),
+    path('notifications/count/', views.get_notifications_count, name='notifications_count'),
+    path('notifications/<int:notification_id>/read/', views.mark_notification_read, name='mark_notification_read'),
+    path('notifications/read-all/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
+    path('notifications/generate/', views.generate_notifications, name='generate_notifications'),  # Solo para testing
 
 ] 
 if settings.DEBUG:
