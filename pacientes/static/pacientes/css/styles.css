@@ -2321,6 +2321,202 @@ th.sorting_desc::after {
 	display: inline-flex;
 	gap: 10px;
 }
+/* ====================================
+   ESTILOS DE NOTIFICACIONES
+   ==================================== */
+
+/* Contenedor de la campana */
+.notification-bell {
+    position: relative;
+    cursor: pointer;
+    margin-right: 20px;
+    display: flex;
+    align-items: center;
+}
+
+/* Badge (Contador) */
+.notification-badge {
+    position: absolute;
+    top: -5px; /* Ajusta la posición */
+    right: -10px; /* Ajusta la posición */
+    background-color: #ff4d4f; /* Rojo de alerta, ajusta a tu variable */
+    color: white;
+    border-radius: 50%;
+    padding: 2px 6px;
+    font-size: 11px;
+    font-weight: bold;
+    /* Usar flex para centrar el contenido, y display: none/flex lo controla JS */
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    min-width: 20px; 
+    height: 20px;
+}
+
+/* Dropdown (Contenedor principal) */
+#notification-dropdown {
+    position: absolute;
+    top: 100%; 
+    right: 0;
+    width: 320px; /* Ancho cómodo para el dropdown */
+    max-height: 400px;
+    background: var(--light, white); /* Usar tu color de fondo */
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    
+    /* Ocultar por defecto y transicionar */
+    visibility: hidden;
+    opacity: 0;
+    transform: translateY(10px);
+    transition: all .3s ease;
+}
+
+/* Clase 'show' controlada por JS */
+#notification-dropdown.show {
+    visibility: visible;
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Encabezado y botón Marcar todo */
+.notification-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    border-bottom: 1px solid var(--grey, #e0e0e0);
+}
+
+.notification-header h4 {
+    margin: 0;
+    font-size: 16px;
+    color: var(--dark, #333);
+}
+
+.mark-all-read {
+    background: none;
+    border: none;
+    color: var(--blue, #007bff); /* Color principal o de enlace */
+    cursor: pointer;
+    font-size: 18px;
+    padding: 5px;
+    opacity: 0.8;
+}
+
+.mark-all-read:hover {
+    opacity: 1;
+}
+
+/* Lista de notificaciones (scroll) */
+.notification-list {
+    max-height: 300px; 
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+/* Ítem individual */
+.notification-item {
+    display: flex;
+    align-items: flex-start;
+    padding: 12px 15px;
+    border-bottom: 1px solid var(--grey, #eee);
+    text-decoration: none;
+    color: var(--dark, #333);
+    transition: background-color 0.2s;
+    cursor: pointer;
+}
+
+.notification-item:hover {
+    background-color: var(--light-grey, #f4f4f4); 
+}
+
+/* Indicador de no leído */
+.notification-item.unread {
+    background-color: #fffbe6; /* Color para destacar no leídas */
+    font-weight: 500;
+}
+
+/* Ícono de la notificación */
+.notification-icon {
+    flex-shrink: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 10px;
+}
+
+.notification-icon i {
+    font-size: 16px;
+    color: white;
+}
+
+/* Colores de íconos basados en tu función getNotificationIcon */
+.notification-icon.session { background-color: var(--blue, #1890ff); }
+.notification-icon.payment { background-color: #faad14; } /* Amarillo/Naranja */
+.notification-icon.expense { background-color: #ff4d4f; } /* Rojo */
+
+/* Contenido de texto */
+.notification-content {
+    flex-grow: 1;
+    min-width: 0; /* Para que el texto se trunque correctamente */
+}
+
+.notification-title {
+    font-size: 13px;
+    font-weight: bold;
+    /* Añadir truncamiento si es necesario */
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.notification-message {
+    font-size: 12px;
+    color: var(--text-secondary, #666);
+    margin-top: 2px;
+    /* Permite múltiples líneas, pero podrías truncar */
+}
+
+.notification-time {
+    font-size: 10px;
+    color: var(--text-tertiary, #999);
+    margin-top: 5px;
+    text-align: right;
+}
+
+/* Mensajes de estado (cargando, vacío) */
+.notification-loading,
+.notification-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-secondary, #999);
+}
+
+.notification-loading i {
+    margin-right: 5px;
+}
+
+.notification-empty i {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+/* Pie de página */
+.notification-footer {
+    padding: 10px 15px;
+    text-align: center;
+    border-top: 1px solid var(--grey, #e0e0e0);
+}
+
+.notification-footer a {
+    color: var(--blue, #1890ff);
+    text-decoration: none;
+    font-size: 13px;
+}
 
 /* ===== RESPONSIVE STYLES ===== */
 @media (max-width: 1279.98px) {
