@@ -23,6 +23,7 @@ from django.views.decorators.debug import sensitive_post_parameters
 from django.utils import timezone
 from django.db.models import Sum, Q
 from calendar import monthrange
+import json
 
 #views para login
 @sensitive_post_parameters()
@@ -901,6 +902,41 @@ def expense_edit(request, pk):
         form = ExpenseForm(instance=exp)
     
     return render(request, 'pacientes/finance/expense_form.html', {'form': form, 'title': 'Editar gasto'})
+
+
+@login_required
+@require_POST
+def toggle_expense_paid(request, pk):
+    """
+    Toggle del estado 'paid' de un gasto desde la lista.
+    """
+    try:
+        expense = get_object_or_404(Expense, pk=pk)
+        
+        # Obtener el nuevo estado del body JSON
+        data = json.loads(request.body)
+        new_paid_status = data.get('paid', False)
+        
+        # Actualizar
+        expense.paid = new_paid_status
+        
+        # Si se marca como pagado y no tiene fecha, asignar hoy
+        if expense.paid and not expense.paid_at:
+            expense.paid_at = timezone.now().date()
+        
+        expense.save()
+        
+        return JsonResponse({
+            'success': True,
+            'paid': expense.paid,
+            'message': 'Gasto actualizado correctamente'
+        })
+        
+    except Exception as e:
+        return JsonResponse({
+            'success': False,
+            'error': str(e)
+        }, status=400)
 
 
 @login_required

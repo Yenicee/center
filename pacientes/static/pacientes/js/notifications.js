@@ -181,9 +181,9 @@
     }
     // Click en el enlace "Cerrar" (antiguo "Ver todas")
     viewAllBtn.addEventListener('click', (e) => {
-        e.preventDefault(); // Evita que el navegador navegue a '#'
-        e.stopPropagation(); // Evita que se propague el clic (aunque ya está dentro del dropdown)
-        closeDropdown();     // Llama a la función para cerrar el diálogo
+        e.preventDefault(); 
+        e.stopPropagation(); 
+        closeDropdown();     
     });
     
     /**
@@ -194,7 +194,7 @@
         
         if (isDropdownOpen) {
             notificationDropdown.classList.add('show');
-            loadNotifications(); // Cargar notificaciones al abrir
+            loadNotifications(); 
         } else {
             notificationDropdown.classList.remove('show');
         }

@@ -7,7 +7,13 @@
 <table class="table">
   <thead>
     <tr>
-      <th>Ítem</th><th>Monto</th><th>Fijo</th><th>Recurrente</th><th>Vence</th><th>Pagado</th><th></th>
+      <th>Ítem</th>
+      <th>Monto</th>
+      <th>Fijo</th>
+      <th>Recurrente</th>
+      <th>Vence</th>
+      <th>Pagado</th>
+      <th></th>
     </tr>
   </thead>
   <tbody>
@@ -18,7 +24,12 @@
         <td>{{ i.is_fixed|yesno:"Sí,No" }}</td>
         <td>{{ i.is_recurring|yesno:"Sí,No" }}</td>
         <td>{{ i.due_date|date:"d/m/Y" }}</td>
-        <td>{{ i.paid|yesno:"Sí,No" }}</td>
+        <td>
+          <select class="paid-select" data-expense-id="{{ i.id }}">
+            <option value="false" {% if not i.paid %}selected{% endif %}>No</option>
+            <option value="true" {% if i.paid %}selected{% endif %}>Sí</option>
+          </select>
+        </td>
         <td class="actions-tab">
           <a href="{% url 'expense_edit' i.id %}" class="btn-icon edit"><i class="fas fa-pencil-alt"></i></a>
           <a href="{% url 'expense_delete' i.id %}" class="btn-icon delete"><i class="fas fa-trash"></i></a>
@@ -29,4 +40,49 @@
     {% endfor %}
   </tbody>
 </table>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  document.querySelectorAll('.paid-select').forEach(select => {
+    select.addEventListener('change', function() {
+      const expenseId = this.dataset.expenseId;
+      const isPaid = this.value === 'true';
+      const prevValue = this.value;
+      
+      this.disabled = true;
+      
+      fetch(`/pacientes/finance/expenses/${expenseId}/toggle-paid/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ paid: isPaid })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (!data.success) {
+          this.value = prevValue;
+          alert('Error al actualizar');
+        } else if (typeof loadNotificationCount === 'function') {
+          loadNotificationCount();
+        }
+      })
+      .catch(() => {
+        this.value = prevValue;
+        alert('Error de conexion');
+      })
+      .finally(() => this.disabled = false);
+    });
+  });
+  
+  function getCookie(name) {
+    const value = `; ${document.cookie}`;
+    const parts = value.split(`; ${name}=`);
+    if (parts.length === 2) return parts.pop().split(';').shift();
+  }
+});
+</script>
+
+{% csrf_token %}
 {% endblock %}

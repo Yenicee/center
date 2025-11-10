@@ -72,6 +72,7 @@ urlpatterns = [
     path('finance/expenses/new/', views.expense_create, name='expense_create'),
     path('finance/expenses/<int:pk>/edit/', views.expense_edit, name='expense_edit'),
     path('finance/expenses/<int:pk>/delete/', views.expense_delete, name='expense_delete'),
+    path('finance/expenses/<int:pk>/toggle-paid/', views.toggle_expense_paid, name='toggle_expense_paid'),
     
     #Notificaciones
     path('notifications/', views.get_notifications, name='get_notifications'),
