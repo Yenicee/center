@@ -6,7 +6,8 @@
     const notificationDropdown = document.getElementById('notification-dropdown');
     const notificationList = document.getElementById('notification-list');
     const markAllReadBtn = document.getElementById('mark-all-read');
-    
+    const viewAllBtn = document.getElementById('view-all-notifications');
+
     let isDropdownOpen = false;
     
     // ========== FUNCIONES PRINCIPALES ==========
@@ -178,9 +179,15 @@
         })
         .catch(error => console.error('Error al marcar todas como leídas:', error));
     }
+    // Click en el enlace "Cerrar" (antiguo "Ver todas")
+    viewAllBtn.addEventListener('click', (e) => {
+        e.preventDefault(); // Evita que el navegador navegue a '#'
+        e.stopPropagation(); // Evita que se propague el clic (aunque ya está dentro del dropdown)
+        closeDropdown();     // Llama a la función para cerrar el diálogo
+    });
     
     /**
-     * Toggle del dropdown
+     * Toggle del dropdown|
      */
     function toggleDropdown() {
         isDropdownOpen = !isDropdownOpen;
@@ -224,6 +231,11 @@
         toggleDropdown();
     });
     
+    notificationBadge.addEventListener('click', (e) => {
+        e.stopPropagation(); // Prevenir propagación
+        toggleDropdown();    // Abrir/Cerrar el dropdown
+    });
+
     // Click en marcar todas como leídas
     markAllReadBtn.addEventListener('click', (e) => {
         e.stopPropagation();
